@@ -61,7 +61,7 @@ elif inputParameter2 == "c" or inputParameter2 == "cpp" or inputParameter2 == "c
     cmd                     = inputParameter1 # 获取第一个参数
     codeqlOutName           = str(getCurrentTime())+"_"+str(getCodeRespName(cmd))+"_codeql扫描结果.txt"
     cdToRootCmd             = "cd " + str(root_path) + str(getCodeRespName(cmd)) + ";"
-    codeqlCreateCmd         = cdToRootCmd  + "codeqlBinPath database create codeqldatabase --language=cpp  --command='mkdir build ; cd build ; cmake .. ;make'   --overwrite".replace("codeqlBinPath",codeqlBinPath)+";"
+    codeqlCreateCmd         = cdToRootCmd  + "codeqlBinPath database create codeqldatabase --language=cpp  --command='bash /root/code/build.sh'   --overwrite".replace("codeqlBinPath",codeqlBinPath)+";"
     codeqlScanCmd           = "for file in codeqlcppFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlcppFilesPath",codeqlcppFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
     finalCMD                = (codeqlCreateCmd+codeqlScanCmd)
    
