@@ -6,7 +6,7 @@ where
   call.getCallee().getName().toLowerCase().regexpMatch("(?i).*\\b(error|log|info|trace|debug)\\b.*")  and
   // 循环判断每个参数是否包含敏感词
   exists(int i | i in [0 .. call.getNumArgument() - 1] |
-    call.getArgument(i).toString().regexpMatch(".*(?i)(key|password|token|secret|vault|arn|email|content|mail|ldap|response|request).*") and 
+    call.getArgument(i).toString().regexpMatch(".*(?i)(key|password|token|secret|vault|param|arn|email|content|mail|ldap|response|request).*") and 
     not call.getArgument(i) instanceof StringLiteral and 
     tempStr = call.getArgument(i).toString()) and 
     loc = call.getLocation().getFile().getAbsolutePath() + ":" + call.getLocation().getStartLine()

@@ -15,7 +15,7 @@ javaEnvSetting          = "echo 1"
 ###################################工具集###################################
 def getCurrentTime():
     now = datetime.now() # 获取当前时间
-    format = "%Y-%m-%d_%H-%M-%S" # 定义格式字符串
+    format = "%Y-%m-%d" # 定义格式字符串
     time_str = now.strftime(format) # 格式化时间字符串
     return time_str
 
