@@ -4,7 +4,7 @@ from datetime import datetime
 root_path               = "/root/code/"
 codeqlJavaFilesPath     = "/root/tools/codeql/java/ql/examples/snippets/"
 codeqlJSFilesPath       = "/root/tools/codeql/javascript/ql/examples/"
-codeqlcppFilesPath      = "/root/tools/codeql/java/ql/examples/snippets/"
+codeqlcppFilesPath      = "/root/tools/codeql/cpp/ql/examples/snippets/"
 trivyFilesPath          = "/root/tools/trivy_0.41.0/"
 mavenSettingsFile       = "/root/tools/apache-maven-3.9.2/settings.xml"
 mavenLocalRepositoryDir = "/root/tools/apache-maven-3.9.2/repository"
