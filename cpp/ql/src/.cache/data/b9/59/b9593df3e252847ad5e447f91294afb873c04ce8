@@ -1,0 +1,24 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "SizeCheck2.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "71aeec42ce2f60e7e2d20ea62cb6c1e212e14394"
+  debugInfo: "0c9c9b9f5bf126d8bd79e0457af12365b251f197"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "f1077788343023e211afa1c5ec89a5533ebdd313"
+- cached: "6c8b3996f913a2c301248eb9686264937fe1493c"
+  debugInfo: "eae137bdfb1c7c4a89b2ae1cccc0129c4de0cf19"
+- cached: "5a7f9fbc1550c93084b1c41446939bca46efe511"
+  debugInfo: "4bdb749519ec7a01c21b18dd6a8a1cad57d70f56"
+- cached: "2407ffc6dc5373c4974dadf0af691749a6e8ee39"
+  debugInfo: "d24b8d80dfff45799dbe1c76314030cd2d5164e3"
+- cached: "ce756884cb88d306754f68b961d8f2d1fcfb776e"
+  debugInfo: "2afbee74836ff2e35b7b5af1f11882b72e78ef22"
+results:
+  '#select':
+    resultArranger: "2\"alloc\"ei120s"
+inputsDigest: "b9593df3e252847ad5e447f91294afb873c04ce8"

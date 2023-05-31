@@ -1,0 +1,14 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "vardecl.ql"
+dbscheme: "4d00210ca570d55c4833af11d3372b774dbc63f2"
+stages:
+- cached: "81b516b9596afdb4c914f1308d97653d55218dd7"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+results:
+  '#select':
+    resultArranger: "1\"d\"ei12"
+inputsDigest: "6d6d0d1a57697d96e78c7192a0371617b74492d5"

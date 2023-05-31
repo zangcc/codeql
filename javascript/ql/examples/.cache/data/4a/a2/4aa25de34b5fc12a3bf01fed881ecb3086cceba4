@@ -1,0 +1,16 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "classdefltctor.ql"
+dbscheme: "4d00210ca570d55c4833af11d3372b774dbc63f2"
+stages:
+- cached: "46d60abd4b900489a90dc421d46dc2674d86d203"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+- cached: "a6db6a5e3ada74a79dc0cc768874bffd97f2e1e4"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+results:
+  '#select':
+    resultArranger: "1\"c\"ei12"
+inputsDigest: "4aa25de34b5fc12a3bf01fed881ecb3086cceba4"

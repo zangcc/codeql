@@ -1,0 +1,14 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "singlequotestring.ql"
+dbscheme: "4d00210ca570d55c4833af11d3372b774dbc63f2"
+stages:
+- cached: "0c9d29dd75b9b9852752c0851bca7f8539c22f26"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+results:
+  '#select':
+    resultArranger: "1\"s\"ei12"
+inputsDigest: "3d88896f35ab6477f3ae9bcac5c83cae4c037003"

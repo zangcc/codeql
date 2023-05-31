@@ -1,0 +1,2 @@
+| java.time.Duration#ofMillis(long) | 1 |
+| java.util.concurrent.atomic.AtomicReference#set(Object) | 1 |

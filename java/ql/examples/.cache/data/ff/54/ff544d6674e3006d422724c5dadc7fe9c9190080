@@ -1,0 +1,22 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "02-hardcode-string.ql"
+dbscheme: "934bf10b4bd34cf648893efcd1d0d7be9471d39f"
+stages:
+- cached: "d0e569ac51f56d075eb77dd802cff07f31144fb9"
+  debugInfo: "0190683fba008e5fe5f1e91ea9548d570196ce28"
+- cached: "34d6e488b5bd74f8e63b31cea66db1d73354c7cd"
+  debugInfo: "d316ce597de16bc20b156b2799abd3fc980faabe"
+- cached: "69e65073dbb577c1ce0e199e0f008519f03f85ad"
+  debugInfo: "92c3a4b7c2c5a40d28a1f0ee68bbde6009a4b9ea"
+- cached: "4a7e0d379f66ff637d3b25fb91e4f4ce0637799c"
+  debugInfo: "9b022f4e05b051bb189b79b5a6d87b71dd0a255b"
+- cached: "6900b5ef008003e92dccfb7cf84d4757b413de40"
+  debugInfo: "e86fc638fac6af02eb3eba62893b4d0626e55e8d"
+results:
+  '#select':
+    resultArranger: "2\"lc\"ei120s"
+inputsDigest: "ff544d6674e3006d422724c5dadc7fe9c9190080"

@@ -1,0 +1,14 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "exportfn.ql"
+dbscheme: "4d00210ca570d55c4833af11d3372b774dbc63f2"
+stages:
+- cached: "2115553a1e5593b665b1df3a999f83c223837630"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+results:
+  '#select':
+    resultArranger: "1\"e\"ei12"
+inputsDigest: "e2c37c363731cd9211344e18709837d1c1658487"

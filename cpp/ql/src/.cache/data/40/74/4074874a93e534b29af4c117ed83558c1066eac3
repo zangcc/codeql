@@ -1,0 +1,26 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "SuspiciousAddWithSizeof.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "71aeec42ce2f60e7e2d20ea62cb6c1e212e14394"
+  debugInfo: "eb63fd43310f5b40ab1a9b141d27b07ef734d829"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "9f50dca82600c5e306269fe1c73471451107ac0b"
+- cached: "6c8b3996f913a2c301248eb9686264937fe1493c"
+  debugInfo: "da0abe5360040497154ddaff747ff12c7a88a666"
+- cached: "5a7f9fbc1550c93084b1c41446939bca46efe511"
+  debugInfo: "ede925ce63b3d6188133e33d3bcce85aa5b6b5ce"
+- cached: "2407ffc6dc5373c4974dadf0af691749a6e8ee39"
+  debugInfo: "c2d0996c62381997457c3987935edba6e7948896"
+- cached: "3a65a71867a3302b9ca6acc6adcc6746d306ce4b"
+  debugInfo: "ef5338350f70197a5e4ef7b9b7bcfc6d9657f832"
+- cached: "0f8b7249712514b7e1aceb48876ef7ed8798c758"
+  debugInfo: "28fe3740313b8e80788db2d75780275978570a67"
+results:
+  '#select':
+    resultArranger: "4\"sizeofExpr\"ei120s\"t\"ei120s"
+inputsDigest: "4074874a93e534b29af4c117ed83558c1066eac3"

@@ -1,0 +1,40 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "DescriptorMayNotBeClosed.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "6400e9ccf96cf3f3d9c5bfbc6fc03b621153afe2"
+  debugInfo: "15f453cd8cd3c0a29ab71619a99e9e904f76c4dd"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "fa013889b2d28b53e3918fe25bc6eedf0a3857b1"
+- cached: "17679d8a97d178b355d5fa1b675e94ccfa6ac6dd"
+  debugInfo: "3efa3cfcf8500235e063d33ecb913180794f61f5"
+- cached: "2072c056f08fb0aa4fbde527aab6943dbf3ef07e"
+  debugInfo: "a2a862842cf09bbd18812d1bfb00d965a7f407ab"
+- cached: "3a65a71867a3302b9ca6acc6adcc6746d306ce4b"
+  debugInfo: "ac18153475919fa8f1dbe6dc433fedcddf915e4a"
+- cached: "121b5f55b4af35cbd464689196bb93b147bbf760"
+  debugInfo: "79fb46145f67480a8fd2ba43d818fefbafd2e9bf"
+- cached: "f2f6e348919108389443d0dab7d8975d7e3ff1e8"
+  debugInfo: "9fd6acdc5294871e1829ee25870914842e86aca1"
+- cached: "4dfabdf06ebd3c998d9d16df72f6814ede161495"
+  debugInfo: "81e67beb643a49cb814849277eaa09839bf5254a"
+- cached: "cd3ad5727bd551f8ea8aa4b782d71c784641ae31"
+  debugInfo: "6287eda40fc57f59ecab719de345264b831a3b0c"
+- cached: "9acdb6975eba5c006b363166d7429c0d694e8eb5"
+  debugInfo: "7429bfbe9ebd26d24def83509a53b3c888c9e931"
+- cached: "e085b8b41dcf9edef346b7dc8d7ca81bb04fe679"
+  debugInfo: "1330d50b2a235bf46e7fea48cf92ed16ddf19d46"
+- cached: "bf5fc8589ecfec4fa28496a6c99d9c1828df42c7"
+  debugInfo: "6621b94e3387ad4b6445fd1df069e7db994fa57a"
+- cached: "971277065fee907ae08c591d5d9c306e065d9284"
+  debugInfo: "94d03b828403d493943dc3afe41a2a51e95964f1"
+- cached: "90167be04c22adf0376e527a8fb4c7af92c8300e"
+  debugInfo: "26abcee79e5ba191118629f1149e2b2055348463"
+results:
+  '#select':
+    resultArranger: "2\"ret\"ei120s"
+inputsDigest: "9d01b69ea515f53ad6ca1887c64beb07f34d9abd"

@@ -1,0 +1,14 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "singletonblock.ql"
+dbscheme: "4d00210ca570d55c4833af11d3372b774dbc63f2"
+stages:
+- cached: "5d214aa2f83ca867b56ae2fb40cdece1c80636cc"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+results:
+  '#select':
+    resultArranger: "1\"b\"ei12"
+inputsDigest: "0197b02eccc396c3b0bfbccb0e66e75f380f2311"

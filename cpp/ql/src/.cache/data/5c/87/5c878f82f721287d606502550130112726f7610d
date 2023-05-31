@@ -1,0 +1,34 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "DescriptorNeverClosed.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "6400e9ccf96cf3f3d9c5bfbc6fc03b621153afe2"
+  debugInfo: "fbf719c144b17b12fb4a88f0eb99dc34ad3bc900"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "408d2ea9a99166948b50a5c052327eaf38d66ae2"
+- cached: "3a65a71867a3302b9ca6acc6adcc6746d306ce4b"
+  debugInfo: "52574e1e45f83897d2a7263039931590a481d963"
+- cached: "121b5f55b4af35cbd464689196bb93b147bbf760"
+  debugInfo: "e3f183b1fd78e946fc2ce8d0fd68ed0d1fa6a3b7"
+- cached: "51a90f9af6d20acf168f2380c25c45703a0cacc0"
+  debugInfo: "1cf50f52531d602c00e36e65f7383b380d7a5d38"
+- cached: "2072c056f08fb0aa4fbde527aab6943dbf3ef07e"
+  debugInfo: "4ee54d4484f6b940a3e66b98d76b165d49b2f893"
+- cached: "f3bdb0eae9d5dab1555507b85529defc3b62c340"
+  debugInfo: "18fbfddb4418bac6ccda506d2e99674fb65c5b44"
+- cached: "3dee82116509d99792459308ac3f7a56b2d3287d"
+  debugInfo: "ce1b82fbb0520795b3e2ade67b72629d6f2776f9"
+- cached: "f8b3d590fd7071d5f067fed0e7d55e9a714246db"
+  debugInfo: "16f8577ebc66720a296725ae013eeee0458edf77"
+- cached: "23c913809095a1072a26e99e1c21f3877eeb7527"
+  debugInfo: "bf1137bda64ca87e0dcb8ffb09415b62441b31f5"
+- cached: "ac05c4cf55ad921e061b389e0352907cb9a5ff31"
+  debugInfo: "bced1a3b934af5489d2cc3225cf18c73555589c9"
+results:
+  '#select':
+    resultArranger: "2\"alloc\"ei120s"
+inputsDigest: "5c878f82f721287d606502550130112726f7610d"

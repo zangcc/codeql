@@ -1,0 +1,15 @@
+load("@bazel_skylib//rules:native_binary.bzl", "native_binary")
+
+native_binary(
+    name = "codegen",
+    out = "codegen",
+    src = "//misc/codegen",
+    data = [
+        "//swift:schema",
+        "//swift:codegen_conf",
+    ],
+    args = [
+        "--configuration-file=$(location //swift:codegen_conf)",
+    ],
+    visibility = ["//swift:__subpackages__"],
+)

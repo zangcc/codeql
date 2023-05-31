@@ -1,0 +1,16 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "propaccess.ql"
+dbscheme: "4d00210ca570d55c4833af11d3372b774dbc63f2"
+stages:
+- cached: "46d60abd4b900489a90dc421d46dc2674d86d203"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+- cached: "0bfd99af7c0bc712b17a2cab6d750104b0415e46"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+results:
+  '#select':
+    resultArranger: "1\"p\"ei12"
+inputsDigest: "a5c93f72ebf51547c275c11228683b5693405b7c"
