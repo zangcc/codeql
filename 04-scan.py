@@ -6,6 +6,7 @@ codeqlJavaFilesPath     = "/root/tools/codeql/java/ql/examples/snippets/"
 codeqlJSFilesPath       = "/root/tools/codeql/javascript/ql/examples/"
 codeqlcppFilesPath      = "/root/tools/codeql/cpp/ql/examples/snippets/"
 trivyFilesPath          = "/root/tools/trivy_0.41.0/"
+mavenDir                = "/root/tools/apache-maven-3.9.2/"
 mavenSettingsFile       = "/root/tools/apache-maven-3.9.2/settings.xml"
 mavenLocalRepositoryDir = "/root/tools/apache-maven-3.9.2/repository"
 delombokJarFilePath     = "/root/tools/lombok.jar"
@@ -45,7 +46,7 @@ if inputParameter2 == "java":
     codeqlOutName           = str(getCurrentTime())+"_"+str(getCodeRespName(cmd))+"_codeql扫描结果.txt"
     cdToRootCmd             = "cd " + str(root_path) + str(getCodeRespName(cmd)) + ";"
     lombokCmd               = cdToRootCmd   +   lombokCommands   + ";"
-    codeqlCreateCmd         = "javaEnvSetting  ;codeqlBinPath database create codeqldatabase --language=java --command='mvn    -gs mavenSettingsFile  clean install   -Dmaven.test.skip -Dmaven.repo.local=mavenLocalRepositoryDir' --overwrite".replace("mavenSettingsFile",mavenSettingsFile).replace("mavenLocalRepositoryDir",mavenLocalRepositoryDir).replace("codeqlBinPath",codeqlBinPath)+";"
+    codeqlCreateCmd         = "javaEnvSetting  ;codeqlBinPath database create codeqldatabase --language=java --command='mavenDir/bin/mvn    -gs mavenSettingsFile  clean install   -Dmaven.test.skip -Dmaven.repo.local=mavenLocalRepositoryDir' --overwrite".replace("mavenSettingsFile",mavenSettingsFile).replace("mavenLocalRepositoryDir",mavenLocalRepositoryDir).replace("codeqlBinPath",codeqlBinPath).replace("mavenDir",mavenDir)+";"
     codeqlScanCmd           = "for file in codeqlJavaFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlJavaFilesPath",codeqlJavaFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
     finalCMD                = (lombokCmd+codeqlCreateCmd+codeqlScanCmd)
 
