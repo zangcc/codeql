@@ -158,14 +158,14 @@ try:
 except Exception as e:
     traceback.print_exc()
     pass
-
-endTime                     = time.time()
-totalTime                   =  str((endTime-startTime)/60) + "min"
-trivyOutPutFilePath         = root_path + str(getCodeRespName(inputParameter1)) + "/"+trivyOutPutFilename
-codeqlOutFilePath           = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
-scanResultPath              = trivyOutPutFilePath + "\n" + codeqlOutFilePath
-if isCodeqlDBCreateSucc(codeqlDatabasePath):
-    msg                         = "[扫描项目]:getCodeRespName\n[扫描状态]:✅\n[扫描耗时]:".replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
-else:
-    msg                         = "[扫描项目]:getCodeRespName\n[扫描状态]:❌\n[失败原因]:codeql数据库创建失败!\n[扫描耗时]:".replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
-sendDingMessage(msg,isAtAll,atPersons)
+finally:
+    endTime                     = time.time()
+    totalTime                   =  str((endTime-startTime)/60) + "min"
+    trivyOutPutFilePath         = root_path + str(getCodeRespName(inputParameter1)) + "/"+trivyOutPutFilename
+    codeqlOutFilePath           = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
+    scanResultPath              = trivyOutPutFilePath + "\n" + codeqlOutFilePath
+    if isCodeqlDBCreateSucc(codeqlDatabasePath):
+        msg                         = "[扫描项目]:getCodeRespName\n[扫描状态]:✅\n[扫描耗时]:".replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
+    else:
+        msg                         = "[扫描项目]:getCodeRespName\n[扫描状态]:❌\n[失败原因]:codeql数据库创建失败!\n[扫描耗时]:".replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
+    sendDingMessage(msg,isAtAll,atPersons)
