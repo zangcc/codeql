@@ -144,5 +144,5 @@ totalTime                   =  str((endTime-startTime)/60) + "min"
 trivyOutPutFilePath         = root_path + str(getCodeRespName(inputParameter1)) + "/"+trivyOutPutFilename
 codeqlOutFilePath           = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
 scanResultPath              = trivyOutPutFilePath + "," + codeqlOutFilePath
-msg                         = "[✅] getCodeRespName 扫描完成\n[扫描耗时]:".replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: scanResultPath".replace("scanResultPath",scanResultPath)
+msg                         = "[扫描项目]:getCodeRespName\n[扫描状态]:✅\n[扫描耗时]:".replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: scanResultPath".replace("scanResultPath",scanResultPath)
 sendDingMessage(msg,isAtAll,atPersons)
