@@ -135,14 +135,14 @@ mvCodeqlDatabaseDirCmd2     =  "mv " + codeqlDatabasePath + " " + root_path + "/
 finalCMD                    =  (gitCloneCmd+finalCMD+mvCodeqlDatabaseDirCmd1 + trivyCmd + replaceFileContenCmd + mvCodeqlDatabaseDirCmd2).replace("javaEnvSetting",javaEnvSetting)
 # finalCMD                    =  gitCloneCmd + "sudo bash -c '''" + finalCMD + "'''"
 msg                         =  msg.replace("finaCMD",finalCMD)
-startTime           = time.time()
 print(msg)
-returned_value      = subprocess.call(finalCMD, shell=True) # 返回退出码
+startTime                   = time.time()
+returned_value              = subprocess.call(finalCMD, shell=True) # 返回退出码
 print('returned value:', returned_value)
-endTime             = time.time()
-totalTime           =  str((endTime-startTime)/60) + "min"
-trivyOutPutFilePath = root_path + str(getCodeRespName(inputParameter1)) + "/"+trivyOutPutFilename
-codeqlOutFilePath   = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
-scanResultPath      = trivyOutPutFilePath + "," + codeqlOutFilePath
-msg             = "[✅] getCodeRespName 扫描完成\n[扫描耗时]:".replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: scanResultPath".replace("scanResultPath",scanResultPath)
+endTime                     = time.time()
+totalTime                   =  str((endTime-startTime)/60) + "min"
+trivyOutPutFilePath         = root_path + str(getCodeRespName(inputParameter1)) + "/"+trivyOutPutFilename
+codeqlOutFilePath           = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
+scanResultPath              = trivyOutPutFilePath + "," + codeqlOutFilePath
+msg                         = "[✅] getCodeRespName 扫描完成\n[扫描耗时]:".replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: scanResultPath".replace("scanResultPath",scanResultPath)
 sendDingMessage(msg,isAtAll,atPersons)
