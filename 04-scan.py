@@ -145,7 +145,7 @@ try:
     trivyCmd                    =  " "+trivyFilesPath + "trivy fs " + projectRootPath + " --offline-scan   -o " + trivyOutPutFilename + ";"
     codeqlDatabasePath          =  root_path + "/" + str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_codeqldatabase"
     mvCodeqlDatabaseDirCmd1     =  "mv " + projectRootPath + "/codeqldatabase " + codeqlDatabasePath+";"
-    mvCodeqlDatabaseDirCmd2     =  "mv " + codeqlDatabasePath + " " + root_path +str(getCodeRespName(inputParameter1)) +"/;"
+    mvCodeqlDatabaseDirCmd2     =  "mv " + codeqlDatabasePath + " " + root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase;"
     finalCMD                    =  (gitCloneCmd+finalCMD+mvCodeqlDatabaseDirCmd1 + trivyCmd + mvCodeqlDatabaseDirCmd2 + replaceFileContenCmd).replace("javaEnvSetting",javaEnvSetting)
     # finalCMD                    =  gitCloneCmd + "sudo bash -c '''" + finalCMD + "'''"
     msg                         =  msg.replace("finaCMD",finalCMD)
@@ -162,6 +162,7 @@ finally:
     trivyOutPutFilePath         = root_path + str(getCodeRespName(inputParameter1)) + "/"+trivyOutPutFilename
     codeqlOutFilePath           = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
     scanResultPath              = trivyOutPutFilePath + "\n" + codeqlOutFilePath
+    codeqlDatabasePath          = root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase"
     if isCodeqlDBCreateSucc(codeqlDatabasePath):
         msg                         = "[扫描项目]:getCodeRespName\n[扫描状态]:✅\n[扫描耗时]:".replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
     else:
