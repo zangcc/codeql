@@ -144,8 +144,8 @@ try:
     trivyOutPutFilename         =  str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_trivy扫描结果.txt"
     trivyCmd                    =  " "+trivyFilesPath + "trivy fs " + projectRootPath + " --offline-scan   -o " + trivyOutPutFilename + ";"
     codeqlDatabasePath          =  root_path + "/" + str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_codeqldatabase"
-    mvCodeqlDatabaseDirCmd1     =  "mv " + projectRootPath + "/codeqldatabase " + codeqlDatabasePath+";"
-    mvCodeqlDatabaseDirCmd2     =  "mv " + codeqlDatabasePath + " " + root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase;"
+    mvCodeqlDatabaseDirCmd1     =  "rm -rf "+ codeqlDatabasePath + ";mv " + projectRootPath + "/codeqldatabase " + codeqlDatabasePath+";"
+    mvCodeqlDatabaseDirCmd2     =  "rm -rf "+ root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase" +";mv " + codeqlDatabasePath + " " + root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase;"
     finalCMD                    =  (gitCloneCmd+finalCMD+mvCodeqlDatabaseDirCmd1 + trivyCmd + mvCodeqlDatabaseDirCmd2 + replaceFileContenCmd).replace("javaEnvSetting",javaEnvSetting)
     # finalCMD                    =  gitCloneCmd + "sudo bash -c '''" + finalCMD + "'''"
     msg                         =  msg.replace("finaCMD",finalCMD)
