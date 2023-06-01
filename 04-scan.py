@@ -18,11 +18,26 @@ delombokJarFilePath               =    str(con.get('DependencyToolConfigInfo', '
 codeqlBinPath                     =    str(con.get('DependencyToolConfigInfo', 'codeqlBinPath'))
 javaHome                          =    str(con.get('DependencyToolConfigInfo', 'javaHome'))
 javaEnvSetting                    =    str(con.get('DependencyToolConfigInfo', 'javaEnvSetting'))
+codeqlDBCreateSuccFlagList        =     con.get('DependencyToolConfigInfo', 'codeqlDBCreateSuccFlagList').split(",")
 isAtAll                           = str(con.get('DingdingConfigInfo', 'isAtAll'))
 atPersons                         =     con.get('DingdingConfigInfo', 'atPersons').split(",")
 
 
 ###################################工具集###################################
+
+def isCodeqlDBCreateSucc(codeqlDBPath):
+    global codeqlDBCreateSuccFlagList
+    isSuccess = False
+    items = os.listdir(codeqlDBPath) # 获取文件夹中的所有内容
+    index = 0
+    for target in codeqlDBCreateSuccFlagList:
+        if target in items:
+            index+=1
+            print(index)
+    if (index==len(codeqlDBCreateSuccFlagList)):
+        isSuccess =True
+    return isSuccess
+
 def getCurrentTime():
     now = datetime.now() # 获取当前时间
     format = "%Y-%m-%d" # 定义格式字符串
@@ -132,7 +147,7 @@ trivyCmd                    =  " "+trivyFilesPath + "trivy fs " + projectRootPat
 codeqlDatabasePath          =  root_path + "/" + str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_codeqldatabase"
 mvCodeqlDatabaseDirCmd1     =  "mv " + projectRootPath + "/codeqldatabase " + codeqlDatabasePath+";"
 mvCodeqlDatabaseDirCmd2     =  "mv " + codeqlDatabasePath + " " + root_path + "/" +str(getCodeRespName(inputParameter1)) +"/"+ str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_codeqldatabase;"
-finalCMD                    =  (gitCloneCmd+finalCMD+mvCodeqlDatabaseDirCmd1 + trivyCmd + replaceFileContenCmd + mvCodeqlDatabaseDirCmd2).replace("javaEnvSetting",javaEnvSetting)
+finalCMD                    =  (gitCloneCmd+finalCMD+mvCodeqlDatabaseDirCmd1 + trivyCmd + mvCodeqlDatabaseDirCmd2 + replaceFileContenCmd).replace("javaEnvSetting",javaEnvSetting)
 # finalCMD                    =  gitCloneCmd + "sudo bash -c '''" + finalCMD + "'''"
 msg                         =  msg.replace("finaCMD",finalCMD)
 print(msg)
@@ -143,6 +158,6 @@ endTime                     = time.time()
 totalTime                   =  str((endTime-startTime)/60) + "min"
 trivyOutPutFilePath         = root_path + str(getCodeRespName(inputParameter1)) + "/"+trivyOutPutFilename
 codeqlOutFilePath           = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
-scanResultPath              = trivyOutPutFilePath + "," + codeqlOutFilePath
-msg                         = "[扫描项目]:getCodeRespName\n[扫描状态]:✅\n[扫描耗时]:".replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: scanResultPath".replace("scanResultPath",scanResultPath)
+scanResultPath              = trivyOutPutFilePath + "\n" + codeqlOutFilePath
+msg                         = "[扫描项目]:getCodeRespName\n[扫描状态]:✅\n[扫描耗时]:".replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
 sendDingMessage(msg,isAtAll,atPersons)
