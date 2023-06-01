@@ -152,8 +152,13 @@ finalCMD                    =  (gitCloneCmd+finalCMD+mvCodeqlDatabaseDirCmd1 + t
 msg                         =  msg.replace("finaCMD",finalCMD)
 print(msg)
 startTime                   = time.time()
-returned_value              = subprocess.call(finalCMD, shell=True) # 返回退出码
-print('returned value:', returned_value)
+try:
+    returned_value              = subprocess.call(finalCMD, shell=True) # 返回退出码
+    print('returned value:', returned_value)
+except Exception as e:
+    traceback.print_exc()
+    pass
+
 endTime                     = time.time()
 totalTime                   =  str((endTime-startTime)/60) + "min"
 trivyOutPutFilePath         = root_path + str(getCodeRespName(inputParameter1)) + "/"+trivyOutPutFilename
