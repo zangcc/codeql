@@ -1,8 +1,0 @@
-import javascript
-from CallExpr call ,string loc,PropAccess propAccess
-where
-  call.getCalleeName().toString().regexpMatch("(?i)\\b(error|log|info|trace)\\b") and 
-  exists(int i | i in [0 .. call.getNumArgument() - 1] | call.getArgument(i).toString().regexpMatch("(?i).*\\b(text)\\b.*")) and 
-  loc = call.getLocation().getFile().getAbsolutePath() + ":" + call.getLocation().getStartLine()
-
-select  call.getCallee().toString()+"()"," "+ loc
