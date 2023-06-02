@@ -5,7 +5,7 @@ from PropRead pr ,string tempStr
 where pr.getBase().toString().regexpMatch("(?i)(log)") and
  // 循环判断每个参数是否包含敏感词
  exists(int i | i in [0 .. pr.getAMethodCall().getNumArgument() - 1] |
- pr.getAMethodCall().getArgument(i).asExpr().toString().regexpMatch("(?i).*\\b(key|password|recordId|secret|realFeeRateDto|vault|param|arn|text|email|content|token|mail|ldap|response|request)\\b.*") and 
+ pr.getAMethodCall().getArgument(i).asExpr().toString().regexpMatch("(?i).*(key|password|secret|vault|param|arn|text|email|content|token|mail|ldap|response|request).*") and 
  not pr.getAMethodCall().getArgument(i).asExpr() instanceof StringLiteral and 
  tempStr = pr.getAMethodCall().getArgument(i).toString())
 
