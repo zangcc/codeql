@@ -2,7 +2,7 @@ import cpp
 
 from FunctionCall fc,string str1
 where
-  fc.getTarget().toString().regexpMatch("(?i).*(error|log|info|trace|debug).*")
+  fc.getTarget().toString().regexpMatch("(?i).*(error|log|info|trace|warn|debug).*")
   and exists(int i , string s |
     not fc.getArgument(i) instanceof StringLiteral   and
     s = fc.getArgument(i).toString().trim()  and

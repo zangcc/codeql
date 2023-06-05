@@ -3,7 +3,7 @@ import java
 from Call call,string tempStr,string loc
 where
   // 调用了 error(), INFO()函数
-  call.getCallee().getName().toLowerCase().regexpMatch("(?i).*(error|log|info|trace|debug).*")  and
+  call.getCallee().getName().toLowerCase().regexpMatch("(?i).*(error|log|info|trace|warn|debug).*")  and
   // 循环判断每个参数是否包含敏感词
   exists(int i | i in [0 .. call.getNumArgument() - 1] |
     call.getArgument(i).toString() in ["e"] and 
