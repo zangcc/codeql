@@ -103,7 +103,7 @@ def sendDingMessage(Content,isAtAll,atPersons):
 try:
     inputParameter1 = str(sys.argv[1])
     inputParameter2 = str(sys.argv[2])
-
+    startTime                   = time.time()
     finalCMD                        = ""
     projectRootPath                 = str(root_path) + str(getCodeRespName(inputParameter1))
     replaceFileContenCmd            = "find . -maxdepth 1 -type f -name '*.txt' -exec sed -i '' 's#path##g' {} \;".replace("path",root_path)
@@ -151,7 +151,6 @@ try:
     # finalCMD                    =  gitCloneCmd + "sudo bash -c '''" + finalCMD + "'''"
     msg                         =  msg.replace("finaCMD",finalCMD)
     print(msg)
-    startTime                   = time.time()
     returned_value              = subprocess.call(finalCMD, shell=True) # 返回退出码
     print('returned value:', returned_value)
 except Exception as e:
