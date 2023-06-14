@@ -1,2 +1,1 @@
-test
-sfsdfdsfsdf
+alert("1");
