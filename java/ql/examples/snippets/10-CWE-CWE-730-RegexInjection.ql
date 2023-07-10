@@ -19,5 +19,5 @@ import DataFlow::PathGraph
 
 from DataFlow::PathNode source, DataFlow::PathNode sink, RegexInjectionConfiguration c
 where c.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "This regular expression is constructed from a $@.",
+select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "This regular expression is constructed from a $@.",
   source.getNode(), "user-provided value"

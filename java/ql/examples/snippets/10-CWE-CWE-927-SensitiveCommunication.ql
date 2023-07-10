@@ -17,5 +17,5 @@ import DataFlow::PathGraph
 
 from SensitiveCommunicationConfig cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where cfg.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "This call may leak $@.", source.getNode(),
+select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "This call may leak $@.", source.getNode(),
   "sensitive information"

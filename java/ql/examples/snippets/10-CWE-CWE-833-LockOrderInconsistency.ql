@@ -184,6 +184,6 @@ where
   badReentrantLockOrder(first, second, other) or
   badSynchronizedStmtLockOrder(first, second, other) or
   badMethodAccessLockOrder(first, second, other)
-select first,first.getLocation().getFile().getAbsolutePath()+":"+first.getLocation().getStartLine()+":"+first.getLocation().getEndLine(),
+select first,first.getLocation().getFile().getAbsolutePath()+"$$"+first.getLocation().getStartLine(),
   "Synchronization here and $@ may be performed in reverse order starting $@ and result in deadlock.",
   second, "here", other, "here"

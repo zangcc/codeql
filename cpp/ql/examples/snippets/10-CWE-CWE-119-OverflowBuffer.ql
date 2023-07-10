@@ -55,4 +55,4 @@ where
           "This array indexing operation accesses a negative index " +
             ((accessSize / ba.getActualType().getSize()) - 1) + " on the $@."
     )
-select ba, message,ba.getLocation().getFile().getAbsolutePath()+":"+ba.getLocation().getStartLine(), bufferAlloc, bufferDesc
+select ba, message,ba.getLocation().getFile().getAbsolutePath()+"$$"+ba.getLocation().getStartLine(), bufferAlloc, bufferDesc

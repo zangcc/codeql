@@ -15,4 +15,4 @@ import semmle.code.java.security.HardcodedPasswordField
 
 from PasswordVariable f, CompileTimeConstantExpr e
 where passwordFieldAssignedHardcodedValue(f, e)
-select f,f.getLocation().getFile().getAbsolutePath()+":"+f.getLocation().getStartLine()+":"+f.getLocation().getEndLine(), "Sensitive field is assigned a hard-coded $@.", e, "value"
+select f,f.getLocation().getFile().getAbsolutePath()+"$$"+f.getLocation().getStartLine(), "Sensitive field is assigned a hard-coded $@.", e, "value"

@@ -18,6 +18,6 @@ import DataFlow::PathGraph
 
 from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where cfg.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(),
+select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(),
   "XML parsing depends on a $@ without guarding against external entity expansion.",
   source.getNode(), "user-provided value"

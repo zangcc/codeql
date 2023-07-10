@@ -149,4 +149,4 @@ where
   printsStackExternally(externalExpr, errorInformation) or
   stringifiedStackFlowsExternally(DataFlow::exprNode(externalExpr), errorInformation) or
   getMessageFlowsExternally(DataFlow::exprNode(externalExpr), errorInformation)
-select externalExpr,externalExpr.getLocation().getFile().getAbsolutePath()+":"+externalExpr.getLocation().getStartLine()+":"+externalExpr.getLocation().getEndLine(), "$@ can be exposed to an external user.", errorInformation, "Error information"
+select externalExpr,externalExpr.getLocation().getFile().getAbsolutePath()+"$$"+externalExpr.getLocation().getStartLine(), "$@ can be exposed to an external user.", errorInformation, "Error information"

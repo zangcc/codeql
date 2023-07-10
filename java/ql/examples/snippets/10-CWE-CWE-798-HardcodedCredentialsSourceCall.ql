@@ -18,5 +18,5 @@ from
   DataFlow::PathNode source, DataFlow::PathNode sink,
   HardcodedCredentialSourceCallConfiguration conf
 where conf.hasFlowPath(source, sink)
-select source.getNode(), source, sink, "Hard-coded value flows to $@.", sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine().getNode(),
+select source.getNode(), source, sink, "Hard-coded value flows to $@.", sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine().getNode(),
   "sensitive call"

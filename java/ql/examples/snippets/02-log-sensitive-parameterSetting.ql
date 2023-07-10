@@ -13,6 +13,6 @@ where ma.getQualifier() = v.getAnAccess()
   and v.getName().toString().regexpMatch("(?i).*(key|password|secret|vault|arn|param|token|content|mail|ldap|record|response|request|uuid|result).*")
   and logInfo.getMethod().toString().regexpMatch("(?i).*\\b(error|log|info|trace|warn|debug)\\b.*")
   and v.getAnAccess() = logInfo.getAnArgument()
-  and loc = logInfo.getLocation().getFile().getAbsolutePath() + ":" + logInfo.getLocation().getStartLine()
+  and loc = logInfo.getLocation().getFile().getAbsolutePath() + "$$" + logInfo.getLocation().getStartLine()
 
 select logInfo,logInfo.getQualifier().toString()+"."+logInfo.getCallee().toString()+"()","打印了可能存在敏感信息的变量: "+v.getAnAccess().toString(),loc

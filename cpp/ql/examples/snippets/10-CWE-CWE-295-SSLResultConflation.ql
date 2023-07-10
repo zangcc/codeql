@@ -47,4 +47,4 @@ where
   guard.comparesEq(sink2.asExpr(), c2, 0, false, testIsTrue) and // (value != c2) => testIsTrue
   c1.getValue().toInt() = 0 and
   c2.getValue().toInt() != 0
-select guard,c1.getLocation().getFile().getAbsolutePath()+":"+c1.getLocation().getStartLine(), "This expression conflates OK and non-OK results from $@.", source
+select guard,c1.getLocation().getFile().getAbsolutePath()+"$$"+c1.getLocation().getStartLine(), "This expression conflates OK and non-OK results from $@.", source

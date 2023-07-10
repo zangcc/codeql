@@ -18,4 +18,4 @@ import javascript
 
 from CookieWrites::CookieWrite cookie
 where cookie.isSensitive() and not cookie.isSecure()
-select cookie, cookie.getFile().getAbsolutePath()+":"+cookie.getStartLine(),"Sensitive cookie sent without enforcing SSL encryption."
+select cookie, cookie.getFile().getAbsolutePath()+"$$"+cookie.getStartLine(),"Sensitive cookie sent without enforcing SSL encryption."

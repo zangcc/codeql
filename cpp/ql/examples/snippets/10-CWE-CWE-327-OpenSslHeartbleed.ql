@@ -61,4 +61,4 @@ where
   length.hasName("length") and
   pointsInto(fc.getArgument(1), data) and
   not comparedTo(fc.getArgument(2).(VariableAccess).getTarget(), length)
-select fc, fc.getLocation().getFile().getAbsolutePath()+":"+fc.getLocation().getStartLine(),"This call to memcpy is insecure (Heartbleed vulnerability)."
+select fc, fc.getLocation().getFile().getAbsolutePath()+"$$"+fc.getLocation().getStartLine(),"This call to memcpy is insecure (Heartbleed vulnerability)."

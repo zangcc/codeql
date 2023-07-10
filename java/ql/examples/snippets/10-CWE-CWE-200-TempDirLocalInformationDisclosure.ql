@@ -270,4 +270,4 @@ where
         " readable by other local users."
   ) and
   not isPermissionsProtectedTempDirUse(sink.getNode())
-select source.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), message, source.getNode(), "system temp directory"
+select source.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), message, source.getNode(), "system temp directory"

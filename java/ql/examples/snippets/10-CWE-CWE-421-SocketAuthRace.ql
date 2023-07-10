@@ -75,6 +75,6 @@ from MethodAccess connection, Expr condition
 where
   connection.getMethod() instanceof ConnectionMethod and
   controlledByAuth(connection, condition)
-select connection,connection.getLocation().getFile().getAbsolutePath()+":"+connection.getLocation().getStartLine()+":"+connection.getLocation().getEndLine(),
+select connection,connection.getLocation().getFile().getAbsolutePath()+"$$"+connection.getLocation().getStartLine(),
   "This connection occurs after the authentication in $@, rather than authentication over the new connection.",
   condition, "this condition"

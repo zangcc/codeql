@@ -112,4 +112,4 @@ where
       " and with an unquoted lpCommandLine (" + cmd +
         ") introduces a security vulnerability if the path contains spaces."
   )
-select call,call.getFile().getAbsolutePath()+":"+call.getFile().getLocation().getStartLine(), msg1 + " " + msg2
+select call,call.getFile().getAbsolutePath()+"$$"+call.getFile().getLocation().getStartLine(), msg1 + " " + msg2

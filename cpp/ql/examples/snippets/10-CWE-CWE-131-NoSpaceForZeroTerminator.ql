@@ -44,4 +44,4 @@ predicate terminationProblem(HeuristicAllocationExpr malloc, string msg) {
 
 from Expr problem, string msg
 where terminationProblem(problem, msg)
-select problem, msg,problem.getLocation().getFile().getAbsolutePath()+":"+problem.getLocation().getStartLine()
+select problem, msg,problem.getLocation().getFile().getAbsolutePath()+"$$"+problem.getLocation().getStartLine()

@@ -18,5 +18,5 @@ import DataFlow::PathGraph
 from UntrustedDataToExternalApiConfig config, DataFlow::PathNode source, DataFlow::PathNode sink
 where config.hasFlowPath(source, sink) 
 
-select sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "Call to " + sink.getNode().(ExternalApiDataNode).getMethodDescription()+" with untrusted data from "+source.toString() 

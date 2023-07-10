@@ -10,6 +10,6 @@ where
     str1 = s
     )
    
-select fc,"打印了可能存在敏感信息的变量:"+str1,fc.getLocation().getFile().getAbsolutePath() + ":" + fc.getLocation().getStartLine().toString()
+select fc,"打印了可能存在敏感信息的变量:"+str1,fc.getLocation().getFile().getAbsolutePath() + "$$" + fc.getLocation().getStartLine().toString()
 
 

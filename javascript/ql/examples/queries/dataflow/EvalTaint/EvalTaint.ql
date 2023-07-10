@@ -20,4 +20,4 @@ class EvalTaint extends TaintTracking::Configuration {
 
 from EvalTaint cfg, Node source, Node sink
 where cfg.hasFlow(source, sink)
-select sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(), "Eval with user-controlled input from $@.", source, "here"
+select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), "Eval with user-controlled input from $@.", source, "here"

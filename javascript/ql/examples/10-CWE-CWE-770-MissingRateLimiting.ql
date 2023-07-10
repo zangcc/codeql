@@ -25,5 +25,5 @@ where
   useSite = Routing::getNode(r).getRouteInstallation() and
   r.explain(explanation, reference, referenceLabel) and
   not useSite.isGuardedByNode(any(RateLimitingMiddleware m).getRoutingNode())
-select useSite, r.getFile().getAbsolutePath()+":"+r.getStartLine(),"This route handler " + explanation + ", but is not rate-limited.", reference,
+select useSite, r.getFile().getAbsolutePath()+"$$"+r.getStartLine(),"This route handler " + explanation + ", but is not rate-limited.", reference,
   referenceLabel

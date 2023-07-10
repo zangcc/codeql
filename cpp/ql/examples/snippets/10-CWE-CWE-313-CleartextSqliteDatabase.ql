@@ -74,6 +74,6 @@ where
   config.hasFlowPath(source, sink) and
   source.getNode().asExpr() = sensitive and
   sqliteCall.getASource() = sink.getNode().asExpr()
-select sqliteCall, source,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine(), sink,
+select sqliteCall, source,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), sink,
   "This SQLite call may store $@ in a non-encrypted SQLite database.", sensitive,
   "sensitive information"

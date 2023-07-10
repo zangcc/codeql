@@ -20,5 +20,5 @@ from
 where
   cfg.hasFlowPath(source, sink) and
   sink.getNode().(Sink).hasReason(link, reason)
-select sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(), source, sink, "Denial of service caused by processing $@ with $@.", source.getNode(),
+select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), source, sink, "Denial of service caused by processing $@ with $@.", source.getNode(),
   "user input", link, reason

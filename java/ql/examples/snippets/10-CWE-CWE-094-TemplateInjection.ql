@@ -17,5 +17,5 @@ import DataFlow::PathGraph
 
 from TemplateInjectionFlowConfig config, DataFlow::PathNode source, DataFlow::PathNode sink
 where config.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "Template, which may contain code, depends on a $@.",
+select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "Template, which may contain code, depends on a $@.",
   source.getNode(), "user-provided value"

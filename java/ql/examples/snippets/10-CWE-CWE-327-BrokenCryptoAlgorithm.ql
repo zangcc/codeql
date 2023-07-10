@@ -48,5 +48,5 @@ where
   sink.getNode().asExpr() = c.getAlgoSpec() and
   source.getNode().asExpr() = s and
   conf.hasFlowPath(source, sink)
-select c, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "Cryptographic algorithm $@ is weak and should not be used.", s,
+select c, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "Cryptographic algorithm $@ is weak and should not be used.", s,
   s.getValue()

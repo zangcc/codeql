@@ -98,6 +98,6 @@ from BufferWrite bw, Expr inputSource, Expr tainted, PathNode sourceNode, PathNo
 where
   taintedWithPath(inputSource, tainted, sourceNode, sinkNode) and
   unboundedWriteSource(tainted, bw)
-select bw, sourceNode, sinkNode,bw.getLocation().getFile().getAbsolutePath()+":"+bw.getLocation().getStartLine(),
+select bw, sourceNode, sinkNode,bw.getLocation().getFile().getAbsolutePath()+"$$"+bw.getLocation().getStartLine(),
   "This '" + bw.getBWDesc() + "' with input from $@ may overflow the destination.", inputSource,
   inputSource.toString()

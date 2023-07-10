@@ -16,5 +16,5 @@ import DataFlow::PathGraph
 
 from DataFlow::PathNode source, DataFlow::PathNode sink
 where any(HttpStringToUrlOpenMethodFlowConfig c).hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "URL may have been constructed with HTTP protocol, using $@.",
+select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "URL may have been constructed with HTTP protocol, using $@.",
   source.getNode(), "this HTTP URL"

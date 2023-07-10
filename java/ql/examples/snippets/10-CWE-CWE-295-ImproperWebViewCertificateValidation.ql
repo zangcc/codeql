@@ -15,4 +15,4 @@ import semmle.code.java.security.AndroidWebViewCertificateValidationQuery
 
 from OnReceivedSslErrorMethod m
 where trustsAllCerts(m)
-select m,m.getLocation().getFile().getAbsolutePath()+":"+m.getLocation().getStartLine()+":"+m.getLocation().getEndLine(), "This handler accepts all SSL certificates."
+select m,m.getLocation().getFile().getAbsolutePath()+"$$"+m.getLocation().getStartLine(), "This handler accepts all SSL certificates."

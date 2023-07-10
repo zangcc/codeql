@@ -85,4 +85,4 @@ private class InsecureDefaultFullHttpRequestClassInstantiation extends RequestSp
 }
 
 from InsecureNettyObjectCreation new
-select new, new.getLocation().getFile().getAbsolutePath()+":"+new.getLocation().getStartLine()+":"+new.getLocation().getEndLine(),new.splittingType() + " vulnerability due to header value verification being disabled."
+select new, new.getLocation().getFile().getAbsolutePath()+"$$"+new.getLocation().getStartLine(),new.splittingType() + " vulnerability due to header value verification being disabled."

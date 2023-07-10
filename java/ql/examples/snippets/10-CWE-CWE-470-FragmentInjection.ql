@@ -17,6 +17,6 @@ import DataFlow::PathGraph
 
 from DataFlow::PathNode source, DataFlow::PathNode sink
 where any(FragmentInjectionTaintConf conf).hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "Fragment depends on a $@, which may allow a malicious application to bypass access controls.",
   source.getNode(), "user-provided value"

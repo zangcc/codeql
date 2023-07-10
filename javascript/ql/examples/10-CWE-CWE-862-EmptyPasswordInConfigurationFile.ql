@@ -24,4 +24,4 @@ where
     // look for `password=;`, `password=`, `password=  `, `password==`.
     val.regexpMatch("(?is).*password\\s*(==?|:)\\s*(\\\"\\\"|''|``|;|:)?\\s*($|;|&|]|\\n).*")
   )
-select valElement.(FirstLineOf), valElement.getFile().getAbsolutePath()+":"+valElement.getStartLine(),"Empty password in configuration file."
+select valElement.(FirstLineOf), valElement.getFile().getAbsolutePath()+"$$"+valElement.getStartLine(),"Empty password in configuration file."

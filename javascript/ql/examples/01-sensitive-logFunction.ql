@@ -10,4 +10,4 @@ where pr.getBase().toString().regexpMatch("(?i)(log)") and
  tempStr = pr.getAMethodCall().getArgument(i).toString())
 
 
-select pr,"打印了可能存在敏感信息的变量: "+tempStr,pr.getFile().getAbsolutePath()+":"+pr.getStartLine()
+select pr,"打印了可能存在敏感信息的变量: "+tempStr,pr.getFile().getAbsolutePath()+"$$"+pr.getStartLine()

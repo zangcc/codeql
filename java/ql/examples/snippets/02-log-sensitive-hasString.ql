@@ -9,7 +9,7 @@ where
     call.getArgument(i).toString() in ["e"] and 
     not call.getArgument(i) instanceof StringLiteral and 
     tempStr = call.getArgument(i).toString()) and 
-    loc = call.getLocation().getFile().getAbsolutePath() + ":" + call.getLocation().getStartLine()
+    loc = call.getLocation().getFile().getAbsolutePath() + "$$" + call.getLocation().getStartLine()
 
 select call.getQualifier().toString()+"."+call.getCallee().toString()+"()","打印了可能存在敏感信息的变量: "+tempStr, " "+loc
 

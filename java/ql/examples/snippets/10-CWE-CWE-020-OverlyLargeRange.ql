@@ -24,4 +24,4 @@ from TreeView::RegExpCharacterRange range, string reason
 where
   problem(range, reason) and
   not range.getParent() = potentialMisparsedCharClass()
-select range, range.getLocation().getFile().getAbsolutePath()+":"+range.getLocation().getStartLine()+":"+range.getLocation().getEndLine(),"Suspicious character range that " + reason + "."
+select range, range.getLocation().getFile().getAbsolutePath()+"$$"+range.getLocation().getStartLine(),"Suspicious character range that " + reason + "."

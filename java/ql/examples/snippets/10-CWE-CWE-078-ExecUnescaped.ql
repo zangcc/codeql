@@ -49,4 +49,4 @@ from StringArgumentToExec argument
 where
   builtFromUncontrolledConcat(argument) and
   not execTainted(_, _, argument)
-select argument,argument.getLocation().getFile().getAbsolutePath()+":"+argument.getLocation().getStartLine()+":"+argument.getLocation().getEndLine(), "Command line is built with string concatenation."
+select argument,argument.getLocation().getFile().getAbsolutePath()+"$$"+argument.getLocation().getStartLine(), "Command line is built with string concatenation."

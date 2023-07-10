@@ -19,6 +19,6 @@ import DataFlow::PathGraph
 
 from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where cfg.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(), "This creates a build artifact that depends on $@.",
+select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), "This creates a build artifact that depends on $@.",
   source.getNode(),
   "sensitive data returned by" + source.getNode().(CleartextLogging::Source).describe()

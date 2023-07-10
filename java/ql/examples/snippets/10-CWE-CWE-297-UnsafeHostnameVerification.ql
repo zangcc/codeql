@@ -120,6 +120,6 @@ where
   cfg.hasFlowPath(source, sink) and
   not isNodeGuardedByFlag(sink.getNode()) and
   verifier = source.getNode().asExpr().(ClassInstanceExpr).getConstructedType()
-select sink, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select sink, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "The $@ defined by $@ always accepts any certificate, even if the hostname does not match.",
   source, "hostname verifier", verifier, "this type"

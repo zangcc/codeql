@@ -18,5 +18,5 @@ import semmle.javascript.security.dataflow.InsecureTemporaryFileQuery
 
 from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where cfg.hasFlowPath(source, sink)
-select sink.getNode(), source, sink, sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(),"Insecure creation of file in $@.", source.getNode(),
+select sink.getNode(), source, sink, sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(),"Insecure creation of file in $@.", source.getNode(),
   "the os temp dir"

@@ -108,5 +108,5 @@ where
     source.asExpr() = e and
     not any(WebViewDisallowContentAccessConfiguration cfg).hasFlow(source, _)
   )
-select e,e.getLocation().getFile().getAbsolutePath()+":"+e.getLocation().getStartLine()+":"+e.getLocation().getEndLine(),
+select e,e.getLocation().getFile().getAbsolutePath()+"$$"+e.getLocation().getStartLine(),
   "Sensitive information may be exposed via a malicious link due to access to content:// links being allowed in this WebView."

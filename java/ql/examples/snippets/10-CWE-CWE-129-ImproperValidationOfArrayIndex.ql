@@ -31,6 +31,6 @@ from DataFlow::PathNode source, DataFlow::PathNode sink, CheckableArrayAccess ar
 where
   arrayAccess.canThrowOutOfBounds(sink.getNode().asExpr()) and
   any(Conf conf).hasFlowPath(source, sink)
-select arrayAccess.getIndexExpr(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select arrayAccess.getIndexExpr(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "This index depends on a $@ which can cause an ArrayIndexOutOfBoundsException.", source.getNode(),
   "user-provided value"

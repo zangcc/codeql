@@ -15,4 +15,4 @@ import semmle.code.java.frameworks.android.WebView
 
 from MethodAccess ma
 where ma.getMethod() instanceof WebViewAddJavascriptInterfaceMethod
-select ma,ma.getLocation().getFile().getAbsolutePath()+":"+ma.getLocation().getStartLine()+"-"+ ma.getLocation().getEndLine(), "JavaScript interface to Java object added in Android WebView."
+select ma,ma.getLocation().getFile().getAbsolutePath()+"$$"+ma.getLocation().getStartLine()+"-"+ ma.getLocation().getEndLine(), "JavaScript interface to Java object added in Android WebView."

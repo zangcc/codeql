@@ -16,5 +16,5 @@ import DataFlow::PathGraph
 
 from RsaWithoutOaepConfig conf, DataFlow::PathNode source, DataFlow::PathNode sink
 where conf.hasFlowPath(source, sink)
-select source, source, sink, "This specification is used to $@ without OAEP padding.", sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select source, source, sink, "This specification is used to $@ without OAEP padding.", sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "initialize an RSA cipher"

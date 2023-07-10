@@ -54,6 +54,6 @@ where
   // can use fixed sizes for arrays, but this doesn't work well when the array is initialized to zero
   // and subsequently reassigned or grown.
   count(arrayAccess.getArray().(VarAccess).getVariable().getAnAssignedValue()) = 1
-select arrayAccess.getIndexExpr(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select arrayAccess.getIndexExpr(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "$@ flows to the index used in this array access, and may cause the operation to throw an ArrayIndexOutOfBoundsException.",
   boundedsource, boundedsource.getDescription()

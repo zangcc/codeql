@@ -81,4 +81,4 @@ predicate hasOriginCheck(PostMessageHandler handler) {
 
 from PostMessageHandler handler
 where not hasOriginCheck(handler)
-select handler.getEventParameter(), handler.getFile().getAbsolutePath()+":"+handler.getFile().getLocation().getStartLine(),"Postmessage handler has no origin check."
+select handler.getEventParameter(), handler.getFile().getAbsolutePath()+"$$"+handler.getFile().getLocation().getStartLine(),"Postmessage handler has no origin check."

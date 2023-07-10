@@ -75,6 +75,6 @@ where
     missingGuardAgainstOverflow(op, va) and effect = "overflow"
   ) and
   causeEffectCorrespond(cause, effect)
-select va,va.getLocation().getFile().getAbsolutePath()+":"+va.getLocation().getStartLine(),
+select va,va.getLocation().getFile().getAbsolutePath()+"$$"+va.getLocation().getStartLine(),
   "$@ flows to an operand of an arithmetic expression, potentially causing an " + effect + ".",
   origin, "Extreme value"

@@ -80,5 +80,5 @@ where
     exists(SetMessageInterpolatorCall c | not c.isSafe())
   ) and
   cfg.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "Custom constraint error message contains an unsanitized $@.",
+select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "Custom constraint error message contains an unsanitized $@.",
   source, "user-provided value"

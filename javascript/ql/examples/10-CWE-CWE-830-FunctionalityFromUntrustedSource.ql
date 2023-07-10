@@ -166,4 +166,4 @@ module DynamicCreation {
 }
 
 from AddsUntrustedUrl s
-select s,s.getFile().getAbsolutePath()+":"+s.getStartLine(), s.getProblem()
+select s,s.getFile().getAbsolutePath()+"$$"+s.getStartLine(), s.getProblem()

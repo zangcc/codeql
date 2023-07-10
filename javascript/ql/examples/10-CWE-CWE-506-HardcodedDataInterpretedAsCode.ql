@@ -18,6 +18,6 @@ import DataFlow::PathGraph
 
 from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where cfg.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(),
+select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(),
   "$@ is interpreted as " + sink.getNode().(Sink).getKind() + ".", source.getNode(),
   "Hard-coded data"

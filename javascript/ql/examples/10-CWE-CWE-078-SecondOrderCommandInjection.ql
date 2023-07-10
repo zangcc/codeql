@@ -19,7 +19,7 @@ import semmle.javascript.security.dataflow.SecondOrderCommandInjectionQuery
 
 from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink, Sink sinkNode
 where cfg.hasFlowPath(source, sink) and sinkNode = sink.getNode()
-select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(),
+select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(),
   "Command line argument that depends on $@ can execute an arbitrary command if " +
     sinkNode.getVulnerableArgumentExample() + " is used with " + sinkNode.getCommand() + ".",
   source.getNode(), source.getNode().(Source).describe()

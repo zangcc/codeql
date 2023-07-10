@@ -20,5 +20,5 @@ from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where
   cfg.hasFlowPath(source, sink) and
   not source.getNode() instanceof CleartextPasswordExpr // flagged by js/insufficient-password-hash
-select sink.getNode(), source, sink, sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(),"A broken or weak cryptographic algorithm depends on $@.",
+select sink.getNode(), source, sink, sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(),"A broken or weak cryptographic algorithm depends on $@.",
   source.getNode(), "sensitive data from" + source.getNode().(Source).describe()

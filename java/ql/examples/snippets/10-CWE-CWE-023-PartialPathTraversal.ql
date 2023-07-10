@@ -13,4 +13,4 @@
 import semmle.code.java.security.PartialPathTraversal
 
 from PartialPathTraversalMethodAccess ma
-select ma,ma.getLocation().getFile().getAbsolutePath()+":"+ma.getLocation().getStartLine()+":"+ma.getLocation().getEndLine(), "Partial Path Traversal Vulnerability due to insufficient guard against path traversal."
+select ma,ma.getLocation().getFile().getAbsolutePath()+"$$"+ma.getLocation().getStartLine(), "Partial Path Traversal Vulnerability due to insufficient guard against path traversal."

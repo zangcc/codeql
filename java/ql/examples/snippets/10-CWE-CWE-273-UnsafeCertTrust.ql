@@ -21,4 +21,4 @@ where
   exists(SslEndpointIdentificationFlowConfig config |
     config.hasFlowTo(DataFlow::exprNode(unsafeTrust))
   )
-select unsafeTrust,unsafeTrust.getLocation().getFile().getAbsolutePath()+":"+unsafeTrust.getLocation().getStartLine()+":"+unsafeTrust.getLocation().getEndLine(), "Unsafe configuration of trusted certificates."
+select unsafeTrust,unsafeTrust.getLocation().getFile().getAbsolutePath()+"$$"+unsafeTrust.getLocation().getStartLine(), "Unsafe configuration of trusted certificates."

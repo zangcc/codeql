@@ -17,6 +17,6 @@ from MethodAccess ma
 where
   ma.getMethod() instanceof CrossOriginAccessMethod and
   ma.getArgument(0).(CompileTimeConstantExpr).getBooleanValue() = true
-select ma,ma.getLocation().getFile().getAbsolutePath()+":"+ma.getLocation().getStartLine()+"-"+ ma.getLocation().getEndLine(),
+select ma,ma.getLocation().getFile().getAbsolutePath()+"$$"+ma.getLocation().getStartLine()+"-"+ ma.getLocation().getEndLine(),
   "WebView setting " + ma.getMethod().getName() +
     " may allow for unauthorized access of sensitive information."

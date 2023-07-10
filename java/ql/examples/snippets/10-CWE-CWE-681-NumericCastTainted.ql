@@ -43,6 +43,6 @@ from
 where
   sink.getNode().asExpr() = exp.getExpr() and
   conf.hasFlowPath(source, sink)
-select exp, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select exp, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "This cast to a narrower type depends on a $@, potentially causing truncation.", source.getNode(),
   "user-provided value"

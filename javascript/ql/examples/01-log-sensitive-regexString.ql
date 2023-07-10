@@ -9,7 +9,7 @@ where
     call.getArgument(i).toString().regexpMatch("(?i).*(key|password|secret|vault|arn|param|token|content|mail|ldap|record|response|request|uuid|result).*") and 
     not call.getArgument(i) instanceof StringLiteral and 
     tempStr = call.getArgument(i).toString()) and 
-    loc = call.getLocation().getFile().getAbsolutePath() + ":" + call.getLocation().getStartLine()
+    loc = call.getLocation().getFile().getAbsolutePath() + "$$" + call.getLocation().getStartLine()
 
 select call.getCallee().toString() + "()","打印了可能存在敏感信息的变量: "+tempStr, " "+loc
 

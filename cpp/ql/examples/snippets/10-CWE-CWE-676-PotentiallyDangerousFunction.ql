@@ -24,4 +24,4 @@ from FunctionCall call, Function target, string message
 where
   call.getTarget() = target and
   potentiallyDangerousFunction(target, message)
-select call,call.getFile().getAbsolutePath()+":"+call.getFile().getLocation().getStartLine(), message
+select call,call.getFile().getAbsolutePath()+"$$"+call.getFile().getLocation().getStartLine(), message

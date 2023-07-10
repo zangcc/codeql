@@ -39,4 +39,4 @@ Variable lockSuccessor(Variable v) {
 
 from Variable v1, Variable v2
 where v1 != v2 and lockSuccessor+(v1) = v2 and lockSuccessor+(v2) = v1
-select v1, v1.getLocation().getFile().getAbsolutePath()+":"+v1.getLocation().getStartLine(),"Mutex " + v1 + " has a cyclic lock order dependency with $@.", v2, "mutex " + v2
+select v1, v1.getLocation().getFile().getAbsolutePath()+"$$"+v1.getLocation().getStartLine(),"Mutex " + v1 + " has a cyclic lock order dependency with $@.", v2, "mutex " + v2

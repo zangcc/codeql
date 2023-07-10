@@ -19,5 +19,5 @@ predicate isBintrayRepositoryUsage(DeclaredRepository repository) {
 
 from DeclaredRepository repository
 where isBintrayRepositoryUsage(repository)
-select repository,repository.getLocation().getFile().getAbsolutePath()+":"+repository.getLocation().getStartLine()+":"+repository.getLocation().getEndLine(),
+select repository,repository.getLocation().getFile().getAbsolutePath()+"$$"+repository.getLocation().getStartLine(),
   "Downloading or uploading artifacts to deprecated repository " + repository.getRepositoryUrl()

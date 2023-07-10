@@ -72,4 +72,4 @@ where
     ) and
     not isHresultBooleanConverted(e1)
   )
-select e1,e1.getLocation().getFile().getAbsolutePath()+":"+e1.getLocation().getStartLine(),msg
+select e1,e1.getLocation().getFile().getAbsolutePath()+"$$"+e1.getLocation().getStartLine(),msg

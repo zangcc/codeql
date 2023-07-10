@@ -26,5 +26,5 @@ class UrlRedirectLocalConfig extends TaintTracking::Configuration {
 
 from DataFlow::PathNode source, DataFlow::PathNode sink, UrlRedirectLocalConfig conf
 where conf.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "Untrusted URL redirection depends on a $@.", source.getNode(),
+select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "Untrusted URL redirection depends on a $@.", source.getNode(),
   "user-provided value"

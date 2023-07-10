@@ -27,5 +27,5 @@ class XPathInjectionConfiguration extends TaintTracking::Configuration {
 
 from DataFlow::PathNode source, DataFlow::PathNode sink, XPathInjectionConfiguration c
 where c.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "XPath expression depends on a $@.", source.getNode(),
+select sink.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "XPath expression depends on a $@.", source.getNode(),
   "user-provided value"

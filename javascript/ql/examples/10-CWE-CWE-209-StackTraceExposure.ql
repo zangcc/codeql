@@ -19,5 +19,5 @@ import DataFlow::PathGraph
 
 from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where cfg.hasFlowPath(source, sink)
-select sink.getNode(), source, sink, sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(),"This information exposed to the user depends on $@.",
+select sink.getNode(), source, sink, sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(),"This information exposed to the user depends on $@.",
   source.getNode(), "stack trace information"

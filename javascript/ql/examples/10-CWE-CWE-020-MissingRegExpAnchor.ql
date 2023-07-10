@@ -52,4 +52,4 @@ where
   or
   hasMisleadingAnchorPrecedence(nd, msg)
 // isLineAnchoredHostnameRegExp is not used here, as it is not relevant to JS.
-select nd, nd.getFile().getAbsolutePath()+":"+nd.getFile().getLocation().getStartLine(),msg
+select nd, nd.getFile().getAbsolutePath()+"$$"+nd.getFile().getLocation().getStartLine(),msg

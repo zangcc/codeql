@@ -53,4 +53,4 @@ from Express::RouteSetup setup
 where
   isLoginSetup(setup) and
   not regeneratesSession(setup)
-select setup,setup.getFile().getAbsolutePath()+":"+setup.getStartLine(), "Route handler does not invalidate session following login."
+select setup,setup.getFile().getAbsolutePath()+"$$"+setup.getStartLine(), "Route handler does not invalidate session following login."

@@ -17,4 +17,4 @@ from MethodAccess ma
 where
   ma.getMethod() instanceof AllowJavaScriptMethod and
   ma.getArgument(0).(CompileTimeConstantExpr).getBooleanValue() = true
-select ma,ma.getLocation().getFile().getAbsolutePath()+":"+ma.getLocation().getStartLine()+"-"+ ma.getLocation().getEndLine(), "JavaScript execution enabled in WebView."
+select ma,ma.getLocation().getFile().getAbsolutePath()+"$$"+ma.getLocation().getStartLine()+"-"+ ma.getLocation().getEndLine(), "JavaScript execution enabled in WebView."

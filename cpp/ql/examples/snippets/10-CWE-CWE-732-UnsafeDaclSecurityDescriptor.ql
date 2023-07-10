@@ -92,4 +92,4 @@ where
     nullDaclConfig.hasFlowToExpr(var) and
     not nonNullDaclConfig.hasFlowToExpr(var)
   )
-select call,call.getFile().getAbsolutePath()+":"+call.getFile().getLocation().getStartLine(), message
+select call,call.getFile().getAbsolutePath()+"$$"+call.getFile().getLocation().getStartLine(), message

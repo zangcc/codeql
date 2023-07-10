@@ -591,4 +591,4 @@ where
     msg =
       "The property chain $@ is recursively assigned to $@ without guarding against prototype pollution."
   )
-select base, source, sink, msg, col1,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(), deriveExprName(col1), col2, deriveExprName(col2)
+select base, source, sink, msg, col1,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), deriveExprName(col1), col2, deriveExprName(col2)

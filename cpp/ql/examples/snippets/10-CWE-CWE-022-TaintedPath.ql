@@ -110,6 +110,6 @@ where
   fileFunction.outermostWrapperFunctionCall(taintedArg, callChain) and
   cfg.hasFlowPath(sourceNode, sinkNode) and
   taintSource = sourceNode.getNode()
-select taintedArg, sourceNode, sinkNode,taintedArg.getLocation().getFile().getAbsolutePath()+":"+taintedArg.getLocation().getStartLine(),
+select taintedArg, sourceNode, sinkNode,taintedArg.getLocation().getFile().getAbsolutePath()+"$$"+taintedArg.getLocation().getStartLine(),
   "This argument to a file access function is derived from $@ and then passed to " + callChain + ".",
   taintSource, "user input (" + taintSource.getSourceType() + ")"

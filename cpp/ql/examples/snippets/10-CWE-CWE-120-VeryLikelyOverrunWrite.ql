@@ -28,6 +28,6 @@ where
   estimated = bw.getMaxDataLimited(reason) and
   // we can deduce from non-trivial range analysis that too much data may be copied
   estimated > destSize
-select bw,bw.getLocation().getFile().getAbsolutePath()+":"+bw.getLocation().getStartLine(),
+select bw,bw.getLocation().getFile().getAbsolutePath()+"$$"+bw.getLocation().getStartLine(),
   "This '" + bw.getBWDesc() + "' operation requires " + estimated +
     " bytes but the destination is only " + destSize + " bytes."

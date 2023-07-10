@@ -186,6 +186,6 @@ where
   main(rh, async, cb, crasher) and
   callbackArg.getALocalSource().getAstNode() = cb and
   async.getAnArgument() = callbackArg
-select crasher, crasher, cb,cb.getFile().getAbsolutePath()+":"+cb.getStartLine(),
+select crasher, crasher, cb,cb.getFile().getAbsolutePath()+"$$"+cb.getStartLine(),
   "The server of $@ will terminate when an uncaught exception from this location escapes an $@.",
   rh, "this route handler", callbackArg, "asynchronous callback"

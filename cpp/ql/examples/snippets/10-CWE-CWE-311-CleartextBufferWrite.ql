@@ -60,6 +60,6 @@ where
   config.hasFlowPath(sourceNode, sinkNode) and
   sourceNode.getNode() = source and
   w.getASource() = sinkNode.getNode().asExpr()
-select w, sourceNode, sinkNode,w.getLocation().getFile().getAbsolutePath()+":"+w.getLocation().getStartLine(),
+select w, sourceNode, sinkNode,w.getLocation().getFile().getAbsolutePath()+"$$"+w.getLocation().getStartLine(),
   "This write into buffer '" + w.getDest().toString() + "' may contain unencrypted data from $@.",
   source, "user input (" + source.getSourceType() + ")"

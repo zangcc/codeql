@@ -17,6 +17,6 @@ import DataFlow::PathGraph
 
 from DataFlow::PathNode source, DataFlow::PathNode sink
 where any(InsecureTrustManagerConfiguration cfg).hasFlowPath(source, sink)
-select sink, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "This uses $@, which is defined in $@ and trusts any certificate.",
+select sink, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "This uses $@, which is defined in $@ and trusts any certificate.",
   source, "TrustManager",
   source.getNode().asExpr().(ClassInstanceExpr).getConstructedType() as type, type.nestedName()

@@ -17,4 +17,4 @@ where
   // create socket connection
   ma.getMethod().hasName("Socket") and
   ma.getMethod().getDeclaringType().hasQualifiedName("java.net", "Socket")
-select ma.getLocation().getFile().getAbsolutePath() +":" + ma.getLocation().getStartLine()+"  可能存在后门: "+ma
+select ma.getLocation().getFile().getAbsolutePath() +"$$" + ma.getLocation().getStartLine()+"  可能存在后门: "+ma

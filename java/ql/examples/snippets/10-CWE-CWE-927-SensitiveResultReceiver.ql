@@ -17,5 +17,5 @@ import DataFlow::PathGraph
 
 from DataFlow::PathNode src, DataFlow::PathNode sink, DataFlow::Node recSrc
 where sensitiveResultReceiver(src, sink, recSrc)
-select sink, src, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "This $@ is sent to a ResultReceiver obtained from $@.", src,
+select sink, src, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "This $@ is sent to a ResultReceiver obtained from $@.", src,
   "sensitive information", recSrc, "this untrusted source"

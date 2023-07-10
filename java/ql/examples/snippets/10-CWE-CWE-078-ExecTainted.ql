@@ -20,5 +20,5 @@ import DataFlow::PathGraph
 
 from DataFlow::PathNode source, DataFlow::PathNode sink, ArgumentToExec execArg
 where execTainted(source, sink, execArg)
-select execArg, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "This command line depends on a $@.", source.getNode(),
+select execArg, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "This command line depends on a $@.", source.getNode(),
   "user-provided value"

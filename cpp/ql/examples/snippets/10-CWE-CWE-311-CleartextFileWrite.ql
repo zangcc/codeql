@@ -72,6 +72,6 @@ where
   not dest.(VariableAccess).getTarget().getName() = ["stdin", "stdout", "stderr"] and // exclude calls with standard streams
   not isFileName(globalValueNumber(source)) and // file names are not passwords
   not exists(string convChar | convChar = w.getSourceConvChar(mid) | not convChar = ["s", "S"]) // ignore things written with other conversion characters
-select w, sourceNode, midNode,w.getLocation().getFile().getAbsolutePath()+":"+w.getLocation().getStartLine(),
+select w, sourceNode, midNode,w.getLocation().getFile().getAbsolutePath()+"$$"+w.getLocation().getStartLine(),
   "This write into file '" + dest.toString() + "' may contain unencrypted data from $@.", source,
   "this source."

@@ -37,6 +37,6 @@ where
   sizeExpr = sink.getNode().asExpr() and
   boundedsource = source.getNode() and
   any(BoundedFlowSourceConf conf).hasFlowPath(source, sink)
-select arrayAccess.getIndexExpr(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select arrayAccess.getIndexExpr(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "This accesses the $@, but the array is initialized using $@ which may be zero.", arrayCreation,
   "array", boundedsource, boundedsource.getDescription().toLowerCase()

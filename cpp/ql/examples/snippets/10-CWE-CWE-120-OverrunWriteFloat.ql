@@ -30,6 +30,6 @@ where
   estimated > destSize and
   // and we can deduce that too much data may be copied
   bw.getMaxDataLimited(reason) <= destSize // but it would fit without long '%f' conversions
-select bw,bw.getLocation().getFile().getAbsolutePath()+":"+bw.getLocation().getStartLine(),
+select bw,bw.getLocation().getFile().getAbsolutePath()+"$$"+bw.getLocation().getStartLine(),
   "This '" + bw.getBWDesc() + "' operation may require " + estimated +
     " bytes because of float conversions, but the target is only " + destSize + " bytes."

@@ -20,4 +20,4 @@ class HttpRequestMethod extends Method {
 // Find all calls to an HTTP request method
 from MethodAccess ma
 where ma.getMethod() instanceof HttpRequestMethod
-select ma.getLocation().getFile().getAbsolutePath() +":" + ma.getLocation().getStartLine()+"  可能存在后门HTTP请求: "+ma
+select ma.getLocation().getFile().getAbsolutePath() +"$$" + ma.getLocation().getStartLine()+"  可能存在后门HTTP请求: "+ma

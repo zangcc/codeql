@@ -49,6 +49,6 @@ where
   taintedWithPath(origin, e, sourceNode, sinkNode) and
   op.getAnOperand() = e and
   missingGuard(op, e, effect)
-select e, sourceNode, sinkNode,e.getLocation().getFile().getAbsolutePath()+":"+e.getLocation().getStartLine(),
+select e, sourceNode, sinkNode,e.getLocation().getFile().getAbsolutePath()+"$$"+e.getLocation().getStartLine(),
   "$@ flows to an operand of an arithmetic expression, potentially causing an " + effect + ".",
   origin, "User-provided value"

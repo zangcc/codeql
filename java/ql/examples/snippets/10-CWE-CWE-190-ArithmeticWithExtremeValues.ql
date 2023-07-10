@@ -87,6 +87,6 @@ where
   narrowerThanOrEqualTo(exp, srctyp) and
   v = sink.getNode().asExpr().(VarAccess).getVariable() and
   s = source.getNode().asExpr()
-select exp, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select exp, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "Variable " + v.getName() + " is assigned an extreme value $@, and may cause an " + effect + ".",
   s, s.getVariable().getName()

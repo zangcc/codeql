@@ -25,4 +25,4 @@ from HttpRequestParameter param, string path, int line
 where not hasTimestampParameter(param) and
   path = param.getFile().getAbsolutePath() and
   line = param.getLocation().getStartLine()
-select path,":", line,"HTTP请求中没有加入时间戳,可能存在重放攻击",param
+select path+"$$"+line,"HTTP请求中没有加入时间戳,可能存在重放攻击",param

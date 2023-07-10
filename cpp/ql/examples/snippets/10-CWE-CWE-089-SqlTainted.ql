@@ -49,6 +49,6 @@ where
   runSql.outermostWrapperFunctionCall(taintedArg, callChain) and
   taintedWithPath(taintSource, taintedArg, sourceNode, sinkNode) and
   isUserInput(taintSource, taintCause)
-select taintedArg, sourceNode, sinkNode,taintedArg.getLocation().getFile().getAbsolutePath()+":"+taintedArg.getLocation().getStartLine(),
+select taintedArg, sourceNode, sinkNode,taintedArg.getLocation().getFile().getAbsolutePath()+"$$"+taintedArg.getLocation().getStartLine(),
   "This argument to a SQL query function is derived from $@ and then passed to " + callChain + ".",
   taintSource, "user input (" + taintCause + ")"

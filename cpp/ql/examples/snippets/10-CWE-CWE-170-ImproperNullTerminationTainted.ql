@@ -86,5 +86,5 @@ class TaintSource extends VariableAccess {
 
 from TaintSource source, VariableAccess sink
 where source.reaches(sink)
-select sink, "String operation depends on a $@ that may not be null terminated.", source,sink.getFile().getAbsolutePath()+":"+sink.getFile().getLocation().getStartLine(),
+select sink, "String operation depends on a $@ that may not be null terminated.", source,sink.getFile().getAbsolutePath()+"$$"+sink.getFile().getLocation().getStartLine(),
   "user-provided value"

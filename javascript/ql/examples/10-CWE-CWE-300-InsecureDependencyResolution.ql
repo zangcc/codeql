@@ -20,4 +20,4 @@ from PackageJson pack, JsonString val
 where
   [pack.getDependencies(), pack.getDevDependencies()].getPropValue(_) = val and
   val.getValue().regexpMatch("(http|ftp)://.*")
-select val,val.getFile().getAbsolutePath()+":"+val.getStartLine(), "Dependency downloaded using unencrypted communication channel."
+select val,val.getFile().getAbsolutePath()+"$$"+val.getStartLine(), "Dependency downloaded using unencrypted communication channel."

@@ -52,4 +52,4 @@ where
     tryLockCondition(access2, _, _) or
     call.isCondition()
   )
-select access2, access2.getLocation().getFile().getAbsolutePath()+":"+access2.getLocation().getStartLine(),"Mutex " + v + " might be locked already, which could cause a deadlock."
+select access2, access2.getLocation().getFile().getAbsolutePath()+"$$"+access2.getLocation().getStartLine(),"Mutex " + v + " might be locked already, which could cause a deadlock."

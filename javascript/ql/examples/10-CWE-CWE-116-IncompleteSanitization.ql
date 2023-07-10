@@ -177,4 +177,4 @@ where
     not allBackslashesEscaped(repl) and
     msg = "This does not escape backslash characters in the input."
   )
-select repl.getCalleeNode(),repl.getFile().getAbsolutePath()+":"+repl.getStartLine(),msg
+select repl.getCalleeNode(),repl.getFile().getAbsolutePath()+"$$"+repl.getStartLine(),msg
