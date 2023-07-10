@@ -10,7 +10,7 @@ from MethodAccess ma, Variable v, MethodAccess logInfo,string loc
 
 where ma.getQualifier() = v.getAnAccess()
   and ma.getMethod().toString().regexpMatch("(?i).*(set|update|change).*")
-  and v.getName().toString().regexpMatch("(?i).*(key|password|secret|vault|arn|param|token|content|mail|ldap|record|response|request|uuid|result).*")
+  and v.getName().toString().regexpMatch("(?i).*(key|password|secret|vault|arn|param|token|content|mail|ldap|record|response|request|result).*")
   and logInfo.getMethod().toString().regexpMatch("(?i).*\\b(error|log|info|trace|warn|debug)\\b.*")
   and v.getAnAccess() = logInfo.getAnArgument()
   and loc = logInfo.getLocation().getFile().getAbsolutePath() + "$$" + logInfo.getLocation().getStartLine()
