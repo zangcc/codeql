@@ -161,7 +161,7 @@ try:
     inputParameter2 = str(sys.argv[2])
 
     finalCMD                        = ""
-    projectRootPath                 = str(root_path) + str(getCodeRespName(inputParameter1))
+    projectRootPath                 = str(root_path) + str(getCodeRespName(inputParameter1)) + "/"
     replaceFileContenCmd            =   "cd " + projectRootPath +";"+ getReplaceCommand(inputParameter1,projectRootPath)
     DependencyCheckOutputName       = str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_"+getBranchName(str(inputParameter1))+"_DependencyCheck扫描结果.html"
     DependencyCheckCmd              = "sudo dependency-check.sh --project 'myproject' -s  scanPath   -n  --out outPutname".replace("myproject",getCodeRespName(inputParameter1)).replace("outPutname",DependencyCheckOutputName).replace("scanPath",projectRootPath)+";"
