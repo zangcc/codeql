@@ -219,7 +219,8 @@ try:
     msg="++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++运行下面命令：++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\nfinaCMD \n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++运行上面面命令：++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
 
     trivyOutPutFilename         =  str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_"+ getBranchName(str(inputParameter1)) +"_trivy扫描结果.txt"
-    trivyCmd                    =  " "+trivyFilesPath  + " " + projectRootPath + " -o " + trivyOutPutFilename + ";"
+    trivyOutPutFilePath         = root_path + str(getCodeRespName(inputParameter1)) + "/"+trivyOutPutFilename
+    trivyCmd                    =  " "+trivyFilesPath  + " " + projectRootPath + " -o " + trivyOutPutFilePath + ";"
     codeqlDatabasePath          =  root_path + "/" + str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_codeqldatabase"
     mvCodeqlDatabaseDirCmd1     =  "rm -rf "+ codeqlDatabasePath + ";mv " + projectRootPath + "/codeqldatabase " + codeqlDatabasePath+";"
     mvCodeqlDatabaseDirCmd2     =  "rm -rf "+ root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase" +";mv " + codeqlDatabasePath + " " + root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase;"
