@@ -124,6 +124,9 @@ def getBranchName(gitCommand):
             branchName             =   "main"
         elif "phabricator" in gitCommandStr:
             branchName             =   "master"
+        elif "github" in gitCommandStr:
+            branchName             =   "main"
+                
         pass
     finally:
         return branchName
@@ -145,6 +148,16 @@ def getReplaceCommand(gitCommand,projectRootPath):
         
         replaceCommand          =   replaceCommand.replace("projectRootPath",projectRootPath).replace("repositoryAddress",repositoryAddress).replace("repositoryType","\#L")
         
+    elif "github" in gitCommandStr:
+        if "https://github" in gitCommandStr:
+            repositoryAddress   =   gitCommand[2].replace(".git","") + "/tree/" + str(branchName)  +"/"
+        elif "git@github" in gitCommandStr:
+            repositoryAddress   =   gitCommand[2].replace(":","/").replace("git@","https://").replace(":","/").replace(".git","")+ "/tree/" + str(branchName) + "/"
+            repositoryAddress   =   repositoryAddress.replace("///","://")
+
+        replaceCommand          =   replaceCommand.replace("projectRootPath",projectRootPath).replace("repositoryAddress",repositoryAddress).replace("repositoryType","\#L")
+
+
     elif "phabricator" in gitCommandStr:
         repositoryAddress   = gitCommand[2].replace("ssh://git@","https://")
         repositoryAddress   = re.sub(r"/(\d+)/.*", r"/\1/replaceFlag", repositoryAddress)
@@ -153,6 +166,15 @@ def getReplaceCommand(gitCommand,projectRootPath):
         replaceCommand        =replaceCommand.replace("projectRootPath",projectRootPath).replace("repositoryAddress",repositoryAddress).replace("repositoryType","\$")
     
     return replaceCommand
+
+
+try:
+    inputParameter3  = str(sys.argv[3])#决定是否要进行codeql扫描,默认进行codeql扫描
+except Exception as e:
+    traceback.print_exc()
+    inputParameter3  = ""
+    pass
+
 
     
 try:
@@ -177,21 +199,21 @@ try:
         lombokCmd               = cdToRootCmd   +   lombokCommands   + ";"
         codeqlCreateCmd         = "javaEnvSetting  ;codeqlBinPath database create codeqldatabase --language=java --command='mavenDir/bin/mvn    -gs mavenSettingsFile  clean install   -Dmaven.test.skip -Dmaven.repo.local=mavenLocalRepositoryDir' --overwrite".replace("mavenSettingsFile",mavenSettingsFile).replace("mavenLocalRepositoryDir",mavenLocalRepositoryDir).replace("codeqlBinPath",codeqlBinPath).replace("mavenDir",mavenDir)+";"
         codeqlScanCmd           = "for file in codeqlJavaFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlJavaFilesPath",codeqlJavaFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
-        finalCMD                = (lombokCmd+codeqlCreateCmd+codeqlScanCmd)
+        codeqlFinalCMD          = (lombokCmd+codeqlCreateCmd+codeqlScanCmd)
 
     elif inputParameter2 == "js" or inputParameter2 == "javascript":
         cmd                     = inputParameter1 # 获取第一个参数
         cdToRootCmd             = "cd " + str(root_path) + str(getCodeRespName(cmd)) + ";"
         codeqlCreateCmd         = cdToRootCmd  + "codeqlBinPath database create codeqldatabase --language=javascript  --overwrite".replace("codeqlBinPath",codeqlBinPath)+";"
         codeqlScanCmd           = "for file in codeqlJSFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlJSFilesPath",codeqlJSFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
-        finalCMD                = (codeqlCreateCmd+codeqlScanCmd)
+        codeqlFinalCMD          = (codeqlCreateCmd+codeqlScanCmd)
 
     elif inputParameter2 == "c" or inputParameter2 == "cpp" or inputParameter2 == "c++" :
         cmd                     = inputParameter1 # 获取第一个参数
         cdToRootCmd             = "cd " + str(root_path) + str(getCodeRespName(cmd)) + ";"
         codeqlCreateCmd         = cdToRootCmd  + "codeqlBinPath database create codeqldatabase --language=cpp  --command='bash /root/code/build.sh'   --overwrite".replace("codeqlBinPath",codeqlBinPath)+";"
         codeqlScanCmd           = "for file in codeqlcppFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlcppFilesPath",codeqlcppFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
-        finalCMD                = (codeqlCreateCmd+codeqlScanCmd)
+        codeqlFinalCMD          = (codeqlCreateCmd+codeqlScanCmd)
     
 
     msg="++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++运行下面命令：++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\nfinaCMD \n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++运行上面面命令：++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
@@ -203,9 +225,19 @@ try:
     mvCodeqlDatabaseDirCmd2     =  "rm -rf "+ root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase" +";mv " + codeqlDatabasePath + " " + root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase;"
 
     if "git" in inputParameter1 and "clone" in inputParameter1:
-        finalCMD                    =  (gitCloneCmd+finalCMD+mvCodeqlDatabaseDirCmd1 + trivyCmd + mvCodeqlDatabaseDirCmd2 + replaceFileContenCmd).replace("javaEnvSetting",javaEnvSetting)
+        if inputParameter3 == "":
+            finalCMD                    =  (gitCloneCmd+codeqlFinalCMD+mvCodeqlDatabaseDirCmd1 + trivyCmd + mvCodeqlDatabaseDirCmd2 + replaceFileContenCmd).replace("javaEnvSetting",javaEnvSetting)
+        else:
+            finalCMD                    =  (gitCloneCmd + trivyCmd + replaceFileContenCmd).replace("javaEnvSetting",javaEnvSetting)
+
+
     elif os.path.isabs(str(inputParameter1).replace(" ","")):
-        finalCMD                    =  ("cd " + str(inputParameter1) + ";" + codeqlScanCmd +trivyCmd + replaceFileContenCmd).replace("javaEnvSetting",javaEnvSetting)
+        if inputParameter3 == "":
+            finalCMD                    =  ("cd " + str(inputParameter1) + ";" + codeqlScanCmd +trivyCmd + replaceFileContenCmd).replace("javaEnvSetting",javaEnvSetting)
+        else:
+            finalCMD                    =  ("cd " + str(inputParameter1) + ";" +trivyCmd + replaceFileContenCmd).replace("javaEnvSetting",javaEnvSetting)
+
+
     # finalCMD                    =  gitCloneCmd + "sudo bash -c '''" + finalCMD + "'''"
     msg                         =  msg.replace("finaCMD",finalCMD)
     print(msg)
@@ -221,8 +253,12 @@ finally:
     codeqlOutFilePath           = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
     scanResultPath              = trivyOutPutFilePath + "\n" + codeqlOutFilePath
     codeqlDatabasePath          = root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase"
-    if isCodeqlDBCreateSucc(codeqlDatabasePath):
-        msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
+    if inputParameter3 == "":
+        if isCodeqlDBCreateSucc(codeqlDatabasePath):
+            msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
+        else:
+            msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:❌\n[失败原因]:codeql数据库创建失败!\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
     else:
-        msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:❌\n[失败原因]:codeql数据库创建失败!\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
+        msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",trivyOutPutFilePath)
+    
     sendDingMessage(msg,isAtAll,atPersons)
