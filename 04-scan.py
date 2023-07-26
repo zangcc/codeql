@@ -3,7 +3,6 @@ from datetime import datetime
 
 ############################################################从配置文件中读取信息############################################################
 file    = os.path.join(os.path.dirname(__file__), '/root/tools/config.ini')
-file    = os.path.join(os.path.dirname(__file__), '/Users/mashuang/Desktop/temp/tools/04-kexin/config.ini')
 con     = configparser.ConfigParser() # 创建配置文件对象
 con.read(file, encoding='utf-8') # 读取文件
 
