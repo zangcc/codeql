@@ -22,7 +22,7 @@ where m.hasAnnotation("org.springframework.web.bind.annotation","PostMapping")
   and filed.toString()  = filed.getAnAssignedValue().toString() //private只能是这种格式 private String code;
   and loc  = filed.getLocation().getFile().getAbsolutePath() + "$$" + filed.getLocation().getStartLine()
   and loc1 = m.getLocation().getFile().getAbsolutePath() + "$$" + m.getLocation().getStartLine()
-  and onlyHasSpecialAnotaion(filed.getAnAnnotation())= "True"
+  and onlyHasSpecialAnotaion(filed.getAnAnnotation(),filed)= "True"
 select "传入参数点: "+loc1,"传入的参数: "+filed,"系统只做了 NotBlank, NotNull,Valid, NotEmpty简单注释过滤处理",loc
 
 
@@ -50,12 +50,12 @@ not lastName  = ["Void","Integer","String"] and result = fullTypeName.splitAt("<
    
 }
 
-bindingset[a]
-string onlyHasSpecialAnotaion(Annotation a) {
+bindingset[a,field]
+string onlyHasSpecialAnotaion(Annotation a,Field field) {
   a.getType().hasName(["NotBlank", "NotNull", "Valid", "NotEmpty"])
   and not exists(Annotation b | b.getAnnotatedElement() = a.getAnnotatedElement() and not b.getType().hasName(["NotBlank", "NotNull", "Valid", "NotEmpty"]))
   and result = "True"
-  or not exists( Annotation b | b.getAnnotatedElement() = a.getAnnotatedElement()) 
+  or not exists( Annotation b | b.getAnnotatedElement() = field.getAnAnnotation()) 
   and result = "True"
 }
 
