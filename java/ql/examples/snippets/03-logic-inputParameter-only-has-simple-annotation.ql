@@ -55,6 +55,8 @@ string onlyHasSpecialAnotaion(Annotation a) {
   a.getType().hasName(["NotBlank", "NotNull", "Valid", "NotEmpty"])
   and not exists(Annotation b | b.getAnnotatedElement() = a.getAnnotatedElement() and not b.getType().hasName(["NotBlank", "NotNull", "Valid", "NotEmpty"]))
   and result = "True"
+  or not exists( Annotation b | b.getAnnotatedElement() = a.getAnnotatedElement()) 
+  and result = "True"
 }
 
 
