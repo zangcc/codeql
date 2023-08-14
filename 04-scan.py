@@ -54,8 +54,13 @@ def getCodeRespName(string):
         else: # 如果没有找到匹配
             pass
     elif os.path.isabs(str(string).replace(" ","")):
+        if "-b" in str(string):
+            string = string.split(" ")[0]
         stringList = string.replace("//","/").replace(" ","").split("/")
-        projectName        = stringList[-1]
+        if stringList[-1] == "":
+            projectName        = stringList[-2]
+        else:
+            projectName        = stringList[-1]
         return projectName
 
 def Signature_Url():
@@ -116,9 +121,16 @@ def getBranchName(gitCommand):
     gitCommand    = getGitCommandList(gitCommand)
     branchName    = ""
     try:
-        if "/" in gitCommand[4]:
-            gitCommand[4] = gitCommand[4].replace("/","%252F")
-        branchName    = gitCommand[4] 
+        if "git" in gitCommandStr:
+            if "/" in gitCommand[4]:
+                gitCommand[4] = gitCommand[4].replace("/","%252F")
+            branchName    = gitCommand[4] 
+        else:
+            if "-b" in gitCommandStr:
+                branchName = str(gitCommand[2])
+            else:
+                branchName = "master"
+
     except:
         if "gitlab" in gitCommandStr:
             branchName             =   "main"
