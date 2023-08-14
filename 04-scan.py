@@ -126,11 +126,10 @@ def getBranchName(gitCommand):
                 gitCommand[4] = gitCommand[4].replace("/","%252F")
             branchName    = gitCommand[4] 
         else:
-            if "-b" in gitCommandStr:
+            if " -b" in gitCommandStr:
                 branchName = str(gitCommand[2])
             else:
                 branchName = "master"
-
     except:
         if "gitlab" in gitCommandStr:
             branchName             =   "main"
