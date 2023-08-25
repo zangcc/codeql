@@ -12,7 +12,7 @@ class HttpRequestClass extends RefType {
 
 string domainOrIpRegex() {
   result = "(^(?:\\d{1,3}\\.){3}\\d{1,3})" or 
-  result = "^https?" or 
+  result = "^https?://" or 
   result = "^[\\w\\.]+\\.[a-z]{2,10}"
 }
 
@@ -25,7 +25,8 @@ class HttpRequestMethod extends Method {
 }
 
 // Find all calls to an HTTP request method
-from MethodAccess ma,StringLiteral sl
+from MethodAccess ma,StringLiteral sl,Variable var
 where ma.getMethod() instanceof HttpRequestMethod 
   and ma.getAnArgument() = sl and  sl.getValue().regexpMatch(domainOrIpRegex()) 
-select ma.getLocation().getFile().getAbsolutePath() +"$$" + ma.getLocation().getStartLine()+" 可能存在向"+sl.getValue().toString()+"的后门HTTP请求: " +ma
+  or ma.getAnArgument() = var.getAnAssignedValue() and  var.getAnAssignedValue().toString().regexpMatch(domainOrIpRegex()) 
+select ma.getLocation().getFile().getAbsolutePath() +"$$" + ma.getLocation().getStartLine()+" 可能存在向"+ma.getAnArgument().toString()+"的后门HTTP请求: " +ma
