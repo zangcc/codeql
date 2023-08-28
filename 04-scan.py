@@ -29,7 +29,7 @@ atPersons                         =     con.get('DingdingConfigInfo', 'atPersons
 
 def writeContent2File(content,filePath):
     # 以读模式打开文件
-    with open(filePath, 'r') as f:
+    with open(filePath, 'a') as f:
         f.write(content+"\n")
 
 def isCodeqlDBCreateSucc(codeqlDBPath):
