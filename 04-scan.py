@@ -7,6 +7,7 @@ con     = configparser.ConfigParser() # 创建配置文件对象
 con.read(file, encoding='utf-8') # 读取文件
 
 root_path                         =    str(con.get('DependencyToolConfigInfo', 'root_path'))
+scanResFileNamePath               =    root_path + "/" + "scanRes.txt"
 codeqlJavaFilesPath               =    str(con.get('DependencyToolConfigInfo', 'codeqlJavaFilesPath'))
 codeqlJSFilesPath                 =    str(con.get('DependencyToolConfigInfo', 'codeqlJSFilesPath'))
 codeqlcppFilesPath                =    str(con.get('DependencyToolConfigInfo', 'codeqlcppFilesPath'))
@@ -25,6 +26,11 @@ atPersons                         =     con.get('DingdingConfigInfo', 'atPersons
 
 
 ###################################工具集###################################
+
+def writeContent2File(content,filePath):
+    # 以读模式打开文件
+    with open(filePath, 'r') as f:
+        f.write(content+"\n")
 
 def isCodeqlDBCreateSucc(codeqlDBPath):
     global codeqlDBCreateSuccFlagList
@@ -268,9 +274,12 @@ finally:
     if inputParameter3 == "":
         if isCodeqlDBCreateSucc(codeqlDatabasePath):
             msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
+            tempContent                 = trivyOutPutFilePath + "\n" +codeqlOutFilePath
+            writeContent2File(tempContent,scanResFileNamePath)
         else:
             msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:❌\n[失败原因]:codeql数据库创建失败!\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
     else:
         msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",trivyOutPutFilePath)
+        writeContent2File(trivyOutPutFilePath,scanResFileNamePath)
     
     sendDingMessage(msg,isAtAll,atPersons)
