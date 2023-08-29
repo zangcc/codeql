@@ -52,24 +52,6 @@ def getCurrentTime():
     time_str = now.strftime(format) # 格式化时间字符串
     return time_str
 
-def getCodeRespName(string):
-    if "git" in string and "clone" in string:
-        pattern = r"/([a-zA-Z-_0-9]+)\.git" # 定义正则表达式模式
-        match = re.search(pattern, string) # 使用search方法查找匹配
-        if match: # 如果找到匹配
-            return match.group().replace(".git","").replace("/","")
-        else: # 如果没有找到匹配
-            pass
-    elif os.path.isabs(str(string).replace(" ","")):
-        if "-b" in str(string):
-            string = string.split(" ")[0]
-        stringList = string.replace("//","/").replace(" ","").split("/")
-        if stringList[-1] == "":
-            projectName        = stringList[-2]
-        else:
-            projectName        = stringList[-1]
-        return projectName
-
 def Signature_Url():
     global file,con
     webhook_url             = str(con.get('DingdingConfigInfo', 'webhook_url')) 
@@ -123,31 +105,51 @@ def getGitCommandList(gitCommand):
     gitCommand       = [x for x in gitCommand if x != '']
     return gitCommand
 
+def getCodeRespName(string):
+    if " -b " in string:
+        string = re.sub(r"\s+", " ", string)
+        # print(string.split(" "))
+        string = string.split(" ")[2]
+        
+    if ":" in string:
+        tempList    = string.split("/")
+        projectName = tempList[len(tempList)-1].replace(".git","")
+        return projectName 
+
+    else:
+        tempStr     = re.sub(r"\s+", " ", string)
+        tempStr     = tempStr.split(" ")[0]
+        tempStr     = re.sub(r"/+", "/", tempStr)
+        tempList    = tempStr.split("/")
+        projectName = tempList[len(tempList)-1]
+        return projectName
+
 def getBranchName(gitCommand):
-    gitCommandStr = str(gitCommand)
-    gitCommand    = getGitCommandList(gitCommand)
-    branchName    = ""
-    try:
-        if "phabricator" in gitCommandStr:
-            if "/" in gitCommand[4]:
-                gitCommand[4] = gitCommand[4].replace("/","%252F")
-            branchName    = gitCommand[4] 
-        else:
-            if " -b" in gitCommandStr:
-                branchName = str(gitCommand[2])
+    branchName = "main"
+    if " -b " in gitCommand:
+        if ":" in gitCommand:
+            tempStr = re.sub(r"\s+", " ", gitCommand)
+            # print(tempStr.split(" "))
+            if "phabricator" in gitCommand:
+                branchName = tempStr.split(" ")[4].replace("/","%252F")
             else:
-                branchName = "master"
-    except:
-        if "gitlab" in gitCommandStr:
+                branchName = tempStr.split(" ")[4]
+        elif os.path.isabs(str(gitCommand).replace(" ","")):
+            # print(string)
+            if " -b " in str(gitCommand):
+                tempStr     = re.sub(r"\s+", " ", gitCommand)
+                branchName  =tempStr.split(" ")[2]
+
+    else:
+        if "gitlab" in gitCommand:
             branchName             =   "main"
-        elif "phabricator" in gitCommandStr:
+        elif "phabricator" in gitCommand:
             branchName             =   "master"
-        elif "github" in gitCommandStr:
-            branchName             =   "main"
-                
-        pass
-    finally:
-        return branchName
+        elif "github" in gitCommand:
+            branchName             =   "main"  
+    return branchName   
+
+
 
 
 def getReplaceCommand(gitCommand,projectRootPath):
