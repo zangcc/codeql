@@ -12,6 +12,7 @@ codeqlJavaFilesPath               =    str(con.get('DependencyToolConfigInfo', '
 codeqlJSFilesPath                 =    str(con.get('DependencyToolConfigInfo', 'codeqlJSFilesPath'))
 codeqlcppFilesPath                =    str(con.get('DependencyToolConfigInfo', 'codeqlcppFilesPath'))
 trivyFilesPath                    =    str(con.get('DependencyToolConfigInfo', 'trivyFilesPath'))
+codeqlConfigPath                  =    str(con.get('DependencyToolConfigInfo', 'codeqlConfigPath'))
 mavenDir                          =    str(con.get('DependencyToolConfigInfo', 'mavenDir'))
 mavenSettingsFile                 =    str(con.get('DependencyToolConfigInfo', 'mavenSettingsFile'))
 mavenLocalRepositoryDir           =    str(con.get('DependencyToolConfigInfo', 'mavenLocalRepositoryDir'))
@@ -214,21 +215,21 @@ try:
         cmd                     = inputParameter1 # 获取第一个参数
         cdToRootCmd             = "cd " + str(root_path) + str(getCodeRespName(cmd)) + ";"
         lombokCmd               = cdToRootCmd   +   lombokCommands   + ";"
-        codeqlCreateCmd         = "javaEnvSetting  ;codeqlBinPath database create codeqldatabase --language=java --command='mavenDir/bin/mvn    -gs mavenSettingsFile  clean install   -Dmaven.test.skip -Dmaven.repo.local=mavenLocalRepositoryDir' --overwrite".replace("mavenSettingsFile",mavenSettingsFile).replace("mavenLocalRepositoryDir",mavenLocalRepositoryDir).replace("codeqlBinPath",codeqlBinPath).replace("mavenDir",mavenDir)+";"
+        codeqlCreateCmd         = "javaEnvSetting  ;codeqlBinPath database create codeqldatabase --language=java --command='mavenDir/bin/mvn    -gs mavenSettingsFile  clean install   -Dmaven.test.skip -Dmaven.repo.local=mavenLocalRepositoryDir' --overwrite  --codescanning-config=codeqlConfigPath".replace("codeqlConfigPath",codeqlConfigPath).replace("mavenSettingsFile",mavenSettingsFile).replace("mavenLocalRepositoryDir",mavenLocalRepositoryDir).replace("codeqlBinPath",codeqlBinPath).replace("mavenDir",mavenDir)+";"
         codeqlScanCmd           = "for file in codeqlJavaFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlJavaFilesPath",codeqlJavaFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
         codeqlFinalCMD          = (lombokCmd+codeqlCreateCmd+codeqlScanCmd)
 
     elif inputParameter2 == "js" or inputParameter2 == "javascript":
         cmd                     = inputParameter1 # 获取第一个参数
         cdToRootCmd             = "cd " + str(root_path) + str(getCodeRespName(cmd)) + ";"
-        codeqlCreateCmd         = cdToRootCmd  + "codeqlBinPath database create codeqldatabase --language=javascript  --overwrite".replace("codeqlBinPath",codeqlBinPath)+";"
+        codeqlCreateCmd         = cdToRootCmd  + "codeqlBinPath database create codeqldatabase --language=javascript  --overwrite  --codescanning-config=codeqlConfigPath".replace("codeqlConfigPath",codeqlConfigPath).replace("codeqlBinPath",codeqlBinPath)+";"
         codeqlScanCmd           = "for file in codeqlJSFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlJSFilesPath",codeqlJSFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
         codeqlFinalCMD          = (codeqlCreateCmd+codeqlScanCmd)
 
     elif inputParameter2 == "c" or inputParameter2 == "cpp" or inputParameter2 == "c++" :
         cmd                     = inputParameter1 # 获取第一个参数
         cdToRootCmd             = "cd " + str(root_path) + str(getCodeRespName(cmd)) + ";"
-        codeqlCreateCmd         = cdToRootCmd  + "codeqlBinPath database create codeqldatabase --language=cpp  --command='bash /root/tools/build.sh'   --overwrite".replace("codeqlBinPath",codeqlBinPath)+";"
+        codeqlCreateCmd         = cdToRootCmd  + "codeqlBinPath database create codeqldatabase --language=cpp  --command='bash /root/tools/build.sh'   --overwrite  --codescanning-config=codeqlConfigPath".replace("codeqlConfigPath",codeqlConfigPath).replace("codeqlBinPath",codeqlBinPath)+";"
         codeqlScanCmd           = "for file in codeqlcppFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlcppFilesPath",codeqlcppFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
         codeqlFinalCMD          = (codeqlCreateCmd+codeqlScanCmd)
     
