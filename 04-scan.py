@@ -205,10 +205,10 @@ try:
     finalCMD                        = ""
     projectRootPath                 = str(root_path) + str(getCodeRespName(inputParameter1)) + "/"
     replaceFileContenCmd            =   "cd " + projectRootPath +";"+ getReplaceCommand(inputParameter1,projectRootPath)
-    DependencyCheckOutputName       = str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_"+getBranchName(str(inputParameter1))+"_DependencyCheck扫描结果.html"
+    DependencyCheckOutputName       = str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_"+getBranchName(str(inputParameter1)).replace("/","%252F")+"_DependencyCheck扫描结果.html"
     DependencyCheckCmd              = "sudo dependency-check.sh --project 'myproject' -s  scanPath   -n  --out outPutname".replace("myproject",getCodeRespName(inputParameter1)).replace("outPutname",DependencyCheckOutputName).replace("scanPath",projectRootPath)+";"
     gitCloneCmd                     =  "cd " + str(root_path) + "; sudo  rm -rf "+ str(getCodeRespName(inputParameter1)) + ";"+inputParameter1 +";"
-    codeqlOutName                   = str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_"+getBranchName(str(inputParameter1))+"_codeql扫描结果.txt"
+    codeqlOutName                   = str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_"+getBranchName(str(inputParameter1)).replace("/","%252F")+"_codeql扫描结果.txt"
     codeqlScanCmd                   = ""
     ###################################工具集###################################
     if inputParameter2 == "java":
@@ -238,7 +238,7 @@ try:
 
     msg="++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++运行下面命令：++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\nfinaCMD \n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++运行上面面命令：++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
 
-    trivyOutPutFilename         =  str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_"+ getBranchName(str(inputParameter1)) +"_trivy扫描结果.txt"
+    trivyOutPutFilename         =  str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_"+ getBranchName(str(inputParameter1)).replace("/","%252F") +"_trivy扫描结果.txt"
     trivyOutPutFilePath         = root_path + str(getCodeRespName(inputParameter1)) + "/"+trivyOutPutFilename
     trivyCmd                    =  " "+trivyFilesPath  + " " + projectRootPath + " -o " + trivyOutPutFilePath + ";"
     codeqlDatabasePath          =  root_path + "/" + str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_codeqldatabase"
