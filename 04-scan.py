@@ -128,7 +128,7 @@ def getBranchName(gitCommand):
     gitCommand    = getGitCommandList(gitCommand)
     branchName    = ""
     try:
-        if "git" in gitCommandStr:
+        if "phabricator" in gitCommandStr:
             if "/" in gitCommand[4]:
                 gitCommand[4] = gitCommand[4].replace("/","%252F")
             branchName    = gitCommand[4] 
