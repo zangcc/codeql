@@ -21,6 +21,9 @@ codeqlBinPath                     =    str(con.get('DependencyToolConfigInfo', '
 javaHome                          =    str(con.get('DependencyToolConfigInfo', 'javaHome'))
 javaHomeDir                       =    javaHome.replace("bin/java","")
 javaEnvSetting                    =    "export JAVA_HOME=javaHomeDir;export PATH=$JAVA_HOME/bin:$PATH;export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar".replace("javaHomeDir",javaHomeDir)
+findFileExtensionList             =     con.get('DependencyToolConfigInfo', 'findFileExtension').split(",")
+findKeywordsList                  =     con.get('DependencyToolConfigInfo', 'findKeywords').split(",")
+findCommand                       =     str(con.get('DependencyToolConfigInfo', 'findCommand'))
 codeqlDBCreateSuccFlagList        =     con.get('DependencyToolConfigInfo', 'codeqlDBCreateSuccFlagList').split(",")
 isAtAll                           = str(con.get('DingdingConfigInfo', 'isAtAll'))
 atPersons                         =     con.get('DingdingConfigInfo', 'atPersons').split(",")
@@ -123,6 +126,17 @@ def getCodeRespName(string):
         tempList    = tempStr.split("/")
         projectName = tempList[len(tempList)-1]
         return projectName
+
+def excuteFindCommandRes2File(projectPath,findResOutputFilePath):
+    global findFileExtensionList,findKeywordsList,findCommand
+    for findFileExtension in findFileExtensionList:
+        for findKeywords in findKeywordsList:
+            echoCommand = "echo  '[-] Try to find Keywords: findKeywords in *.findFileExtension files of Projetc: projectPath' >>findResOutputFilePath".replace("findKeywords",findKeywords).replace("findFileExtension",findFileExtension).replace("projectPath",projectPath).replace("findResOutputFilePath",findResOutputFilePath)
+            tempFindCommand = findCommand.replace("findFileExtension",findFileExtension).replace("findKeywords",findKeywords).replace("findResOutputFilePath",findResOutputFilePath).replace("projectPath",projectPath)
+            print("[+] excute command "+ echoCommand)
+            subprocess.call(echoCommand, shell=True) # 返回退出码
+            print("[+] excute command "+ tempFindCommand)
+            subprocess.call(tempFindCommand, shell=True) # 返回退出码
 
 def getBranchName(gitCommand):
     branchName = "main"
@@ -274,6 +288,7 @@ finally:
     codeqlOutFilePath           = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
     scanResultPath              = trivyOutPutFilePath + "\n" + codeqlOutFilePath
     codeqlDatabasePath          = root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase"
+    excuteFindCommandRes2File(projectRootPath,codeqlOutFilePath)
     if inputParameter3 == "":
         if isCodeqlDBCreateSucc(codeqlDatabasePath):
             msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
