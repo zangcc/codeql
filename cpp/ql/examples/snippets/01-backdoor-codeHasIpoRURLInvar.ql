@@ -4,7 +4,7 @@ import cpp
 string domainOrIpRegex() {
    result = "(^(?:\\d{1,3}\\.){3}\\d{1,3})" or 
    result = "^https?://.*?" or 
-   result = "^[\\w\\.]+\\.[a-z]{2,10}"
+   result = "^[a-zA-Z0-9_\\.]+\\.[a-z]{2,10}"
 }
 
 from  Variable var,string loc1

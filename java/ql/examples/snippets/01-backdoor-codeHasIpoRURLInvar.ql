@@ -4,10 +4,15 @@ import java
 string domainOrIpRegex() {
    result = "(^(?:\\d{1,3}\\.){3}\\d{1,3})" or 
    result = "^https?://.*?" or 
-   result = "^[\\w\\.]+\\.[a-z]{2,10}"
+   // result = "^[a-zA-Z0-9_\\.]+\\.[a-z]{2,10}" or
+   result = "^[a-zA-Z0-9_\\.]+\\.[a-z]{2,10}"
 }
 
 from  Variable var,string loc1
-where  var.getAnAssignedValue().toString().regexpMatch(domainOrIpRegex()) and loc1 = var.getLocation().getFile().getAbsolutePath() +"$$" + var.getLocation().getStartLine()+ " 代码中出现了域名或者IP,请手工检查是否可能存在后门：" + var.getAnAssignedValue().toString() 
+where  var.getAnAssignedValue().toString().regexpMatch(domainOrIpRegex()) 
+   and var.isStatic() 
+   and loc1 = var.getLocation().getFile().getAbsolutePath() +"$$" + var.getLocation().getStartLine()+ " 代码中出现了域名或者IP,请手工检查是否可能存在后门：" + var.getAnAssignedValue().toString() 
 
+
+ 
 select loc1

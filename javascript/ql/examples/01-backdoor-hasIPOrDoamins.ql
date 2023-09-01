@@ -4,7 +4,7 @@ import javascript
 string domainOrIpRegex() {
    result = "(^(?:\\d{1,3}\\.){3}\\d{1,3})" or 
    result = "^https?://" or 
-   result = "^[\\w\\.]+\\.[a-z]{2,10}"
+   result = "^[a-zA-Z0-9_\\.]+\\.[a-z]{2,10}"
 }
 
 // 定义一个查询，用来查找代码中的函数调用，其参数是一个字符串字面量，其值可能是一个域名或者IP地址
