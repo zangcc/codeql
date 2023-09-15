@@ -240,6 +240,7 @@ try:
         cmd                     = inputParameter1 # 获取第一个参数
         cdToRootCmd             = "cd " + str(root_path) + str(getCodeRespName(cmd)) + ";"
         codeqlCreateCmd         = cdToRootCmd  + "codeqlBinPath database create codeqldatabase --language=javascript  --overwrite  --codescanning-config=codeqlConfigPath".replace("codeqlConfigPath",codeqlConfigPath).replace("codeqlBinPath",codeqlBinPath)+";"
+        codeqlCreateCmd         = codeqlCreateCmd.replace("codeql-v2.14.5","codeql-v2.13.1") # codeql-v2.13.1版本创建js有问题，暂时使用2.13.1来创建js
         codeqlScanCmd           = "for file in codeqlJSFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlJSFilesPath",codeqlJSFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
         codeqlFinalCMD          = (codeqlCreateCmd+codeqlScanCmd)
 
