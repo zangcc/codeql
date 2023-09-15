@@ -230,10 +230,11 @@ try:
         lombokCommands          = " ; ".join(lombokCommands)
         cmd                     = inputParameter1 # 获取第一个参数
         cdToRootCmd             = "cd " + str(root_path) + str(getCodeRespName(cmd)) + ";"
-        lombokCmd               = cdToRootCmd   +   lombokCommands   + ";"
+        lombokCmd               = lombokCommands   + ";"
+        lombokCmd               = "" # 官方已经支持lombok，所以这里的命令设置为空
         codeqlCreateCmd         = "javaEnvSetting  ;codeqlBinPath database create codeqldatabase --language=java --command='mavenDir/bin/mvn    -gs mavenSettingsFile  clean install   -Dmaven.test.skip -Dmaven.repo.local=mavenLocalRepositoryDir' --overwrite  --codescanning-config=codeqlConfigPath".replace("codeqlConfigPath",codeqlConfigPath).replace("mavenSettingsFile",mavenSettingsFile).replace("mavenLocalRepositoryDir",mavenLocalRepositoryDir).replace("codeqlBinPath",codeqlBinPath).replace("mavenDir",mavenDir)+";"
         codeqlScanCmd           = "for file in codeqlJavaFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlJavaFilesPath",codeqlJavaFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
-        codeqlFinalCMD          = (lombokCmd+codeqlCreateCmd+codeqlScanCmd)
+        codeqlFinalCMD          = (cdToRootCmd + lombokCmd+codeqlCreateCmd+codeqlScanCmd)
 
     elif inputParameter2 == "js" or inputParameter2 == "javascript":
         cmd                     = inputParameter1 # 获取第一个参数
