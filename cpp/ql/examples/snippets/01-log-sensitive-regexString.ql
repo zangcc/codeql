@@ -6,7 +6,7 @@ where
   and exists(int i , string s |
     not fc.getArgument(i) instanceof StringLiteral   and
     s = fc.getArgument(i).toString().trim()  and
-    s.regexpMatch(".*(key|password|secret|vault|arn|param|token|content|mail|ldap|record|response|request|result).*")  and
+    s.regexpMatch(".*(key|password|secret|vault|arn|param|token|content|mail|ldap|record|response|request|result|account).*")  and
     str1 = s
     )
    
