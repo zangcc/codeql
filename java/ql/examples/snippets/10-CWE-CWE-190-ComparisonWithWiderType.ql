@@ -52,7 +52,7 @@ from WideningComparison c, LoopStmt l
 where
   not c.getAnOperand().isCompileTimeConstant() and
   l.getCondition().getAChildExpr*() = c
-select c,c.getLocation().getFile().getAbsolutePath()+":"+c.getLocation().getStartLine()+":"+c.getLocation().getEndLine(),
+select c,c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine(),
   "Comparison between $@ of type " + c.getNarrower().getType().getName() + " and $@ of wider type " +
     c.getWider().getType().getName() + ".", c.getNarrower(), "expression", c.getWider(),
   "expression"

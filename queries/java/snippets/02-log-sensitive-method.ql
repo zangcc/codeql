@@ -25,4 +25,4 @@ from LogMethod lm, MethodAccess ma, Expr arg
 where ma.getMethod() = lm and // 方法调用对应于日志方法
 arg = ma.getAnArgument() and // arg是方法调用的一个参数
 containsKey(arg) // arg包含了特定字符串
-select ma," 文件路径: " + ma.getLocation().getFile().getAbsolutePath() +":" + ma.getLocation().getStartLine()+"  Log里面打印了可能存在敏感信息的参数: "+ arg.toString()
+select ma," 文件路径: " + ma.getLocation().getFile().getAbsolutePath() +"$$" + ma.getLocation().getStartLine()+"  Log里面打印了可能存在敏感信息的参数: "+ arg.toString()

@@ -17,5 +17,5 @@ import DataFlow::PathGraph
 
 from DataFlow::PathNode source, DataFlow::PathNode sink, UnsafeDeserializationConfig conf
 where conf.hasFlowPath(source, sink)
-select sink.getNode().(UnsafeDeserializationSink).getMethodAccess(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select sink.getNode().(UnsafeDeserializationSink).getMethodAccess(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "Unsafe deserialization depends on a $@.", source.getNode(), "user-provided value"

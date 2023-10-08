@@ -20,5 +20,5 @@ where
   input = s.getAnInput() and
   store = s.getAStore() and
   data.flowsTo(input)
-select store,store.getLocation().getFile().getAbsolutePath()+":"+store.getLocation().getStartLine()+"-"+ store.getLocation().getEndLine(), "This stores the 'SharedPreferences' class $@ containing $@ which $@.", s,
+select store,store.getLocation().getFile().getAbsolutePath()+"$$"+store.getLocation().getStartLine()+"-"+ store.getLocation().getEndLine(), "This stores the 'SharedPreferences' class $@ containing $@ which $@.", s,
   s.toString(), data, "sensitive data", input, "was set as a shared preference"

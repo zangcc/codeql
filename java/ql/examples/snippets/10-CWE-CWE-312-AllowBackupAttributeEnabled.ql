@@ -15,4 +15,4 @@ import semmle.code.xml.AndroidManifest
 
 from AndroidApplicationXmlElement androidAppElem
 where androidAppElem.allowsBackup()
-select androidAppElem,androidAppElem.getLocation().getFile().getAbsolutePath()+":"+androidAppElem.getLocation().getStartLine()+":"+androidAppElem.getLocation().getEndLine(), "Backups are allowed in this Android application."
+select androidAppElem,androidAppElem.getLocation().getFile().getAbsolutePath()+"$$"+androidAppElem.getLocation().getStartLine(), "Backups are allowed in this Android application."

@@ -60,5 +60,5 @@ DataFlow::Node getReportingNode(DataFlow::Node sink) {
 
 from DataFlow::PathNode source, DataFlow::PathNode sink, TaintedPathConfig conf
 where conf.hasFlowPath(source, sink)
-select getReportingNode(sink.getNode()), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "This path depends on a $@.",
+select getReportingNode(sink.getNode()), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "This path depends on a $@.",
   source.getNode(), "user-provided value"

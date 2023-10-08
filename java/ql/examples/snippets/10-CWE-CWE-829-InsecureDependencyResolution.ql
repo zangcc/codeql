@@ -23,6 +23,6 @@ predicate isInsecureRepositoryUsage(DeclaredRepository repository) {
 
 from DeclaredRepository repository
 where isInsecureRepositoryUsage(repository)
-select repository,repository.getLocation().getFile().getAbsolutePath()+":"+repository.getLocation().getStartLine()+":"+repository.getLocation().getEndLine(),
+select repository,repository.getLocation().getFile().getAbsolutePath()+"$$"+repository.getLocation().getStartLine(),
   "Downloading or uploading artifacts over insecure protocol (eg. http or ftp) to/from repository " +
     repository.getRepositoryUrl()

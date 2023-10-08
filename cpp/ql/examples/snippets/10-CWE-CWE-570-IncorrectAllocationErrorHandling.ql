@@ -251,4 +251,4 @@ where
     msg = "This allocation cannot return null. $@ is unnecessary." and
     elementString = "This check"
   )
-select newExpr,newExpr.getLocation().getFile().getAbsolutePath()+":"+newExpr.getLocation().getStartLine(), msg, element, elementString
+select newExpr,newExpr.getLocation().getFile().getAbsolutePath()+"$$"+newExpr.getLocation().getStartLine(), msg, element, elementString

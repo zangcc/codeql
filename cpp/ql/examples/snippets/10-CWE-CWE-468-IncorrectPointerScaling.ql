@@ -42,7 +42,7 @@ where
   forall(Expr parent | parent = pointerArithmeticParent+(dest) |
     parent.getFullyConverted().getUnspecifiedType() instanceof PointerType
   )
-select dest,dest.getLocation().getFile().getAbsolutePath()+":"+dest.getLocation().getStartLine(),
+select dest,dest.getLocation().getFile().getAbsolutePath()+"$$"+dest.getLocation().getStartLine(),
   "This pointer might have type $@ (size " + sourceBase.getSize() +
     "), but this pointer arithmetic is done with type " + destType + " (size " + destBase.getSize() +
     ").", sourceLoc, sourceBase.toString()

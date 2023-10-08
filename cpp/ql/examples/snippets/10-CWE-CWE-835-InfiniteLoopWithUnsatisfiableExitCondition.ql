@@ -57,5 +57,5 @@ predicate impossibleEdgeCausesNonTermination(ComparisonOperation cmp, boolean va
 
 from ComparisonOperation cmp, boolean value
 where impossibleEdgeCausesNonTermination(cmp, value)
-select cmp,cmp.getLocation().getFile().getAbsolutePath()+":"+cmp.getLocation().getStartLine(),
+select cmp,cmp.getLocation().getFile().getAbsolutePath()+"$$"+cmp.getLocation().getStartLine(),
   "Function exit is unreachable because this condition is always " + value.toString() + "."

@@ -42,4 +42,4 @@ where
     m.getMethod().getName() = "getInputStream" or
     m.getMethod().getName() = "getOutputStream"
   )
-select m,m.getLocation().getFile().getAbsolutePath()+":"+m.getLocation().getStartLine()+":"+m.getLocation().getEndLine(), "Stream using vulnerable non-SSL " + type + "."
+select m,m.getLocation().getFile().getAbsolutePath()+"$$"+m.getLocation().getStartLine(), "Stream using vulnerable non-SSL " + type + "."

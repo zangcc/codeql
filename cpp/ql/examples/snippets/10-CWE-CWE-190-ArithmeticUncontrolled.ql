@@ -134,6 +134,6 @@ where
   config.hasFlowPath(source, sink) and
   sink.getNode().asExpr() = va and
   missingGuard(va, effect)
-select sink.getNode(), source,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine(), sink,
+select sink.getNode(), source,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), sink,
   "This arithmetic expression depends on an $@, potentially causing an " + effect + ".",
   getExpr(source.getNode()), "uncontrolled value"

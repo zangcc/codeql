@@ -119,4 +119,4 @@ where
   strictcount(DangerousScheme s | exists(schemeCheckOn(root, path, s))) < n
 select schemeCheckOn(root, path, "javascript:"),
   "This check does not consider " +
-    strictconcat(DangerousScheme s | not exists(schemeCheckOn(root, path, s)) | s, " and ") + ".",root.getFile().getAbsolutePath()+":"+root.getFile().getLocation().getStartLine()
+    strictconcat(DangerousScheme s | not exists(schemeCheckOn(root, path, s)) | s, " and ") + ".",root.getFile().getAbsolutePath()+"$$"+root.getFile().getLocation().getStartLine()

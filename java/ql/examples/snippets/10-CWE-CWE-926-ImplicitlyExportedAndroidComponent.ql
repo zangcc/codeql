@@ -14,4 +14,4 @@ import java
 import semmle.code.java.security.ImplicitlyExportedAndroidComponent
 
 from ImplicitlyExportedAndroidComponent impExpAndroidComp
-select impExpAndroidComp,new.getLocation().getFile().getAbsolutePath()+":"+new.getLocation().getStartLine()+"-"+new.getLocation().getEndLine(), "This component is implicitly exported."
+select impExpAndroidComp,new.getLocation().getFile().getAbsolutePath()+"$$"+new.getLocation().getStartLine()+"-", "This component is implicitly exported."

@@ -17,6 +17,6 @@ import semmle.code.java.security.FragmentInjection
 
 from IsValidFragmentMethod m
 where m.isUnsafe()
-select m,m.getLocation().getFile().getAbsolutePath()+":"+m.getLocation().getStartLine()+":"+m.getLocation().getEndLine(),
+select m,m.getLocation().getFile().getAbsolutePath()+"$$"+m.getLocation().getStartLine(),
   "The 'isValidFragment' method always returns true. This makes the exported Activity $@ vulnerable to Fragment Injection.",
   m.getDeclaringType(), m.getDeclaringType().getName()

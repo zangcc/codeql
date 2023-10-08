@@ -22,5 +22,5 @@ where
   fileVariable.getAnAccess() = setWorldWritable.getFileVarAccess() and
   // If the file variable is a parameter, the result should be reported in the caller.
   not fileVariable instanceof Parameter
-select setWorldWritable, setWorldWritable.getLocation().getFile().getAbsolutePath()+":"+setWorldWritable.getLocation().getStartLine()+":"+setWorldWritable.getLocation().getEndLine(),"This sets a file is as world writable, but is read from $@.", readFrom,
+select setWorldWritable, setWorldWritable.getLocation().getFile().getAbsolutePath()+"$$"+setWorldWritable.getLocation().getStartLine(),"This sets a file is as world writable, but is read from $@.", readFrom,
   "statement"

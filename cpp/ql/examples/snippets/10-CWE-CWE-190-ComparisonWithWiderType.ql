@@ -67,7 +67,7 @@ where
     getComparisonSize(small) and
   // ignore loop-invariant smaller variables
   loopVariant(small, l)
-select rel,rel.getLocation().getFile().getAbsolutePath()+":"+rel.getLocation().getStartLine(),
+select rel,rel.getLocation().getFile().getAbsolutePath()+"$$"+rel.getLocation().getStartLine(),
   "Comparison between $@ of type " + small.getType().getName() + " and $@ of wider type " +
     large.getType().getName() + ".", friendlyLoc(small), small.toString(), friendlyLoc(large),
   large.toString()

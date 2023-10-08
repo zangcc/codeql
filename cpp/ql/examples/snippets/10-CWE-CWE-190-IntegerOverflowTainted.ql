@@ -36,4 +36,4 @@ where
   not inSystemMacroExpansion(use) and
   // Avoid double-counting: don't include all the conversions of `use`.
   not use instanceof Conversion
-select use, use.getLocation().getFile().getAbsolutePath()+":"+use.getLocation().getStartLine(),"$@ flows an expression which might " + kind + ".", origin, "User-provided value"
+select use, use.getLocation().getFile().getAbsolutePath()+"$$"+use.getLocation().getStartLine(),"$@ flows an expression which might " + kind + ".", origin, "User-provided value"

@@ -59,6 +59,6 @@ where
   bits = source.getNode().asInstruction().(ConstantValueInstruction).getValue().toInt() and
   bits < minimumBits and
   bits != 0
-select fc, source,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine(), sink,
+select fc, source,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), sink,
   "The key size $@ is less than the recommended key size of " + minimumBits.toString() + " bits.",
   source, bits.toString()

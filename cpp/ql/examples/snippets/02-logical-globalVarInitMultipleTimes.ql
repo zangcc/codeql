@@ -5,7 +5,7 @@
 //         and count1 = count(v.getInitializer()) 
 //         and count1 =1
 //         and v.getFile().getBaseName().regexpMatch("\\.cpp$")
-// select v, "全局变量被初始化了两次,可能存在安全风险", count1,fc.getLocation().getFile().getAbsolutePath() + ":" + fc.getLocation().getStartLine().toString()
+// select v, "全局变量被初始化了两次,可能存在安全风险", count1,fc.getLocation().getFile().getAbsolutePath() + "$$" + fc.getLocation().getStartLine().toString()
 
 
 
@@ -30,4 +30,4 @@ where
   gv.hasInitializer() and
   v.hasInitializer() and
   gv.getParentScope() != v.getParentScope()
-select v,gv,"全局变量在函数内第二次被初始化了,可能存在安全风险" ,gv.getLocation().getFile().getAbsolutePath() + ":" + gv.getLocation().getStartLine().toString()+":"+v.getLocation().getStartLine().toString()
+select v,gv,"全局变量在函数内第二次被初始化了,可能存在安全风险" ,gv.getLocation().getFile().getAbsolutePath() + "$$" + gv.getLocation().getStartLine().toString()+"$$"+v.getLocation().getStartLine().toString()

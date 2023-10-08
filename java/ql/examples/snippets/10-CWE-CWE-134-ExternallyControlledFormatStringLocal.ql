@@ -31,5 +31,5 @@ from
   DataFlow::PathNode source, DataFlow::PathNode sink, StringFormat formatCall,
   ExternallyControlledFormatStringLocalConfig conf
 where conf.hasFlowPath(source, sink) and sink.getNode().asExpr() = formatCall.getFormatArgument()
-select formatCall.getFormatArgument(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "Format string depends on a $@.",
+select formatCall.getFormatArgument(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "Format string depends on a $@.",
   source.getNode(), "user-provided value"

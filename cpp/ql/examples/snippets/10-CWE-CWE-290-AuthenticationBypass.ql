@@ -68,5 +68,5 @@ from Expr subexpression, Expr source, Expr condition, PathNode sourceNode, PathN
 where
   hardCodedAddressInCondition(subexpression, condition) and
   taintedWithPath(source, subexpression, sourceNode, sinkNode)
-select condition, sourceNode, sinkNode,condition.getLocation().getFile().getAbsolutePath()+":"+condition.getLocation().getStartLine(),
+select condition, sourceNode, sinkNode,condition.getLocation().getFile().getAbsolutePath()+"$$"+condition.getLocation().getStartLine(),
   "Untrusted input $@ might be vulnerable to a spoofing attack.", source, source.toString()

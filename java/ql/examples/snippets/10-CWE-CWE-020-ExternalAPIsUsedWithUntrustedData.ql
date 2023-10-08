@@ -13,4 +13,4 @@ import semmle.code.java.security.ExternalAPIs
 import semmle.code.java.dataflow.DataFlow
 
 from ExternalApiUsedWithUntrustedData externalApi
-select externalApi,"ExternalAPIsUsedWithUntrustedData",externalApi.getUntrustedDataNode().getLocation().getFile().getAbsolutePath()+":"+externalApi.getUntrustedDataNode().getLocation().getStartLine()
+select externalApi,"ExternalAPIsUsedWithUntrustedData",externalApi.getUntrustedDataNode().getLocation().getFile().getAbsolutePath()+"$$"+externalApi.getUntrustedDataNode().getLocation().getStartLine()

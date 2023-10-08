@@ -33,6 +33,6 @@ where
   arrayAccess.canThrowOutOfBoundsDueToEmptyArray(sizeExpr, arrayCreation) and
   sizeExpr = sink.getNode().asExpr() and
   any(Conf conf).hasFlowPath(source, sink)
-select arrayAccess.getIndexExpr(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select arrayAccess.getIndexExpr(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "This accesses the $@, but the array is initialized using a $@ which may be zero.", arrayCreation,
   "array", source.getNode(), "user-provided value"

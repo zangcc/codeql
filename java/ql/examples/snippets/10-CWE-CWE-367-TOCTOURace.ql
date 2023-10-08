@@ -120,5 +120,5 @@ where
   not probablyNeverEscapes(r) and
   // The synchronized methods on `Throwable` are not interesting.
   not call1.getCallee().getDeclaringType() instanceof TypeThrowable
-select call,call.getLocation().getFile().getAbsolutePath()+":"+call.getLocation().getStartLine()+"-"+call.getLocation().getEndLine()2, "This uses the state of $@ which $@. But these are not jointly synchronized.", r,
+select call,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine()+"-"+call.getLocation().getEndLine()2, "This uses the state of $@ which $@. But these are not jointly synchronized.", r,
   r.getName(), call1, "is checked at a previous call"

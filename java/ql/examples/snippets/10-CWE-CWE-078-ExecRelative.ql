@@ -23,4 +23,4 @@ where
     arrayStartingWithRelative(argument, command)
   ) and
   not shellBuiltin(command)
-select argument, argument.getLocation().getFile().getAbsolutePath()+":"+argument.getLocation().getStartLine()+":"+argument.getLocation().getEndLine(),"Command with a relative path '" + command + "' is executed."
+select argument, argument.getLocation().getFile().getAbsolutePath()+"$$"+argument.getLocation().getStartLine(),"Command with a relative path '" + command + "' is executed."

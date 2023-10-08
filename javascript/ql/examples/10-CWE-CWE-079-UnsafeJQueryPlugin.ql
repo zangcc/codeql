@@ -22,5 +22,5 @@ from
 where
   cfg.hasFlowPath(source, sink) and
   source.getNode().(Source).getPlugin() = plugin
-select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(), "Potential XSS vulnerability in the $@.", plugin,
+select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), "Potential XSS vulnerability in the $@.", plugin,
   "'$.fn." + plugin.getPluginName() + "' plugin"

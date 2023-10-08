@@ -163,6 +163,6 @@ from File f, BlamedElement firstResult, BlamedElement thisResult
 where
   firstResult.hasFileRank(f, 1) and
   thisResult.hasFileRank(f, _)
-select firstResult,firstResult.getLocation().getFile().getAbsolutePath()+":"+firstResult.getLocation().getStartLine(),
+select firstResult,firstResult.getLocation().getFile().getAbsolutePath()+"$$"+firstResult.getLocation().getStartLine(),
   "This file makes use of a broken or weak cryptographic algorithm (specified by $@).", thisResult,
   thisResult.getDescription()

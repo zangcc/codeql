@@ -41,5 +41,5 @@ where
       value = "The hard-coded value \"" + val + "\""
     )
   else value = "This hard-coded value"
-select source.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(), value + " is used as $@.", sink.getNode(),
+select source.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), value + " is used as $@.", sink.getNode(),
   sink.getNode().(Sink).getKind()

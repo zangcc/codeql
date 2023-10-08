@@ -23,5 +23,5 @@ where
   input.getKind() = "parameter" and
   input.(DataFlow::SourceNode).flowsTo(sensitive) and
   not sensitive.getClassification() = SensitiveDataClassification::id()
-select input,input.getFile().getAbsolutePath()+":"+input.getStartLine(), "$@ for GET requests uses query parameter as sensitive data.", handler,
+select input,input.getFile().getAbsolutePath()+"$$"+input.getStartLine(), "$@ for GET requests uses query parameter as sensitive data.", handler,
   "Route handler"

@@ -50,5 +50,5 @@ where
     )
   ) and
   not queryTaintedBy(query, _, _)
-select query,query.getLocation().getFile().getAbsolutePath()+":"+query.getLocation().getStartLine()+"-"+query.getLocation().getEndLine(), "Query built by concatenation with $@, which may be untrusted.", uncontrolled,
+select query,query.getLocation().getFile().getAbsolutePath()+"$$"+query.getLocation().getStartLine()+"-", "Query built by concatenation with $@, which may be untrusted.", uncontrolled,
   "this expression"

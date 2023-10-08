@@ -27,6 +27,6 @@ from
 where
   cfg.hasFlowPath(source, sink) and
   sink.getNode().(Sink).dependencyInfo(moduleName, dependencyLoc)
-select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(),
+select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(),
   "Prototype pollution caused by merging a $@ using a vulnerable version of $@.", source,
   "user-controlled value", dependencyLoc, moduleName

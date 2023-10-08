@@ -47,5 +47,5 @@ private class VulnerableJHipsterRandomUtilMethod extends Method {
 }
 
 from VulnerableJHipsterRandomUtilMethod method
-select method,method.getLocation().getFile().getAbsolutePath()+":"+method.getLocation().getStartLine()+":"+method.getLocation().getEndLine(),
+select method,method.getLocation().getFile().getAbsolutePath()+"$$"+method.getLocation().getStartLine(),
   "Weak random number generator used in security sensitive method (JHipster CVE-2019-16303)."

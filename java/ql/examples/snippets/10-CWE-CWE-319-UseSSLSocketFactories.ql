@@ -78,4 +78,4 @@ predicate query(MethodAccess m, Method def, int paramNo, string message, Element
 
 from MethodAccess m, Method def, int param, string message, Element evidence
 where query(m, def, param, message, evidence)
-select m,m.getLocation().getFile().getAbsolutePath()+":"+m.getLocation().getStartLine()+":"+m.getLocation().getEndLine(), "Method " + message + ": use an SSL factory."
+select m,m.getLocation().getFile().getAbsolutePath()+"$$"+m.getLocation().getStartLine(), "Method " + message + ": use an SSL factory."

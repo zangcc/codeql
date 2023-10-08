@@ -7,7 +7,7 @@ where ma.getMethod().hasName("invoke") and
   ma.getArgument(0) = cie and
   cie.getType() instanceof TypeRuntime and
   cie.getArgument(0).(StringLiteral).getValue().regexpMatch(".*[a-zA-Z0-9]+.*")
-select ma,ma.getLocation().getFile().getAbsolutePath()+":"+ma.getLocation().getStartLine()+":"+ma.getLocation().getEndLine(), "Possible backdoor reflection invocation."
+select ma,ma.getLocation().getFile().getAbsolutePath()+"$$"+ma.getLocation().getStartLine(), "Possible backdoor reflection invocation."
 
 
 

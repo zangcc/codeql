@@ -47,5 +47,5 @@ class XxeConfiguration extends DataFlow::Configuration {
 
 from XxeConfiguration conf, DataFlow::PathNode source, DataFlow::PathNode sink
 where conf.hasFlowPath(source, sink)
-select sink, source,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine(), sink,
+select sink, source,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), sink,
   "This $@ is not configured to prevent an XML external entity (XXE) attack.", source, "XML parser"

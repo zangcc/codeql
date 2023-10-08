@@ -16,5 +16,5 @@ import DataFlow::PathGraph
 from
   DataFlow::PathNode source, DataFlow::PathNode sink, HardcodedCredentialApiCallConfiguration conf
 where conf.hasFlowPath(source, sink)
-select source.getNode(), source, sink, "Hard-coded value flows to $@.", sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine().getNode(),
+select source.getNode(), source, sink, "Hard-coded value flows to $@.", sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine().getNode(),
   "sensitive API call"

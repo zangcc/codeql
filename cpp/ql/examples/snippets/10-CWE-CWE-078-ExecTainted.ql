@@ -155,7 +155,7 @@ where
   taintCause = sourceNode.getNode().(FlowSource).getSourceType() and
   shellCommand(sinkAsArgumentIndirection(sinkNode.getNode()), callChain) and
   concatResult = sinkNode.getState().(ExecState).getSndNode()
-select sinkAsArgumentIndirection(sinkNode.getNode()), sourceNode, sinkNode,concatResult.getLocation().getFile().getAbsolutePath()+":"+concatResult.getLocation().getStartLine(),
+select sinkAsArgumentIndirection(sinkNode.getNode()), sourceNode, sinkNode,concatResult.getLocation().getFile().getAbsolutePath()+"$$"+concatResult.getLocation().getStartLine(),
   "This argument to an OS command is derived from $@, dangerously concatenated into $@, and then passed to "
     + callChain + ".", sourceNode, "user input (" + taintCause + ")", concatResult,
   concatResult.toString()

@@ -90,4 +90,4 @@ where
   not isFromMacroDefinition(ro) and
   // generally catches false positives where there's a relation between the left and right operands
   not exprIsSubLeftOrLess(sub, DataFlow::exprNode(sub.getRightOperand()))
-select ro, ro.getLocation().getFile().getAbsolutePath()+":"+ro.getLocation().getStartLine(),"Unsigned subtraction can never be negative."
+select ro, ro.getLocation().getFile().getAbsolutePath()+"$$"+ro.getLocation().getStartLine(),"Unsigned subtraction can never be negative."

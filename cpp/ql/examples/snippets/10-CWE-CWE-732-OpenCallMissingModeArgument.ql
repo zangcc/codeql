@@ -15,5 +15,5 @@ import FilePermissions
 
 from FileCreationWithOptionalModeExpr fc
 where not fc.hasModeArgument()
-select fc,fc.getLocation().getFile().getAbsolutePath()+":"+fc.getLocation().getStartLine(),
+select fc,fc.getLocation().getFile().getAbsolutePath()+"$$"+fc.getLocation().getStartLine(),
   "This creates a file without providing a mode argument, which may leak bits from the stack."

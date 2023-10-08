@@ -22,6 +22,6 @@ where
   not exists(DataFlow::PropRead s | s = lSource or s = rSource |
     s.getPropertyName().regexpMatch("(?i).*(csrf|state|token).*")
   )
-select cmp,cmp.getFile().getAbsolutePath()+":"+cmp.getStartLine(),
+select cmp,cmp.getFile().getAbsolutePath()+"$$"+cmp.getStartLine(),
   "This comparison of $@ and $@ is a potential security risk since it is controlled by the user.",
   lSource, lSource.toString(), rSource, rSource.toString()

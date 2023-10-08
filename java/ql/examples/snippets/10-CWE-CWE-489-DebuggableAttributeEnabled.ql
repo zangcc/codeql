@@ -17,4 +17,4 @@ from AndroidApplicationXmlElement androidAppElem
 where
   androidAppElem.isDebuggable() and
   not androidAppElem.getFile().(AndroidManifestXmlFile).isInBuildDirectory()
-select androidAppElem.getAttribute("debuggable"),androidAppElem.getLocation().getFile().getAbsolutePath()+":"+androidAppElem.getLocation().getStartLine()+":"+androidAppElem.getLocation().getEndLine(), "The 'android:debuggable' attribute is enabled."
+select androidAppElem.getAttribute("debuggable"),androidAppElem.getLocation().getFile().getAbsolutePath()+"$$"+androidAppElem.getLocation().getStartLine(), "The 'android:debuggable' attribute is enabled."

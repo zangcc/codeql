@@ -26,5 +26,5 @@ where
   if cfg.isSinkWithHighlight(sink.getNode(), _)
   then cfg.isSinkWithHighlight(sink.getNode(), highlight)
   else highlight = sink.getNode()
-select highlight, source, sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(), "This shell command depends on an uncontrolled $@.", sourceNode,
+select highlight, source, sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), "This shell command depends on an uncontrolled $@.", sourceNode,
   sourceNode.getSourceType()

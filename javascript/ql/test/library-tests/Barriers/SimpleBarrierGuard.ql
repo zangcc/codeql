@@ -30,4 +30,4 @@ class SimpleBarrierGuardNode extends DataFlow::BarrierGuardNode, DataFlow::Invok
 
 from Configuration cfg, DataFlow::Node source, DataFlow::Node sink
 where cfg.hasFlow(source, sink)
-select sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(), source
+select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), source

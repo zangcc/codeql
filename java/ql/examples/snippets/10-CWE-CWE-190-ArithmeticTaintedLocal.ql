@@ -46,6 +46,6 @@ where
   any(ArithmeticTaintedLocalUnderflowConfig c).hasFlowPath(source, sink) and
   underflowSink(exp, sink.getNode().asExpr()) and
   effect = "underflow"
-select exp, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select exp, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "This arithmetic expression depends on a $@, potentially causing an " + effect + ".",
   source.getNode(), "user-provided value"

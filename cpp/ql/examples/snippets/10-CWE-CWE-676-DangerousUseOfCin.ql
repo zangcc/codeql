@@ -234,4 +234,4 @@ where
       forall(Expr w | w = input.getWidthAfter() | w.getValue().toInt() > arraySize)
     )
   )
-select rshift,rshift.getLocation().getFile().getAbsolutePath()+":"+rshift.getLocation().getStartLine(), "Use of 'cin' without specifying the length of the input may be dangerous."
+select rshift,rshift.getLocation().getFile().getAbsolutePath()+"$$"+rshift.getLocation().getStartLine(), "Use of 'cin' without specifying the length of the input may be dangerous."

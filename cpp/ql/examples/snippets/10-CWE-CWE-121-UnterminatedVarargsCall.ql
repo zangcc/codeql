@@ -76,6 +76,6 @@ where
   fc = f.getACallToThisFunction() and
   not normalisedExprValue(f.trailingArgumentIn(fc)) = terminator and
   not f.isWhitelisted()
-select fc,fc.getLocation().getFile().getAbsolutePath()+":"+fc.getLocation().getStartLine(),
+select fc,fc.getLocation().getFile().getAbsolutePath()+"$$"+fc.getLocation().getStartLine(),
   "Calls to $@ should use the value " + terminator + " as a terminator (" + cnt + " of " +
     totalCount + " calls do).", f, f.getQualifiedName()

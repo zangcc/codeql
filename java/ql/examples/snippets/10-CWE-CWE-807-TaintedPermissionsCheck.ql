@@ -66,5 +66,5 @@ from
   DataFlow::PathNode source, DataFlow::PathNode sink, PermissionsConstruction p,
   TaintedPermissionsCheckFlowConfig conf
 where sink.getNode().asExpr() = p.getInput() and conf.hasFlowPath(source, sink)
-select p, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(), "Permissions check depends on a $@.", source.getNode(),
+select p, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "Permissions check depends on a $@.", source.getNode(),
   "user-controlled value"

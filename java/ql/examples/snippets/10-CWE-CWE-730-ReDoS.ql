@@ -22,6 +22,6 @@ where
   ExponentialBackTracking::hasReDoSResult(t, pump, s, prefixMsg) and
   // exclude verbose mode regexes for now
   not t.getRegex().getAMode() = "VERBOSE"
-select t,t.getLocation().getFile().getAbsolutePath()+":"+t.getLocation().getStartLine()+":"+t.getLocation().getEndLine(),
+select t,t.getLocation().getFile().getAbsolutePath()+"$$"+t.getLocation().getStartLine(),
   "This part of the regular expression may cause exponential backtracking on strings " + prefixMsg +
     "containing many repetitions of '" + pump + "'."

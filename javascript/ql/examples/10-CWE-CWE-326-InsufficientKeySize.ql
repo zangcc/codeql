@@ -33,4 +33,4 @@ where
       "Creation of an asymmetric " + algo + "key uses " + size +
         " bits, which is below 2048 and considered breakable."
   )
-select key, key.getFile().getAbsolutePath()+":"+key.getStartLine(),msg
+select key, key.getFile().getAbsolutePath()+"$$"+key.getStartLine(),msg

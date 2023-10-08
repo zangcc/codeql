@@ -60,6 +60,6 @@ where
   subCondition(cond, test, negated) and
   uselessTest(_, test, testIsTrue) and
   testIsTrue = polarity.booleanXor(negated)
-select loop,loop.getLocation().getFile().getAbsolutePath()+":"+loop.getLocation().getStartLine()+":"+loop.getLocation().getEndLine(),
+select loop,loop.getLocation().getFile().getAbsolutePath()+"$$"+loop.getLocation().getStartLine(),
   "Loop might not terminate, as termination depends in part on $@ being " + testIsTrue.booleanNot() +
     " but it is always " + testIsTrue + ".", test, "this test"

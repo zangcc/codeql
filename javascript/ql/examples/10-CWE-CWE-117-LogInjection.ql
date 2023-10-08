@@ -17,5 +17,5 @@ import semmle.javascript.security.dataflow.LogInjectionQuery
 
 from LogInjectionConfiguration config, DataFlow::PathNode source, DataFlow::PathNode sink
 where config.hasFlowPath(source, sink)
-select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(), "Log entry depends on a $@.", source.getNode(),
+select sink.getNode(), source, sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), "Log entry depends on a $@.", source.getNode(),
   "user-provided value"

@@ -17,4 +17,4 @@ class IsVarNameSanitizer extends TaintTracking::AdditionalSanitizerGuardNode, Da
 
 from Configuration xss, Source source, Sink sink
 where xss.hasFlow(source, sink)
-select sink,sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(), "Cross-site scripting vulnerability due to $@.", source, "user-provided value"
+select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), "Cross-site scripting vulnerability due to $@.", source, "user-provided value"

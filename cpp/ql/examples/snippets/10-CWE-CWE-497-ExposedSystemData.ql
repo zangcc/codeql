@@ -42,5 +42,5 @@ where
     alt.asConvertedExpr() = sink.getNode().asExpr() and
     alt != sink.getNode()
   )
-select sink, source, sink, "This operation exposes system data from $@.", source,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine(),
+select sink, source, sink, "This operation exposes system data from $@.", source,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   source.getNode().toString()

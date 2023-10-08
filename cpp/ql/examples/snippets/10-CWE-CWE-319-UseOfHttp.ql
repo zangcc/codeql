@@ -97,4 +97,4 @@ from
 where
   config.hasFlowPath(source, sink) and
   str = source.getNode().asExpr()
-select str, source,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine(), sink, "This URL may be constructed with the HTTP protocol."
+select str, source,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), sink, "This URL may be constructed with the HTTP protocol."

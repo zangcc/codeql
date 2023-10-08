@@ -35,4 +35,4 @@ where
   message =
     "This sets a file's permissions to " + octalFileMode(mode) +
       ", which would make it world-writable."
-select fc,fc.getLocation().getFile().getAbsolutePath()+":"+fc.getLocation().getStartLine(), message
+select fc,fc.getLocation().getFile().getAbsolutePath()+"$$"+fc.getLocation().getStartLine(), message

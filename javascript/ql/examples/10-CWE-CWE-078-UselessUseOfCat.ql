@@ -24,4 +24,4 @@ where
   if cat.isSync()
   then message = " Can be replaced with a call to fs.readFileSync(..)."
   else message = " Can be replaced with a call to fs.readFile(..)."
-select cat.asExpr().(FirstLineOf),cat.getFile().getAbsolutePath()+":"+cat.getStartLine(), "Unnecessary use of `cat` process." + message
+select cat.asExpr().(FirstLineOf),cat.getFile().getAbsolutePath()+"$$"+cat.getStartLine(), "Unnecessary use of `cat` process." + message

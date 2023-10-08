@@ -17,5 +17,5 @@ where
   cookie.isSensitive() and
   cookie.isServerSide() and
   not cookie.isHttpOnly()
-select cookie, cookie.getFile().getAbsolutePath()+":"+cookie.getStartLine(),
+select cookie, cookie.getFile().getAbsolutePath()+"$$"+cookie.getStartLine(),
 "Sensitive server cookie is missing 'httpOnly' flag."

@@ -104,6 +104,6 @@ where
     (exists(on.getNode("discussion")) or exists(on.getNode("discussion_comment"))) and
     isExternalUserControlledDiscussion(context)
   )
-select run,run.getFile().getAbsolutePath()+":"+run.getLocation().getStartLine(),
+select run,run.getFile().getAbsolutePath()+"$$"+run.getLocation().getStartLine(),
   "Potential injection from the " + context +
     " context, which may be controlled by an external user."

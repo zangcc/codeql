@@ -116,5 +116,5 @@ from SslGetPeerCertificateCall getCertCall, ControlFlowNode node
 where
   certNotChecked(getCertCall, node) and
   node instanceof Function // (function exit)
-select getCertCall,getCertCall.getLocation().getFile().getAbsolutePath()+":"+getCertCall.getLocation().getStartLine(),
+select getCertCall,getCertCall.getLocation().getFile().getAbsolutePath()+"$$"+getCertCall.getLocation().getStartLine(),
   "This " + getCertCall.toString() + " is not followed by a call to SSL_get_verify_result."

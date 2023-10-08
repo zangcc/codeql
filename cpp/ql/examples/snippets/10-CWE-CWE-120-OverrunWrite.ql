@@ -31,6 +31,6 @@ where
   // we can deduce that too much data may be copied (even without
   // long '%f' conversions)
   estimated > destSize
-select bw,bw.getLocation().getFile().getAbsolutePath()+":"+bw.getLocation().getStartLine(),
+select bw,bw.getLocation().getFile().getAbsolutePath()+"$$"+bw.getLocation().getStartLine(),
   "This '" + bw.getBWDesc() + "' operation requires " + estimated +
     " bytes but the destination is only " + destSize + " bytes."

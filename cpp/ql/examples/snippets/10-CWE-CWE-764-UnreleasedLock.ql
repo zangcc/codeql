@@ -82,4 +82,4 @@ where
   exit.getEnd() = c and
   lock = src.getANode() and
   lock = t.getLockAccess()
-select lock,lock.getLocation().getFile().getAbsolutePath()+":"+lock.getLocation().getStartLine(), "This lock might not be unlocked or might be locked more times than it is unlocked."
+select lock,lock.getLocation().getFile().getAbsolutePath()+"$$"+lock.getLocation().getStartLine(), "This lock might not be unlocked or might be locked more times than it is unlocked."

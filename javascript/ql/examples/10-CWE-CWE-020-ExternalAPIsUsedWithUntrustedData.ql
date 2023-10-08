@@ -12,6 +12,6 @@ import javascript
 import semmle.javascript.security.dataflow.ExternalAPIUsedWithUntrustedDataQuery
 
 from ExternalApiUsedWithUntrustedData externalApi
-select externalApi,"ExternalAPIsUsedWithUntrustedData",externalApi.getUntrustedDataNode().getFile().getAbsolutePath()+":"+externalApi.getUntrustedDataNode().getStartLine(), count(externalApi.getUntrustedDataNode()) as numberOfUses,
+select externalApi,"ExternalAPIsUsedWithUntrustedData",externalApi.getUntrustedDataNode().getFile().getAbsolutePath()+"$$"+externalApi.getUntrustedDataNode().getStartLine(), count(externalApi.getUntrustedDataNode()) as numberOfUses,
   externalApi.getNumberOfUntrustedSources() as numberOfUntrustedSources order by
     numberOfUntrustedSources desc

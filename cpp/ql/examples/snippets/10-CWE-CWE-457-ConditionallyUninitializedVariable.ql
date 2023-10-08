@@ -28,6 +28,6 @@ where
       then defined = "externally defined (SAL) "
       else defined = "externally defined (CSV) "
   )
-select call,call.getFile().getAbsolutePath()+":"+call.getFile().getLocation().getStartLine(),
+select call,call.getFile().getAbsolutePath()+"$$"+call.getFile().getLocation().getStartLine(),
   "The status of this call to " + defined +
     "$@ is not checked, potentially leaving $@ uninitialized.", f, f.getName(), v, v.getName()

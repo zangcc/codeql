@@ -57,6 +57,6 @@ private class FileCreationSink extends DataFlow::Node {
 
 from PathNode source, PathNode sink
 where any(ZipSlipConfiguration c).hasFlowPath(source, sink)
-select source.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select source.getNode(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "Unsanitized archive entry, which may contain '..', is used in a $@.", sink.getNode(),
   "file system operation"

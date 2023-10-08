@@ -24,6 +24,6 @@ where
   conditionControlsMethod(m, e) and
   sink.getNode().asExpr() = e and
   conf.hasFlowPath(source, sink)
-select m, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select m, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "Sensitive method may not be executed depending on a $@, which flows from $@.", e,
   "this condition", source.getNode(), "user-controlled value"

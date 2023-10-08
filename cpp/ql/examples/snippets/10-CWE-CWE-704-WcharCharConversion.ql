@@ -25,6 +25,6 @@ where
     w = e2.getUnspecifiedType().(PointerType) and
     c = e1.getUnspecifiedType().(PointerType)
   )
-select e1,e1.getLocation().getFile().getAbsolutePath()+":"+e1.getLocation().getStartLine(),
+select e1,e1.getLocation().getFile().getAbsolutePath()+"$$"+e1.getLocation().getStartLine(),
   "Conversion from " + e1.getType().toString() + " to " + e2.getType().toString() +
     ". Use of invalid string can lead to undefined behavior."

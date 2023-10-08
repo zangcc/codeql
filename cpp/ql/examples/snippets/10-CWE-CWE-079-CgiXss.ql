@@ -43,5 +43,5 @@ class Configuration extends TaintTrackingConfiguration {
 
 from QueryString query, Element printedArg, PathNode sourceNode, PathNode sinkNode
 where taintedWithPath(query, printedArg, sourceNode, sinkNode)
-select printedArg, sourceNode, sinkNode,printedArg.getLocation().getFile().getAbsolutePath()+":"+printedArg.getLocation().getStartLine(), "Cross-site scripting vulnerability due to $@.", query,
+select printedArg, sourceNode, sinkNode,printedArg.getLocation().getFile().getAbsolutePath()+"$$"+printedArg.getLocation().getStartLine(), "Cross-site scripting vulnerability due to $@.", query,
   "this query data"

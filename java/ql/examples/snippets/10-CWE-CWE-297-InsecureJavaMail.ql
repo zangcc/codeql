@@ -21,4 +21,4 @@ where
   isInsecureMailPropertyConfig(ma.getArgument(0).(VarAccess).getVariable())
   or
   enablesEmailSsl(ma) and not hasSslCertificateCheck(ma.getQualifier().(VarAccess).getVariable())
-select ma,ma.getLocation().getFile().getAbsolutePath()+":"+ma.getLocation().getStartLine()+"-"+ ma.getLocation().getEndLine(), "Java mailing has insecure SSL configuration."
+select ma,ma.getLocation().getFile().getAbsolutePath()+"$$"+ma.getLocation().getStartLine()+"-"+ ma.getLocation().getEndLine(), "Java mailing has insecure SSL configuration."

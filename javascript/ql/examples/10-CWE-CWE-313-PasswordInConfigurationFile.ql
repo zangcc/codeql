@@ -32,4 +32,4 @@ where
     // `password=%s` and `password==`
     pwd = val.regexpCapture("(?is).*password\\s*=\\s*(?!;|\"?[$`]|%s|=|\\w+\\(.+\\))(\\S+).*", 1)
   )
-select valElement.(FirstLineOf), valElement.getFile().getAbsolutePath()+":"+valElement.getStartLine(),"Hard-coded password '" + pwd + "' in configuration file."
+select valElement.(FirstLineOf), valElement.getFile().getAbsolutePath()+"$$"+valElement.getStartLine(),"Hard-coded password '" + pwd + "' in configuration file."

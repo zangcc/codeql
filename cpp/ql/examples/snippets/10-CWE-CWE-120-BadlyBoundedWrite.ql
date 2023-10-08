@@ -26,6 +26,6 @@ where
   bw.hasExplicitLimit() and // has an explicit size limit
   destSize = getBufferSize(bw.getDest(), _) and
   bw.getExplicitLimit() > destSize // but it's larger than the destination
-select bw,bw.getLocation().getFile().getAbsolutePath()+":"+bw.getLocation().getStartLine(),
+select bw,bw.getLocation().getFile().getAbsolutePath()+"$$"+bw.getLocation().getStartLine(),
   "This '" + bw.getBWDesc() + "' operation is limited to " + bw.getExplicitLimit() +
     " bytes but the destination is only " + destSize + " bytes."

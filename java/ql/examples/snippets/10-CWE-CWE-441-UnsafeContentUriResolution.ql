@@ -18,6 +18,6 @@ import DataFlow::PathGraph
 
 from DataFlow::PathNode src, DataFlow::PathNode sink
 where any(UnsafeContentResolutionConf c).hasFlowPath(src, sink)
-select sink.getNode(), src, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select sink.getNode(), src, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "This ContentResolver method that resolves a URI depends on a $@.", src.getNode(),
   "user-provided value"

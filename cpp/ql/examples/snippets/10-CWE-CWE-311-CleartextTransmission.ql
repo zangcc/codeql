@@ -263,4 +263,4 @@ where
     msg =
       "This operation receives into '" + sink.toString() +
         "', which may put unencrypted sensitive data into $@."
-select networkSendRecv, source, sink, msg, source,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine(), source.getNode().toString()
+select networkSendRecv, source, sink, msg, source,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), source.getNode().toString()

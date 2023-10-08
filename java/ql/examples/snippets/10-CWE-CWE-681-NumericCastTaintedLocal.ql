@@ -45,6 +45,6 @@ where
   sink.getNode().asExpr() = tainted and
   conf.hasFlowPath(source, sink) and
   not exists(RightShiftOp e | e.getShiftedVariable() = tainted.getVariable())
-select exp, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+":"+sink.getNode().getLocation().getStartLine()+"-"+sink.getNode().getLocation().getEndLine(),
+select exp, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "This cast to a narrower type depends on a $@, potentially causing truncation.", source.getNode(),
   "user-provided value"

@@ -33,6 +33,6 @@ from string processOperation, Expr arg, Expr source, PathNode sourceNode, PathNo
 where
   isProcessOperationExplanation(arg, processOperation) and
   taintedWithPath(source, arg, sourceNode, sinkNode)
-select arg, sourceNode, sinkNode,arg.getLocation().getFile().getAbsolutePath()+":"+arg.getLocation().getStartLine(),
+select arg, sourceNode, sinkNode,arg.getLocation().getFile().getAbsolutePath()+"$$"+arg.getLocation().getStartLine(),
   "The value of this argument may come from $@ and is being passed to " + processOperation + ".",
   source, source.toString()

@@ -20,4 +20,4 @@ where
   call.getCallee() = target and
   descriptor = target.getDeclaringType().getQualifiedName() + "." + target.getName() and
   dangerousMethod(descriptor)
-select call,call.getLocation().getFile().getAbsolutePath()+":"+call.getLocation().getStartLine()+"-"+call.getLocation().getEndLine(), "Call to " + descriptor + " is potentially dangerous."
+select call,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine()+"-", "Call to " + descriptor + " is potentially dangerous."

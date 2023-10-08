@@ -17,5 +17,5 @@ import semmle.javascript.security.dataflow.TemplateObjectInjectionQuery
 
 from DataFlow::Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where cfg.hasFlowPath(source, sink)
-select sink.getNode(), source, sink, sink.getNode().getFile().getAbsolutePath()+":"+sink.getNode().getStartLine(),"Template object depends on a $@.", source.getNode(),
+select sink.getNode(), source, sink, sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(),"Template object depends on a $@.", source.getNode(),
   "user-provided value"
