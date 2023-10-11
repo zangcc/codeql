@@ -84,6 +84,21 @@ def read_txt_files(folder_path):
             re.compile("传入的参数: workspaceKey(.*)"), 
             re.compile("传入的参数: timestamp(.*)"), 
             re.compile("传入的参数: workspacceKey(.*)"),
+            re.compile("Round3BCMessage(.*)"),          #2023-10.11
+            re.compile("ecdsa_vault(.*)"), 
+            re.compile("eddsa_vault(.*)"), 
+            re.compile("eddsa_vault(.*)"), 
+            re.compile("StrArray.elements(.*)"), 
+            re.compile("composite_key.Party(.*)"), 
+            re.compile("Round2P2PMessage(.*)"), 
+            re.compile("Round1BCMessage(.*)"), 
+            re.compile("Round0BCMessage(.*)"), 
+            re.compile("Round2BCMessage(.*)"), 
+            re.compile("Round1P2PMessage(.*)"), 
+            re.compile("multi_party_ecdsa(.*)"), 
+            re.compile("multi_party_eddsa(.*)"),
+
+            
         ]
         for pattern in patterns:
             if pattern.search(line):
