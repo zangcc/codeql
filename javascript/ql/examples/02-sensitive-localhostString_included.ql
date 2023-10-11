@@ -5,4 +5,6 @@ from ArrayExpr array, StringLiteral str
 where
 str = array.getAnElement() and
 (str.getValue().matches("%localhost%") or str.getValue().matches("%http://localhost%"))
-select "数组值中存在localhost,请手工检查是否敏感:",array,array.getLocation()
+
+select array.getLocation().getFile().getAbsolutePath() +"$$" + array.getLocation().getStartLine()+"  数组值中存在localhost,请手工检查是否敏感: "+array
+
