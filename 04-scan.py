@@ -283,7 +283,7 @@ try:
 
 
     # finalCMD                    =  gitCloneCmd + "sudo bash -c '''" + finalCMD + "'''"
-    finalCMD                    = finalCMD +";"+ codeqlResFilterCommand + ";" + trivyResFilterCommand
+    finalCMD                    = finalCMD + codeqlResFilterCommand + ";" + trivyResFilterCommand
     msg                         =  msg.replace("finaCMD",finalCMD)
     print(msg)
     returned_value              = subprocess.call(finalCMD, shell=True) # 返回退出码
