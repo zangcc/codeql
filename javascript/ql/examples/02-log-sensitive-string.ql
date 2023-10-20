@@ -11,6 +11,6 @@ where
     not call.getArgument(i) instanceof StringLiteral and // 判断参数是否是字符串字面量
     tempStr = call.getArgument(i).toString()) and // 把参数的字符串赋值给临时字符串变量
   // 获取调用的位置
-  loc = call.getLocation().getFile().getAbsolutePath() + ":" + call.getLocation().getStartLine() // 把调用的文件路径和行号赋值给位置变量
+  loc = call.getLocation().getFile().getAbsolutePath() + "$$" + call.getLocation().getStartLine() // 把调用的文件路径和行号赋值给位置变量
 
 select call.getCallee().toString() + "()","打印了可能存在敏感信息的变量: "+tempStr, " "+loc // 输出调用的函数名，打印的敏感信息变量和位置
