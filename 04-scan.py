@@ -24,11 +24,13 @@ javaEnvSetting                    =    "export JAVA_HOME=javaHomeDir;export PATH
 findFileExtensionList             =     con.get('DependencyToolConfigInfo', 'findFileExtension').split(",")
 findKeywordsList                  =     con.get('DependencyToolConfigInfo', 'findKeywords').split(",")
 findCommand                       =     str(con.get('DependencyToolConfigInfo', 'findCommand'))
+codeqlResFilterCommand            =     str(con.get('DependencyToolConfigInfo', 'codeqlResFilterCommand'))
+trivyResFilterCommand             =     str(con.get('DependencyToolConfigInfo', 'trivyResFilterCommand'))
+codeqlFilteredNewDirName          =     str(con.get('DependencyToolConfigInfo', 'codeqlFilteredNewDirName'))
+trivyFilteredNewDirName           =     str(con.get('DependencyToolConfigInfo', 'trivyFilteredNewDirName'))
 codeqlDBCreateSuccFlagList        =     con.get('DependencyToolConfigInfo', 'codeqlDBCreateSuccFlagList').split(",")
 isAtAll                           = str(con.get('DingdingConfigInfo', 'isAtAll'))
 atPersons                         =     con.get('DingdingConfigInfo', 'atPersons').split(",")
-
-
 ###################################工具集###################################
 
 def writeContent2File(content,filePath):
@@ -260,6 +262,11 @@ try:
     codeqlDatabasePath          =  root_path + "/" + str(getCurrentTime())+"_"+str(getCodeRespName(inputParameter1))+"_codeqldatabase"
     mvCodeqlDatabaseDirCmd1     =  "rm -rf "+ codeqlDatabasePath + ";mv " + projectRootPath + "/codeqldatabase " + codeqlDatabasePath+";"
     mvCodeqlDatabaseDirCmd2     =  "rm -rf "+ root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase" +";mv " + codeqlDatabasePath + " " + root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase;"
+    projectPath                 = root_path + "/" + str(getCodeRespName(inputParameter1))
+    codeqlResFilterCommand      = codeqlResFilterCommand.replace("codeqlResDir",projectPath)
+    trivyResFilterCommand       = trivyResFilterCommand.replace("trivyResDir",projectPath)
+    codeqlFilteredFilePath      =  projectPath + "/" + codeqlFilteredNewDirName + "/" + codeqlOutName
+    trivyFilteredFilePath       =  projectPath + "/" + trivyFilteredNewDirName + "/" + trivyOutPutFilename
 
     if "git" in inputParameter1 and "clone" in inputParameter1:
         if inputParameter3 == "":
@@ -276,6 +283,7 @@ try:
 
 
     # finalCMD                    =  gitCloneCmd + "sudo bash -c '''" + finalCMD + "'''"
+    finalCMD                    = finalCMD +";"+ codeqlResFilterCommand + ";" + trivyResFilterCommand
     msg                         =  msg.replace("finaCMD",finalCMD)
     print(msg)
     returned_value              = subprocess.call(finalCMD, shell=True) # 返回退出码
@@ -289,17 +297,22 @@ finally:
     trivyOutPutFilePath         = root_path + str(getCodeRespName(inputParameter1)) + "/"+trivyOutPutFilename
     codeqlOutFilePath           = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
     scanResultPath              = trivyOutPutFilePath + "\n" + codeqlOutFilePath
+    scanResultFilteredPath      = trivyFilteredFilePath + "\n" +  codeqlFilteredFilePath
     codeqlDatabasePath          = root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase"
     excuteFindCommandRes2File(projectRootPath,codeqlOutFilePath)
     if inputParameter3 == "":
         if isCodeqlDBCreateSucc(codeqlDatabasePath):
-            msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
+            msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[原始扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)+ "\n[过滤的扫描结果]: \nscanResultFilteredPath".replace("scanResultFilteredPath",scanResultFilteredPath)
             tempContent                 = trivyOutPutFilePath + "\n" +codeqlOutFilePath
+            tempContent1                = trivyFilteredFilePath + "\n" + codeqlFilteredFilePath
             writeContent2File(tempContent,scanResFileNamePath)
+            writeContent2File(tempContent1,scanResFileNamePath)
+
         else:
-            msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:❌\n[失败原因]:codeql数据库创建失败!\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)
+            msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:❌\n[失败原因]:codeql数据库创建失败!\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[原始扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)+ "\n[过滤的扫描结果]: \nscanResultFilteredPath".replace("scanResultFilteredPath",scanResultFilteredPath)
     else:
-        msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[扫描结果]: \nscanResultPath".replace("scanResultPath",trivyOutPutFilePath)
+        msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[原始扫描结果]: \nscanResultPath".replace("scanResultPath",trivyOutPutFilePath)+ "\n[过滤的扫描结果]: \nscanResultFilteredPath".replace("scanResultFilteredPath",scanResultFilteredPath)
         writeContent2File(trivyOutPutFilePath,scanResFileNamePath)
+        writeContent2File(trivyFilteredFilePath,scanResFileNamePath)
     
     sendDingMessage(msg,isAtAll,atPersons)
