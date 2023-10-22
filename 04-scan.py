@@ -172,7 +172,7 @@ def getReplaceCommand(gitCommand,projectRootPath):
     gitCommandStr    = str(gitCommand)
     gitCommand       = getGitCommandList(gitCommand)
 
-    replaceCommand   = "find . -maxdepth 1 -type f -name '*.txt' -exec sed -i '' -e 's#projectRootPath#repositoryAddress#g' -e 's#\$\$#repositoryType#g' {} \;"
+    replaceCommand   = "find . -maxdepth 1 -type f -name '*.txt' -exec sed -i '' -e 's#projectRootPath#repositoryAddress#g' -e 's#\$\$#repositoryType#g' {} \;;"
     branchName       = getBranchName(gitCommandStr)
 
     if "gitlab" in gitCommandStr:
@@ -298,6 +298,7 @@ finally:
     codeqlOutFilePath           = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
     scanResultPath              = trivyOutPutFilePath + "\n" + codeqlOutFilePath
     scanResultFilteredPath      = trivyFilteredFilePath + "\n" +  codeqlFilteredFilePath
+    scanResultFilteredPath      = scanResultFilteredPath.replace("扫描结果.txt","扫描结果_report.txt")
     codeqlDatabasePath          = root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase"
     excuteFindCommandRes2File(projectRootPath,codeqlOutFilePath)
     if inputParameter3 == "":
