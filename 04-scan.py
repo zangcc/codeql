@@ -266,7 +266,9 @@ try:
     codeqlResFilterCommand      = codeqlResFilterCommand.replace("codeqlResDir",projectPath)
     trivyResFilterCommand       = trivyResFilterCommand.replace("trivyResDir",projectPath)
     codeqlFilteredFilePath      =  projectPath + "/" + codeqlFilteredNewDirName + "/" + codeqlOutName
+    codeqlFilteredFilePath      =  codeqlFilteredFilePath.replace("扫描结果.txt","扫描结果_report.txt")
     trivyFilteredFilePath       =  projectPath + "/" + trivyFilteredNewDirName + "/" + trivyOutPutFilename
+    trivyFilteredFilePath       = trivyFilteredFilePath.replace("扫描结果.txt","扫描结果_report.txt")
 
     if "git" in inputParameter1 and "clone" in inputParameter1:
         if inputParameter3 == "":
@@ -298,7 +300,7 @@ finally:
     codeqlOutFilePath           = root_path + str(getCodeRespName(inputParameter1)) + "/"+codeqlOutName
     scanResultPath              = trivyOutPutFilePath + "\n" + codeqlOutFilePath
     scanResultFilteredPath      = trivyFilteredFilePath + "\n" +  codeqlFilteredFilePath
-    scanResultFilteredPath      = scanResultFilteredPath.replace("扫描结果.txt","扫描结果_report.txt")
+    # scanResultFilteredPath      = scanResultFilteredPath.replace("扫描结果.txt","扫描结果_report.txt")
     codeqlDatabasePath          = root_path +str(getCodeRespName(inputParameter1)) +"/codeqldatabase"
     excuteFindCommandRes2File(projectRootPath,codeqlOutFilePath)
     if inputParameter3 == "":
