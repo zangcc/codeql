@@ -314,7 +314,7 @@ finally:
         else:
             msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:❌\n[失败原因]:codeql数据库创建失败!\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[原始扫描结果]: \nscanResultPath".replace("scanResultPath",scanResultPath)+ "\n[过滤的扫描结果]: \nscanResultFilteredPath".replace("scanResultFilteredPath",scanResultFilteredPath)
     else:
-        msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[原始扫描结果]: \nscanResultPath".replace("scanResultPath",trivyOutPutFilePath)+ "\n[过滤的扫描结果]: \nscanResultFilteredPath".replace("scanResultFilteredPath",scanResultFilteredPath)
+        msg                         = "[扫描项目]:getCodeRespName\n[分支名称]:branchName\n[扫描状态]:✅\n[扫描耗时]:".replace("branchName",getBranchName(inputParameter1)).replace("getCodeRespName",str(getCodeRespName(inputParameter1))) +totalTime + "\n[原始扫描结果]: \nscanResultPath".replace("scanResultPath",trivyOutPutFilePath)+ "\n[过滤的扫描结果]: \nscanResultFilteredPath".replace("scanResultFilteredPath",trivyFilteredFilePath)
         writeContent2File(trivyOutPutFilePath,scanResFileNamePath)
         writeContent2File(trivyFilteredFilePath,scanResFileNamePath)
     
