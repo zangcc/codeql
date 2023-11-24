@@ -11,6 +11,7 @@ scanResFileNamePath               =    root_path + "/" + "scanRes.txt"
 codeqlJavaFilesPath               =    str(con.get('DependencyToolConfigInfo', 'codeqlJavaFilesPath'))
 codeqlJSFilesPath                 =    str(con.get('DependencyToolConfigInfo', 'codeqlJSFilesPath'))
 codeqlcppFilesPath                =    str(con.get('DependencyToolConfigInfo', 'codeqlcppFilesPath'))
+codeqlpyFilesPath                 =    str(con.get('DependencyToolConfigInfo', 'codeqlpyFilesPath'))
 trivyFilesPath                    =    str(con.get('DependencyToolConfigInfo', 'trivyFilesPath'))
 codeqlConfigPath                  =    str(con.get('DependencyToolConfigInfo', 'codeqlConfigPath'))
 mavenDir                          =    str(con.get('DependencyToolConfigInfo', 'mavenDir'))
@@ -251,6 +252,13 @@ try:
         cdToRootCmd             = "cd " + str(root_path) + str(getCodeRespName(cmd)) + ";"
         codeqlCreateCmd         = cdToRootCmd  + "codeqlBinPath database create codeqldatabase --language=cpp  --command='bash /root/tools/build.sh'   --overwrite  --codescanning-config=codeqlConfigPath".replace("codeqlConfigPath",codeqlConfigPath).replace("codeqlBinPath",codeqlBinPath)+";"
         codeqlScanCmd           = "for file in codeqlcppFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlcppFilesPath",codeqlcppFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
+        codeqlFinalCMD          = (codeqlCreateCmd+codeqlScanCmd)
+
+    elif inputParameter2 == "python" or inputParameter2 == "py" or inputParameter2 == "python3" or inputParameter2 == "python2" or inputParameter2 == "py3" or inputParameter2 == "py2" :
+        cmd                     = inputParameter1 # 获取第一个参数
+        cdToRootCmd             = "cd " + str(root_path) + str(getCodeRespName(cmd)) + ";"
+        codeqlCreateCmd         = cdToRootCmd  + "codeqlBinPath database create codeqldatabase --language=python  --source-root=./  --overwrite  --codescanning-config=codeqlConfigPath".replace("codeqlConfigPath",codeqlConfigPath).replace("codeqlBinPath",codeqlBinPath)+";"
+        codeqlScanCmd           = "for file in codeqlpyFilesPath*.ql; do sudo codeqlBinPath query run --database=codeqldatabase \"$file\">>codeqlOutName; done".replace("codeqlOutName",codeqlOutName).replace("codeqlpyFilesPath",codeqlpyFilesPath).replace("codeqlBinPath",codeqlBinPath)+";"
         codeqlFinalCMD          = (codeqlCreateCmd+codeqlScanCmd)
     
 
