@@ -19,19 +19,23 @@ module ReflectedXss {
   /** A sanitizer for reflected XSS vulnerabilities. */
   abstract class Sanitizer extends DataFlow::Node { }
 
+  /**
+   * DEPRECATED: Use `Sanitizer` instead.
+   *
+   * A sanitizer guard for reflected XSS vulnerabilities.
+   */
+  abstract deprecated class SanitizerGuard extends DataFlow::BarrierGuard { }
+
   /** A shared XSS sanitizer as a sanitizer for reflected XSS. */
   private class SharedXssSanitizer extends Sanitizer instanceof SharedXss::Sanitizer { }
 
-  /**
-   * A request.Cookie method returns the request cookie, which is not user controlled in reflected XSS context.
-   */
-  class CookieSanitizer extends Sanitizer {
-    CookieSanitizer() {
-      exists(Method m, DataFlow::CallNode call | call = m.getACall() |
-        m.hasQualifiedName("net/http", "Request", "Cookie") and
-        this = call.getResult(0)
-      )
-    }
+  /** A shared XSS sanitizer guard as a sanitizer guard for reflected XSS. */
+  deprecated private class SharedXssSanitizerGuard extends SanitizerGuard {
+    SharedXss::SanitizerGuard self;
+
+    SharedXssSanitizerGuard() { this = self }
+
+    override predicate checks(Expr e, boolean b) { self.checks(e, b) }
   }
 
   /**

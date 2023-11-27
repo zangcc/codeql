@@ -28,7 +28,7 @@ class SystemFunction extends FunctionWithWrappers instanceof CommandExecutionFun
  */
 class VarargsExecFunctionCall extends FunctionCall {
   VarargsExecFunctionCall() {
-    this.getTarget()
+    getTarget()
         .hasGlobalName([
             "execl", "execle", "execlp",
             // Windows
@@ -40,7 +40,7 @@ class VarargsExecFunctionCall extends FunctionCall {
 
   /** Whether the last argument to the function is an environment pointer */
   predicate hasEnvironmentArgument() {
-    this.getTarget().hasGlobalName(["execle", "_execle", "_execlpe", "_wexecle", "_wexeclpe"])
+    getTarget().hasGlobalName(["execle", "_execle", "_execlpe", "_wexecle", "_wexeclpe"])
   }
 
   /**
@@ -49,27 +49,25 @@ class VarargsExecFunctionCall extends FunctionCall {
    */
   Expr getCommandArgument(int idx) {
     exists(int underlyingIdx |
-      result = this.getArgument(underlyingIdx) and
-      underlyingIdx > this.getCommandIdx() and
+      result = getArgument(underlyingIdx) and
+      underlyingIdx > getCommandIdx() and
       (
-        underlyingIdx < this.getNumberOfArguments() - 1 or
-        not this.hasEnvironmentArgument()
+        underlyingIdx < getNumberOfArguments() - 1 or
+        not hasEnvironmentArgument()
       ) and
-      idx = underlyingIdx - this.getCommandIdx() - 1
+      idx = underlyingIdx - getCommandIdx() - 1
     )
   }
 
   /** The expression denoting the program to execute */
-  Expr getCommand() { result = this.getArgument(this.getCommandIdx()) }
+  Expr getCommand() { result = getArgument(getCommandIdx()) }
 
   /**
    * The index of the command. The spawn variants start with a mode, whereas
    * all the other ones start with the command.
    */
   private int getCommandIdx() {
-    if this.getTarget().getName().matches(["\\_spawn%", "\\_wspawn%"])
-    then result = 1
-    else result = 0
+    if getTarget().getName().matches(["\\_spawn%", "\\_wspawn%"]) then result = 1 else result = 0
   }
 }
 
@@ -80,7 +78,7 @@ class VarargsExecFunctionCall extends FunctionCall {
  */
 class ArrayExecFunctionCall extends FunctionCall {
   ArrayExecFunctionCall() {
-    this.getTarget()
+    getTarget()
         .hasGlobalName([
             "execv", "execvp", "execvpe", "execve", "fexecve",
             // Windows variants
@@ -91,19 +89,17 @@ class ArrayExecFunctionCall extends FunctionCall {
   }
 
   /** The argument with the array of command arguments */
-  Expr getArrayArgument() { result = this.getArgument(this.getCommandIdx() + 1) }
+  Expr getArrayArgument() { result = getArgument(getCommandIdx() + 1) }
 
   /** The expression denoting the program to execute */
-  Expr getCommand() { result = this.getArgument(this.getCommandIdx()) }
+  Expr getCommand() { result = getArgument(getCommandIdx()) }
 
   /**
    * The index of the command. The spawn variants start with a mode, whereas
    * all the other ones start with the command.
    */
   private int getCommandIdx() {
-    if this.getTarget().getName().matches(["\\_spawn%", "\\_wspawn%"])
-    then result = 1
-    else result = 0
+    if getTarget().getName().matches(["\\_spawn%", "\\_wspawn%"]) then result = 1 else result = 0
   }
 }
 

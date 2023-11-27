@@ -56,7 +56,7 @@ class Library extends LibraryT {
     result = "unknown"
   }
 
-  string toString() { result = this.getName() + "-" + this.getVersion() }
+  string toString() { result = getName() + "-" + getVersion() }
 
   File getAFile() {
     exists(LibraryElement lib |

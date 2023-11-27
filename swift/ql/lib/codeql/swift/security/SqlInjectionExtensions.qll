@@ -14,18 +14,14 @@ import codeql.swift.dataflow.ExternalFlow
 abstract class SqlInjectionSink extends DataFlow::Node { }
 
 /**
- * A barrier for SQL injection vulnerabilities.
+ * A sanitizer for SQL injection vulnerabilities.
  */
-abstract class SqlInjectionBarrier extends DataFlow::Node { }
+abstract class SqlInjectionSanitizer extends DataFlow::Node { }
 
 /**
- * A unit class for adding additional flow steps.
+ * A unit class for adding additional taint steps.
  */
-class SqlInjectionAdditionalFlowStep extends Unit {
-  /**
-   * Holds if the step from `node1` to `node2` should be considered a flow
-   * step for paths related to SQL injection vulnerabilities.
-   */
+class SqlInjectionAdditionalTaintStep extends Unit {
   abstract predicate step(DataFlow::Node nodeFrom, DataFlow::Node nodeTo);
 }
 
@@ -37,7 +33,7 @@ private class CApiDefaultSqlInjectionSink extends SqlInjectionSink {
     // `sqlite3_exec` and variants of `sqlite3_prepare`.
     exists(CallExpr call |
       call.getStaticTarget()
-          .(FreeFunction)
+          .(FreeFunctionDecl)
           .hasName([
               "sqlite3_exec(_:_:_:_:_:)", "sqlite3_prepare(_:_:_:_:_:)",
               "sqlite3_prepare_v2(_:_:_:_:_:)", "sqlite3_prepare_v3(_:_:_:_:_:_:)",
@@ -57,15 +53,15 @@ private class SQLiteSwiftDefaultSqlInjectionSink extends SqlInjectionSink {
     // Variants of `Connection.execute`, `connection.prepare` and `connection.scalar`.
     exists(CallExpr call |
       call.getStaticTarget()
-          .(Method)
+          .(MethodDecl)
           .hasQualifiedName("Connection",
             ["execute(_:)", "prepare(_:_:)", "run(_:_:)", "scalar(_:_:)"]) and
       call.getArgument(0).getExpr() = this.asExpr()
     )
     or
-    // String argument to the `Statement` initializer.
+    // String argument to the `Statement` constructor.
     exists(CallExpr call |
-      call.getStaticTarget().(Method).hasQualifiedName("Statement", "init(_:_:)") and
+      call.getStaticTarget().(MethodDecl).hasQualifiedName("Statement", "init(_:_:)") and
       call.getArgument(1).getExpr() = this.asExpr()
     )
   }
@@ -76,7 +72,7 @@ private class SQLiteSwiftDefaultSqlInjectionSink extends SqlInjectionSink {
  */
 private class GrdbDefaultSqlInjectionSink extends SqlInjectionSink {
   GrdbDefaultSqlInjectionSink() {
-    exists(CallExpr call, Method method |
+    exists(CallExpr call, MethodDecl method |
       call.getStaticTarget() = method and
       call.getArgument(0).getExpr() = this.asExpr()
     |
@@ -123,7 +119,7 @@ private class GrdbDefaultSqlInjectionSink extends SqlInjectionSink {
       method.hasQualifiedName("StatementCache", "statement(_:)")
     )
     or
-    exists(CallExpr call, Method method |
+    exists(CallExpr call, MethodDecl method |
       call.getStaticTarget() = method and
       call.getArgument(1).getExpr() = this.asExpr()
     |
@@ -137,7 +133,7 @@ private class GrdbDefaultSqlInjectionSink extends SqlInjectionSink {
       method.hasQualifiedName("SQLStatementCursor", "init(database:sql:arguments:prepFlags:)")
     )
     or
-    exists(CallExpr call, Method method |
+    exists(CallExpr call, MethodDecl method |
       call.getStaticTarget() = method and
       call.getArgument(3).getExpr() = this.asExpr()
     |
@@ -151,15 +147,5 @@ private class GrdbDefaultSqlInjectionSink extends SqlInjectionSink {
  * A sink defined in a CSV model.
  */
 private class DefaultSqlInjectionSink extends SqlInjectionSink {
-  DefaultSqlInjectionSink() { sinkNode(this, "sql-injection") }
-}
-
-/**
- * A barrier for SQL injection.
- */
-private class SqlInjectionDefaultBarrier extends SqlInjectionBarrier {
-  SqlInjectionDefaultBarrier() {
-    // any numeric type
-    this.asExpr().getType().getUnderlyingType().getABaseType*().getName() = "Numeric"
-  }
+  DefaultSqlInjectionSink() { sinkNode(this, "sql") }
 }

@@ -44,11 +44,4 @@ module Xxe {
       )
     }
   }
-
-  /**
-   * An XML escaping, considered as a sanitizer.
-   */
-  class XmlEscapingAsSanitizer extends Sanitizer {
-    XmlEscapingAsSanitizer() { this = any(XmlEscaping esc).getOutput() }
-  }
 }

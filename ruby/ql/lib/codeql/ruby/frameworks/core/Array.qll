@@ -47,11 +47,11 @@ module Array {
     override MethodCall getACallSimple() { result = getAStaticArrayCall("[]") }
 
     override predicate propagatesFlowExt(string input, string output, boolean preservesValue) {
-      // we make use of the special `splat` argument kind, which contains all positional
-      // arguments wrapped in an implicit array, as well as explicit splat arguments
-      input = "Argument[splat]" and
-      output = "ReturnValue" and
-      preservesValue = true
+      exists(ArrayIndex i |
+        input = "Argument[" + i + "]" and
+        output = "ReturnValue.Element[" + i + "]" and
+        preservesValue = true
+      )
     }
   }
 
@@ -210,28 +210,9 @@ module Array {
     }
   }
 
-  private predicate isKnownRange(RangeLiteral rl, int start, int end) {
-    (
-      // Either an explicit, positive beginning index...
-      start = rl.getBegin().getConstantValue().getInt() and start >= 0
-      or
-      // Or a begin-less one, since `..n` is equivalent to `0..n`
-      not exists(rl.getBegin()) and start = 0
-    ) and
-    // There must be an explicit end. An end-less range like `2..` is not
-    // treated as a known range, since we don't track the length of the array.
-    exists(int e | e = rl.getEnd().getConstantValue().getInt() and e >= 0 |
-      rl.isInclusive() and end = e
-      or
-      rl.isExclusive() and end = e - 1
-    )
-  }
-
   /**
    * A call to `[]` with an unknown argument, which could be either an index or
-   * a range. To avoid spurious flow, we are going to ignore the possibility
-   * that the argument might be a range (unless it is an explicit range literal,
-   * see `ElementReferenceRangeReadUnknownSummary`).
+   * a range.
    */
   private class ElementReferenceReadUnknownSummary extends ElementReferenceReadSummary {
     ElementReferenceReadUnknownSummary() {
@@ -242,7 +223,7 @@ module Array {
 
     override predicate propagatesFlowExt(string input, string output, boolean preservesValue) {
       input = "Argument[self].Element[any]" and
-      output = "ReturnValue" and
+      output = ["ReturnValue", "ReturnValue.Element[?]"] and
       preservesValue = true
     }
   }
@@ -261,8 +242,24 @@ module Array {
       )
       or
       mc.getNumberOfArguments() = 1 and
-      isKnownRange(mc.getArgument(0), start, end) and
-      this = methodName + "(" + start + ".." + end + ")"
+      exists(RangeLiteral rl |
+        rl = mc.getArgument(0) and
+        (
+          // Either an explicit, positive beginning index...
+          start = rl.getBegin().getConstantValue().getInt() and start >= 0
+          or
+          // Or a begin-less one, since `..n` is equivalent to `0..n`
+          not exists(rl.getBegin()) and start = 0
+        ) and
+        // There must be an explicit end. An end-less range like `2..` is not
+        // treated as a known range, since we don't track the length of the array.
+        exists(int e | e = rl.getEnd().getConstantValue().getInt() and e >= 0 |
+          rl.isInclusive() and end = e
+          or
+          rl.isExclusive() and end = e - 1
+        ) and
+        this = methodName + "(" + start + ".." + end + ")"
+      )
     }
 
     override predicate propagatesFlowExt(string input, string output, boolean preservesValue) {
@@ -294,7 +291,12 @@ module Array {
         )
         or
         mc.getNumberOfArguments() = 1 and
-        mc.getArgument(0) = any(RangeLiteral range | not isKnownRange(range, _, _))
+        exists(RangeLiteral rl | rl = mc.getArgument(0) |
+          exists(rl.getBegin()) and
+          not exists(int b | b = rl.getBegin().getConstantValue().getInt() and b >= 0)
+          or
+          not exists(int e | e = rl.getEnd().getConstantValue().getInt() and e >= 0)
+        )
       )
     }
 
@@ -581,8 +583,7 @@ module Array {
 
   private class DeleteUnknownSummary extends DeleteSummary {
     DeleteUnknownSummary() {
-      // Note: take care to avoid a name clash with the "delete" summary from String.qll
-      this = "delete-unknown-key" and
+      this = "delete" and
       not exists(DataFlow::Content::getKnownElementIndex(mc.getArgument(0)))
     }
 
@@ -1182,16 +1183,6 @@ module Array {
       ) and
       output = "ReturnValue.Element[?].Element[?]" and
       preservesValue = true
-    }
-  }
-
-  private class JoinSummary extends SimpleSummarizedCallable {
-    JoinSummary() { this = ["join"] }
-
-    override predicate propagatesFlowExt(string input, string output, boolean preservesValue) {
-      input = "Argument[self].Element[any]" and
-      output = "ReturnValue" and
-      preservesValue = false
     }
   }
 
@@ -2065,11 +2056,7 @@ module Enumerable {
 
     override predicate propagatesFlowExt(string input, string output, boolean preservesValue) {
       input = "Argument[self].Element[any]" and
-      output = "Argument[block].Parameter[0]" and
-      preservesValue = true
-      or
-      input = "Argument[block].ReturnValue" and
-      output = "ReturnValue.Element[?]" and
+      output = ["Argument[block].Parameter[0]", "ReturnValue.Element[?]"] and
       preservesValue = true
     }
   }

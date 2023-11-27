@@ -3,27 +3,24 @@
  */
 
 import csharp
-import TestUtilities.InlineFlowTest
-import PathGraph
+import DataFlow::PathGraph
 
-module TypesConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) {
+class Conf extends DataFlow::Configuration {
+  Conf() { this = "TypesConf" }
+
+  override predicate isSource(DataFlow::Node src) {
     src.asExpr() instanceof ObjectCreation or
     src.asExpr() instanceof NullLiteral
   }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSink(DataFlow::Node sink) {
     exists(MethodCall mc |
       mc.getTarget().hasUndecoratedName("Sink") and
       mc.getAnArgument() = sink.asExpr()
     )
   }
-
-  int fieldFlowBranchLimit() { result = 1000 }
 }
 
-import ValueFlowTest<TypesConfig>
-
-from PathNode source, PathNode sink
-where flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, Conf conf
+where conf.hasFlowPath(source, sink)
 select source, source, sink, "$@", sink, sink.toString()

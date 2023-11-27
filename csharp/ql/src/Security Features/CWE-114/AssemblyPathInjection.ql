@@ -15,24 +15,26 @@
 import csharp
 import semmle.code.csharp.security.dataflow.flowsources.Remote
 import semmle.code.csharp.commons.Util
-import AssemblyPathInjection::PathGraph
+import DataFlow::PathGraph
 
 /**
  * A taint-tracking configuration for untrusted user input used to load a DLL.
  */
-module AssemblyPathInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
+class TaintTrackingConfiguration extends TaintTracking::Configuration {
+  TaintTrackingConfiguration() { this = "DLLInjection" }
+
+  override predicate isSource(DataFlow::Node source) {
     source instanceof RemoteFlowSource or
     source.asExpr() = any(MainMethod main).getParameter(0).getAnAccess()
   }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSink(DataFlow::Node sink) {
     exists(MethodCall mc, string name, int arg |
       mc.getTarget().getName().matches(name) and
       mc.getTarget()
           .getDeclaringType()
           .getABaseType*()
-          .hasFullyQualifiedName("System.Reflection", "Assembly") and
+          .hasQualifiedName("System.Reflection", "Assembly") and
       mc.getArgument(arg) = sink.asExpr()
     |
       name = "LoadFrom" and arg = 0 and mc.getNumberOfArguments() = [1 .. 2]
@@ -46,12 +48,7 @@ module AssemblyPathInjectionConfig implements DataFlow::ConfigSig {
   }
 }
 
-/**
- * A taint-tracking module for untrusted user input used to load a DLL.
- */
-module AssemblyPathInjection = TaintTracking::Global<AssemblyPathInjectionConfig>;
-
-from AssemblyPathInjection::PathNode source, AssemblyPathInjection::PathNode sink
-where AssemblyPathInjection::flowPath(source, sink)
+from TaintTrackingConfiguration c, DataFlow::PathNode source, DataFlow::PathNode sink
+where c.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This assembly path depends on a $@.", source,
   "user-provided value"

@@ -244,7 +244,7 @@ def m_safe_buffer_insert
   b = source "b"
   x = ActionView::SafeBuffer.new(a)
   y = x.insert(i, b)
-  sink y # $hasTaintFlow=a $hasTaintFlow=b
+  sink y # $hasTaintFlow=a
 end
 
 def m_safe_buffer_prepend

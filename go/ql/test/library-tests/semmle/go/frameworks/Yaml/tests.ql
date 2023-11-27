@@ -1,64 +1,28 @@
 import go
 import TestUtilities.InlineExpectationsTest
 
-predicate isYamlFunction(Function f) {
-  f.hasQualifiedName(package("gopkg.in/yaml", ""), _)
-  or
-  f.(Method).hasQualifiedName(package("gopkg.in/yaml", ""), _, _)
-}
+class TaintFunctionModelTest extends InlineExpectationsTest {
+  TaintFunctionModelTest() { this = "TaintFunctionModelTest" }
 
-DataFlow::CallNode getAYamlCall() {
-  isYamlFunction(result.getACalleeIncludingExternals().asFunction())
-}
+  override string getARelevantTag() { result = "ttfnmodelstep" }
 
-predicate isSourceSinkPair(DataFlow::Node inNode, DataFlow::Node outNode) {
-  exists(DataFlow::CallNode cn | cn = getAYamlCall() |
-    inNode = [cn.getAnArgument(), cn.getReceiver()] and
-    (
-      outNode.(DataFlow::PostUpdateNode).getPreUpdateNode() = [cn.getAnArgument(), cn.getReceiver()]
-      or
-      outNode = cn.getAResult()
-    )
-  )
-}
-
-module TaintTransitsFunctionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node n) { isSourceSinkPair(n, _) }
-
-  predicate isSink(DataFlow::Node n) { isSourceSinkPair(_, n) }
-}
-
-module TaintTransitsFunctionFlow = TaintTracking::Global<TaintTransitsFunctionConfig>;
-
-module TaintFunctionModelTest implements TestSig {
-  string getARelevantTag() { result = "ttfnmodelstep" }
-
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "ttfnmodelstep" and
-    (
-      exists(TaintTracking::FunctionModel model, DataFlow::CallNode call | call = model.getACall() |
-        call.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
-          location.getStartColumn(), location.getEndLine(), location.getEndColumn()) and
-        element = call.toString() and
-        value = "\"" + model.getAnInputNode(call) + " -> " + model.getAnOutputNode(call) + "\""
-      )
-      or
-      exists(DataFlow::Node arg, DataFlow::Node output |
-        TaintTransitsFunctionFlow::flow(arg, output) and
-        isSourceSinkPair(arg, output) and
-        arg.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
-          location.getStartColumn(), location.getEndLine(), location.getEndColumn()) and
-        element = arg.toString() and
-        value = "\"" + arg + " -> " + output + "\""
-      )
+    exists(TaintTracking::FunctionModel model, DataFlow::CallNode call | call = model.getACall() |
+      call.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
+        location.getStartColumn(), location.getEndLine(), location.getEndColumn()) and
+      element = call.toString() and
+      value = "\"" + model.getAnInputNode(call) + " -> " + model.getAnOutputNode(call) + "\""
     )
   }
 }
 
-module MarshalerTest implements TestSig {
-  string getARelevantTag() { result = "marshaler" }
+class MarshalerTest extends InlineExpectationsTest {
+  MarshalerTest() { this = "MarshalerTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "marshaler" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "marshaler" and
     exists(MarshalingFunction m, DataFlow::CallNode call | call = m.getACall() |
       call.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
@@ -71,10 +35,12 @@ module MarshalerTest implements TestSig {
   }
 }
 
-module UnmarshalerTest implements TestSig {
-  string getARelevantTag() { result = "unmarshaler" }
+class UnmarshalerTest extends InlineExpectationsTest {
+  UnmarshalerTest() { this = "UnmarshalerTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "unmarshaler" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "unmarshaler" and
     exists(UnmarshalingFunction m, DataFlow::CallNode call | call = m.getACall() |
       call.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
@@ -86,5 +52,3 @@ module UnmarshalerTest implements TestSig {
     )
   }
 }
-
-import MakeTest<MergeTests3<TaintFunctionModelTest, MarshalerTest, UnmarshalerTest>>

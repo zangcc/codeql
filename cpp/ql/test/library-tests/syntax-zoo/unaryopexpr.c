@@ -1,4 +1,4 @@
-static void f() {
+void f() {
     int i;
     &i;
     

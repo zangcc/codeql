@@ -8,13 +8,13 @@ void SetOptionsNoOldTls(boost::asio::ssl::context& ctx)
 
 void TestProperConfiguration_inter_CorrectUsage01()
 {
-	boost::asio::ssl::context ctx(boost::asio::ssl::context::tls_client); // GOOD [FALSE POSITIVE]
+	boost::asio::ssl::context ctx(boost::asio::ssl::context::tls_client);
 	SetOptionsNoOldTls(ctx);
 }
 
 void TestProperConfiguration_inter_CorrectUsage02()
 {
-	boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23); // GOOD [FALSE POSITIVE]
+	boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);
 	ctx.set_options(boost::asio::ssl::context::no_tlsv1 | 
 		boost::asio::ssl::context::no_tlsv1_1 | 
 		boost::asio::ssl::context::no_sslv3);
@@ -22,23 +22,23 @@ void TestProperConfiguration_inter_CorrectUsage02()
 
 void TestProperConfiguration_inter_IncorrectUsage01()
 {
-	boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);	// BAD - missing disable SSLv3
+	boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);	// BUG - missing disable SSLv3
 	SetOptionsNoOldTls(ctx);
 }
 
 void TestProperConfiguration_IncorrectUsage01()
 {
-	boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);	// BAD
+	boost::asio::ssl::context ctx(boost::asio::ssl::context::sslv23);	// BUG
 }
 
 void TestProperConfiguration_IncorrectUsage02()
 {
-	boost::asio::ssl::context ctx(boost::asio::ssl::context::tls);	// BAD
+	boost::asio::ssl::context ctx(boost::asio::ssl::context::tls);	// BUG
 }
 
 void TestProperConfiguration_IncorrectUsage03()
 {
-	boost::asio::ssl::context ctx(boost::asio::ssl::context::tls);	// BAD
+	boost::asio::ssl::context ctx(boost::asio::ssl::context::tls);	// BUG
 	SetOptionsNoOldTls(ctx);
 	ctx.set_options(boost::asio::ssl::context::no_tlsv1 |
 		boost::asio::ssl::context::no_tlsv1_2 );			// BUG - disabling TLS 1.2

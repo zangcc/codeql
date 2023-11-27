@@ -3,4 +3,3 @@ groups: [csharp, test, consistency-queries]
 dependencies:
   codeql/csharp-all: ${workspace}
 extractor: csharp
-warnOnImplicitThis: true

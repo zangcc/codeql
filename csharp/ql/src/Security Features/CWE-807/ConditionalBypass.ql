@@ -15,9 +15,9 @@
 
 import csharp
 import semmle.code.csharp.security.dataflow.ConditionalBypassQuery
-import ConditionalBypass::PathGraph
+import semmle.code.csharp.dataflow.DataFlow::DataFlow::PathGraph
 
-from ConditionalBypass::PathNode source, ConditionalBypass::PathNode sink
-where ConditionalBypass::flowPath(source, sink)
+from Configuration config, DataFlow::PathNode source, DataFlow::PathNode sink
+where config.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This condition guards a sensitive $@, but a $@ controls it.",
   sink.getNode().(Sink).getSensitiveMethodCall(), "action", source.getNode(), "user-provided value"

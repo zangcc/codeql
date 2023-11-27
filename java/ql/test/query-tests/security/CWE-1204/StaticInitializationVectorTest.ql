@@ -2,17 +2,17 @@ import java
 import semmle.code.java.security.StaticInitializationVectorQuery
 import TestUtilities.InlineExpectationsTest
 
-module StaticInitializationVectorTest implements TestSig {
-  string getARelevantTag() { result = "staticInitializationVector" }
+class StaticInitializationVectorTest extends InlineExpectationsTest {
+  StaticInitializationVectorTest() { this = "StaticInitializationVectorTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "staticInitializationVector" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "staticInitializationVector" and
-    exists(DataFlow::Node sink | StaticInitializationVectorFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, StaticInitializationVectorConfig conf | conf.hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<StaticInitializationVectorTest>

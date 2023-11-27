@@ -27,7 +27,7 @@ class XStreamReadObjectMethod extends Method {
 /**
  * A call to `XStream.addPermission(NoTypePermission.NONE)`, which enables white-listing.
  */
-class XStreamEnableWhiteListing extends MethodCall {
+class XStreamEnableWhiteListing extends MethodAccess {
   XStreamEnableWhiteListing() {
     exists(Method m |
       m = this.getMethod() and

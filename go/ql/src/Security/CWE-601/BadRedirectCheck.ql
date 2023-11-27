@@ -14,6 +14,7 @@
 
 import go
 import semmle.go.security.OpenUrlRedirectCustomizations
+import DataFlow::PathGraph
 
 StringOps::HasPrefix checkForLeadingSlash(SsaWithFields v) {
   exists(DataFlow::Node substr |
@@ -90,14 +91,16 @@ predicate urlPath(DataFlow::Node nd) {
   )
 }
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { isCheckedSource(source, _) }
+class Configuration extends TaintTracking::Configuration {
+  Configuration() { this = "BadRedirectCheck" }
+
+  override predicate isSource(DataFlow::Node source) { this.isCheckedSource(source, _) }
 
   /**
    * Holds if `source` is the first node that flows into a use of a variable that is checked by a
    * bad redirect check `check`..
    */
-  additional predicate isCheckedSource(DataFlow::Node source, DataFlow::Node check) {
+  predicate isCheckedSource(DataFlow::Node source, DataFlow::Node check) {
     exists(SsaWithFields v |
       DataFlow::localFlow(source, v.getAUse()) and
       not exists(source.getAPredecessor()) and
@@ -105,12 +108,12 @@ module Config implements DataFlow::ConfigSig {
     )
   }
 
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+  override predicate isAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {
     // this is very over-approximate, because most filtering is done by the isSource predicate
-    exists(Write w | w.writesField(node2, _, node1))
+    exists(Write w | w.writesField(succ, _, pred))
   }
 
-  predicate isBarrierOut(DataFlow::Node node) {
+  override predicate isSanitizerOut(DataFlow::Node node) {
     // assume this value is safe if something is prepended to it.
     exists(StringOps::Concatenation conc, int i, int j | i < j |
       node = conc.getOperand(j) and
@@ -118,14 +121,12 @@ module Config implements DataFlow::ConfigSig {
     )
     or
     exists(DataFlow::CallNode call, int i | call.getTarget().hasQualifiedName("path", "Join") |
-      i > 0 and node = call.getSyntacticArgument(i)
+      i > 0 and node = call.getArgument(i)
     )
   }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof OpenUrlRedirect::Sink }
+  override predicate isSink(DataFlow::Node sink) { sink instanceof OpenUrlRedirect::Sink }
 }
-
-module Flow = TaintTracking::Global<Config>;
 
 /**
  * Holds there is a check `check` that is a bad redirect check, and `v` is either
@@ -167,12 +168,10 @@ predicate isBadRedirectCheckWrapper(DataFlow::Node check, FuncDef f, FunctionInp
   )
 }
 
-import Flow::PathGraph
-
-from Flow::PathNode source, Flow::PathNode sink, DataFlow::Node check
+from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink, DataFlow::Node check
 where
-  Config::isCheckedSource(source.getNode(), check) and
-  Flow::flowPath(source, sink)
+  cfg.isCheckedSource(source.getNode(), check) and
+  cfg.hasFlowPath(source, sink)
 select check, source, sink,
   "This is a check that $@, which flows into a $@, has a leading slash, but not that it does not have '/' or '\\' in its second position.",
   source.getNode(), "this value", sink.getNode(), "redirect"

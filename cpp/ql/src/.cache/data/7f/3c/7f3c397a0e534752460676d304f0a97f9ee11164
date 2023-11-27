@@ -1,0 +1,40 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "DangerousUseOfExceptionBlocks.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "6400e9ccf96cf3f3d9c5bfbc6fc03b621153afe2"
+  debugInfo: "61c2fd199591ed52e9acd33d0778fdf68a11972c"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "538a78714128283b500f8d597129e70bc2ea44be"
+- cached: "17679d8a97d178b355d5fa1b675e94ccfa6ac6dd"
+  debugInfo: "27756815b1ca426acc98def7d5a0da4828a6778f"
+- cached: "2072c056f08fb0aa4fbde527aab6943dbf3ef07e"
+  debugInfo: "ffa3126fbda15ca03f114046689a3e93a59f1676"
+- cached: "3a65a71867a3302b9ca6acc6adcc6746d306ce4b"
+  debugInfo: "d27c9e0e71de4132bb4128727370c53bed2bc6e1"
+- cached: "5e5cf3e67a725b16b6d01a2023ba55e65b6322d1"
+  debugInfo: "c1789f6cf79512c515f2cba7b5e59f6d99857b7d"
+- cached: "2dab68f78e215cce01be75a035cddeb4c93576d0"
+  debugInfo: "dce536c7bc2bf86e804bc35911063f4a5628b505"
+- cached: "4dfabdf06ebd3c998d9d16df72f6814ede161495"
+  debugInfo: "f7de15ddee974919f0fc7d0965d2d0ebb2b441ed"
+- cached: "ecf87c8cea37920a4d0b6c270e3589f431a88052"
+  debugInfo: "df6831515d1e7e262554822909e46a607682dad3"
+- cached: "9ca8fff07ae4722a999bd0ac3d52aeadb728932e"
+  debugInfo: "0d8cbf1a8a81c512d73aa0707324f2ad915629db"
+- cached: "e085b8b41dcf9edef346b7dc8d7ca81bb04fe679"
+  debugInfo: "b466c513c1e4377a7606e8836ec227eb1a6a1d50"
+- cached: "a4ac8a23273d76dab04ddd2af19edc221c95bfe6"
+  debugInfo: "382a45b88ade7a0be0536a55cbba2b319391cbfe"
+- cached: "2fc82c9483d77b14679de08faecb0c46d3861ebc"
+  debugInfo: "3cf59fd67003496815467011d6b9641c84e2ed8f"
+- cached: "36b0a8657b2f4abe66e3100103af4cd69f782869"
+  debugInfo: "2713f1b2d2807e8e6963145596232bbd4a8546b6"
+results:
+  '#select':
+    resultArranger: "2\"cb\"ei12\"msg\"s"
+inputsDigest: "7f3c397a0e534752460676d304f0a97f9ee11164"

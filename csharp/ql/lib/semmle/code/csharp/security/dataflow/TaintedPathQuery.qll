@@ -26,11 +26,9 @@ abstract class Sink extends DataFlow::ExprNode { }
 abstract class Sanitizer extends DataFlow::ExprNode { }
 
 /**
- * DEPRECATED: Use `TaintedPath` instead.
- *
  * A taint-tracking configuration for uncontrolled data in path expression vulnerabilities.
  */
-deprecated class TaintTrackingConfiguration extends TaintTracking::Configuration {
+class TaintTrackingConfiguration extends TaintTracking::Configuration {
   TaintTrackingConfiguration() { this = "TaintedPath" }
 
   override predicate isSource(DataFlow::Node source) { source instanceof Source }
@@ -39,22 +37,6 @@ deprecated class TaintTrackingConfiguration extends TaintTracking::Configuration
 
   override predicate isSanitizer(DataFlow::Node node) { node instanceof Sanitizer }
 }
-
-/**
- * A taint-tracking configuration for uncontrolled data in path expression vulnerabilities.
- */
-private module TaintedPathConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof Source }
-
-  predicate isSink(DataFlow::Node sink) { sink instanceof Sink }
-
-  predicate isBarrier(DataFlow::Node node) { node instanceof Sanitizer }
-}
-
-/**
- * A taint-tracking module for uncontrolled data in path expression vulnerabilities.
- */
-module TaintedPath = TaintTracking::Global<TaintedPathConfig>;
 
 /** A source of remote user input. */
 class RemoteSource extends Source instanceof RemoteFlowSource { }

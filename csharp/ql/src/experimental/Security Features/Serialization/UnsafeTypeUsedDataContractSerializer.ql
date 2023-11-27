@@ -17,7 +17,7 @@ predicate xmlSerializerConstructorArgument(Expr e) {
     c = oc.getTarget() and
     c.getDeclaringType()
         .getABaseType*()
-        .hasFullyQualifiedName("System.Xml.Serialization", "XmlSerializer")
+        .hasQualifiedName("System.Xml.Serialization", "XmlSerializer")
   )
 }
 
@@ -31,16 +31,16 @@ predicate unsafeDataContractTypeCreation(Expr e) {
   e.(TypeofExpr).getTypeAccess().getTarget() instanceof DataSetOrTableRelatedClass
 }
 
-module FlowToDataSerializerConstructorConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) { unsafeDataContractTypeCreation(node.asExpr()) }
+class Conf extends DataFlow::Configuration {
+  Conf() { this = "FlowToDataSerializerConstructor" }
 
-  predicate isSink(DataFlow::Node node) { xmlSerializerConstructorArgument(node.asExpr()) }
+  override predicate isSource(DataFlow::Node node) { unsafeDataContractTypeCreation(node.asExpr()) }
+
+  override predicate isSink(DataFlow::Node node) { xmlSerializerConstructorArgument(node.asExpr()) }
 }
 
-module FlowToDataSerializerConstructor = DataFlow::Global<FlowToDataSerializerConstructorConfig>;
-
-from DataFlow::Node source, DataFlow::Node sink
-where FlowToDataSerializerConstructor::flow(source, sink)
+from Conf conf, DataFlow::Node source, DataFlow::Node sink
+where conf.hasFlow(source, sink)
 select sink,
   "Unsafe type is used in data contract serializer. Make sure $@ comes from the trusted source.",
   source, source.toString()

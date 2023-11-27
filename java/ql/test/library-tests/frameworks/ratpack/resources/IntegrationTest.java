@@ -107,13 +107,13 @@ class IntegrationTest {
                 filterAndMerge_2(pojoForm, mergedParams, name -> false);
                 return mergedParams;
             }).then(pojoMap -> {
-                sink(pojoMap.keySet().iterator().next()); //$hasTaintFlow
-                sink(pojoMap.get("value")); //$hasTaintFlow
+                sink(pojoMap.keySet().iterator().next()); //TODO:$hasTaintFlow
+                sink(pojoMap.get("value")); //TODO:$hasTaintFlow
                 pojoMap.forEach((key, value) -> {
-                    sink(key); //$hasTaintFlow
-                    sink(value); //$hasTaintFlow
+                    sink(key); //TODO:$hasTaintFlow
+                    sink(value); //TODO:$hasTaintFlow
                     List<Object> values = (List<Object>) value;
-                    sink(values.get(0)); //$hasTaintFlow
+                    sink(values.get(0)); //TODO:$hasTaintFlow
                 });
             });
     }

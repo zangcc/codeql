@@ -220,7 +220,7 @@ private class DomBasedXssSinkCharacteristic extends EndpointCharacteristic {
   ) {
     endpointClass instanceof XssSinkType and
     isPositiveIndicator = true and
-    confidence = this.maximalConfidence()
+    confidence = maximalConfidence()
   }
 }
 
@@ -238,7 +238,7 @@ private class TaintedPathSinkCharacteristic extends EndpointCharacteristic {
   ) {
     endpointClass instanceof TaintedPathSinkType and
     isPositiveIndicator = true and
-    confidence = this.maximalConfidence()
+    confidence = maximalConfidence()
   }
 }
 
@@ -256,7 +256,7 @@ private class SqlInjectionSinkCharacteristic extends EndpointCharacteristic {
   ) {
     endpointClass instanceof SqlInjectionSinkType and
     isPositiveIndicator = true and
-    confidence = this.maximalConfidence()
+    confidence = maximalConfidence()
   }
 }
 
@@ -274,7 +274,7 @@ private class NosqlInjectionSinkCharacteristic extends EndpointCharacteristic {
   ) {
     endpointClass instanceof NosqlInjectionSinkType and
     isPositiveIndicator = true and
-    confidence = this.maximalConfidence()
+    confidence = maximalConfidence()
   }
 }
 
@@ -296,7 +296,7 @@ private class ShellCommandInjectionFromEnvironmentSinkCharacteristic extends End
   ) {
     endpointClass instanceof ShellCommandInjectionFromEnvironmentSinkType and
     isPositiveIndicator = true and
-    confidence = this.maximalConfidence()
+    confidence = maximalConfidence()
   }
 }
 
@@ -317,8 +317,7 @@ abstract class OtherModeledArgumentCharacteristic extends EndpointCharacteristic
  * A characteristic that is an indicator of not being a sink of any type, because it's an argument to a function of a
  * builtin object.
  */
-abstract private class ArgumentToBuiltinFunctionCharacteristic extends OtherModeledArgumentCharacteristic
-{
+abstract private class ArgumentToBuiltinFunctionCharacteristic extends OtherModeledArgumentCharacteristic {
   bindingset[this]
   ArgumentToBuiltinFunctionCharacteristic() { any() }
 }
@@ -335,7 +334,7 @@ abstract private class NotASinkCharacteristic extends EndpointCharacteristic {
   ) {
     endpointClass instanceof NegativeType and
     isPositiveIndicator = true and
-    confidence = this.highConfidence()
+    confidence = highConfidence()
   }
 }
 
@@ -354,13 +353,12 @@ abstract class LikelyNotASinkCharacteristic extends EndpointCharacteristic {
   ) {
     endpointClass instanceof NegativeType and
     isPositiveIndicator = true and
-    confidence = this.mediumConfidence()
+    confidence = mediumConfidence()
   }
 }
 
 private class LodashUnderscoreCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   LodashUnderscoreCharacteristic() { this = "LodashUnderscoreArgument" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -369,8 +367,7 @@ private class LodashUnderscoreCharacteristic extends NotASinkCharacteristic,
 }
 
 private class JQueryArgumentCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   JQueryArgumentCharacteristic() { this = "JQueryArgument" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -379,8 +376,7 @@ private class JQueryArgumentCharacteristic extends NotASinkCharacteristic,
 }
 
 private class ClientRequestCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   ClientRequestCharacteristic() { this = "ClientRequest" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -391,8 +387,7 @@ private class ClientRequestCharacteristic extends NotASinkCharacteristic,
 }
 
 private class PromiseDefinitionCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   PromiseDefinitionCharacteristic() { this = "PromiseDefinition" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -403,16 +398,14 @@ private class PromiseDefinitionCharacteristic extends NotASinkCharacteristic,
 }
 
 private class CryptographicKeyCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   CryptographicKeyCharacteristic() { this = "CryptographicKey" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) { n instanceof CryptographicKey }
 }
 
 private class CryptographicOperationFlowCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   CryptographicOperationFlowCharacteristic() { this = "CryptographicOperationFlow" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -421,8 +414,7 @@ private class CryptographicOperationFlowCharacteristic extends NotASinkCharacter
 }
 
 private class LoggerMethodCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   LoggerMethodCharacteristic() { this = "LoggerMethod" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -433,8 +425,7 @@ private class LoggerMethodCharacteristic extends NotASinkCharacteristic,
 }
 
 private class TimeoutCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   TimeoutCharacteristic() { this = "Timeout" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -445,8 +436,7 @@ private class TimeoutCharacteristic extends NotASinkCharacteristic,
 }
 
 private class ReceiverStorageCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   ReceiverStorageCharacteristic() { this = "ReceiverStorage" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -457,8 +447,7 @@ private class ReceiverStorageCharacteristic extends NotASinkCharacteristic,
 }
 
 private class StringStartsWithCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   StringStartsWithCharacteristic() { this = "StringStartsWith" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -469,8 +458,7 @@ private class StringStartsWithCharacteristic extends NotASinkCharacteristic,
 }
 
 private class StringEndsWithCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   StringEndsWithCharacteristic() { this = "StringEndsWith" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -479,8 +467,7 @@ private class StringEndsWithCharacteristic extends NotASinkCharacteristic,
 }
 
 private class StringRegExpTestCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   StringRegExpTestCharacteristic() { this = "StringRegExpTest" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -491,8 +478,7 @@ private class StringRegExpTestCharacteristic extends NotASinkCharacteristic,
 }
 
 private class EventRegistrationCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   EventRegistrationCharacteristic() { this = "EventRegistration" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -501,8 +487,7 @@ private class EventRegistrationCharacteristic extends NotASinkCharacteristic,
 }
 
 private class EventDispatchCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   EventDispatchCharacteristic() { this = "EventDispatch" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -511,8 +496,7 @@ private class EventDispatchCharacteristic extends NotASinkCharacteristic,
 }
 
 private class MembershipCandidateTestCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   MembershipCandidateTestCharacteristic() { this = "MembershipCandidateTest" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -523,8 +507,7 @@ private class MembershipCandidateTestCharacteristic extends NotASinkCharacterist
 }
 
 private class FileSystemAccessCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   FileSystemAccessCharacteristic() { this = "FileSystemAccess" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -533,8 +516,7 @@ private class FileSystemAccessCharacteristic extends NotASinkCharacteristic,
 }
 
 private class DatabaseAccessCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   DatabaseAccessCharacteristic() { this = "DatabaseAccess" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -558,8 +540,7 @@ private class DomCharacteristic extends NotASinkCharacteristic, OtherModeledArgu
 }
 
 private class NextFunctionCallCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   NextFunctionCallCharacteristic() { this = "NextFunctionCall" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -571,8 +552,7 @@ private class NextFunctionCallCharacteristic extends NotASinkCharacteristic,
 }
 
 private class DojoRequireCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   DojoRequireCharacteristic() { this = "DojoRequire" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -583,8 +563,7 @@ private class DojoRequireCharacteristic extends NotASinkCharacteristic,
 }
 
 private class Base64ManipulationCharacteristic extends NotASinkCharacteristic,
-  OtherModeledArgumentCharacteristic
-{
+  OtherModeledArgumentCharacteristic {
   Base64ManipulationCharacteristic() { this = "Base64Manipulation" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -594,8 +573,7 @@ private class Base64ManipulationCharacteristic extends NotASinkCharacteristic,
 }
 
 private class ArgumentToArrayCharacteristic extends ArgumentToBuiltinFunctionCharacteristic,
-  LikelyNotASinkCharacteristic
-{
+  LikelyNotASinkCharacteristic {
   ArgumentToArrayCharacteristic() { this = "ArgumentToArray" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -610,8 +588,7 @@ private class ArgumentToArrayCharacteristic extends ArgumentToBuiltinFunctionCha
 }
 
 private class ArgumentToBuiltinGlobalVarRefCharacteristic extends ArgumentToBuiltinFunctionCharacteristic,
-  LikelyNotASinkCharacteristic
-{
+  LikelyNotASinkCharacteristic {
   ArgumentToBuiltinGlobalVarRefCharacteristic() { this = "ArgumentToBuiltinGlobalVarRef" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -630,8 +607,7 @@ private class ArgumentToBuiltinGlobalVarRefCharacteristic extends ArgumentToBuil
 }
 
 private class ConstantReceiverCharacteristic extends ArgumentToBuiltinFunctionCharacteristic,
-  NotASinkCharacteristic
-{
+  NotASinkCharacteristic {
   ConstantReceiverCharacteristic() { this = "ConstantReceiver" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -647,8 +623,7 @@ private class ConstantReceiverCharacteristic extends ArgumentToBuiltinFunctionCh
 }
 
 private class BuiltinCallNameCharacteristic extends ArgumentToBuiltinFunctionCharacteristic,
-  NotASinkCharacteristic
-{
+  NotASinkCharacteristic {
   BuiltinCallNameCharacteristic() { this = "BuiltinCallName" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -685,7 +660,7 @@ abstract private class StandardEndpointFilterCharacteristic extends EndpointFilt
   ) {
     endpointClass instanceof NegativeType and
     isPositiveIndicator = true and
-    confidence = this.mediumConfidence()
+    confidence = mediumConfidence()
   }
 }
 
@@ -709,8 +684,7 @@ class IsArgumentToModeledFunctionCharacteristic extends StandardEndpointFilterCh
   }
 }
 
-private class IsArgumentToSinklessLibraryCharacteristic extends StandardEndpointFilterCharacteristic
-{
+private class IsArgumentToSinklessLibraryCharacteristic extends StandardEndpointFilterCharacteristic {
   IsArgumentToSinklessLibraryCharacteristic() { this = "argument to sinkless library" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -776,8 +750,7 @@ private class InIrrelevantFileCharacteristic extends StandardEndpointFilterChara
 }
 
 /** An EndpointFilterCharacteristic that indicates that an endpoint is unlikely to be a NoSQL injection sink. */
-abstract private class NosqlInjectionSinkEndpointFilterCharacteristic extends EndpointFilterCharacteristic
-{
+abstract private class NosqlInjectionSinkEndpointFilterCharacteristic extends EndpointFilterCharacteristic {
   bindingset[this]
   NosqlInjectionSinkEndpointFilterCharacteristic() { any() }
 
@@ -786,12 +759,11 @@ abstract private class NosqlInjectionSinkEndpointFilterCharacteristic extends En
   ) {
     endpointClass instanceof NosqlInjectionSinkType and
     isPositiveIndicator = false and
-    confidence = this.mediumConfidence()
+    confidence = mediumConfidence()
   }
 }
 
-private class DatabaseAccessCallHeuristicCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic
-{
+private class DatabaseAccessCallHeuristicCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic {
   DatabaseAccessCallHeuristicCharacteristic() { this = "matches database access call heuristic" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -817,13 +789,12 @@ private class ModeledSinkCharacteristic extends NosqlInjectionSinkEndpointFilter
   override predicate appliesToEndpoint(DataFlow::Node n) {
     exists(DataFlow::CallNode call | n = call.getAnArgument() |
       // Remove modeled sinks
-      this.isArgumentToKnownLibrarySinkFunction(n)
+      isArgumentToKnownLibrarySinkFunction(n)
     )
   }
 }
 
-private class PredecessorInModeledFlowStepCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic
-{
+private class PredecessorInModeledFlowStepCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic {
   PredecessorInModeledFlowStepCharacteristic() { this = "predecessor in a modeled flow step" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -834,8 +805,7 @@ private class PredecessorInModeledFlowStepCharacteristic extends NosqlInjectionS
   }
 }
 
-private class ModeledDatabaseAccessCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic
-{
+private class ModeledDatabaseAccessCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic {
   ModeledDatabaseAccessCharacteristic() { this = "modeled database access" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -848,8 +818,7 @@ private class ModeledDatabaseAccessCharacteristic extends NosqlInjectionSinkEndp
   }
 }
 
-private class ReceiverIsHttpRequestExpressionCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic
-{
+private class ReceiverIsHttpRequestExpressionCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic {
   ReceiverIsHttpRequestExpressionCharacteristic() { this = "receiver is a HTTP request expression" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -860,8 +829,7 @@ private class ReceiverIsHttpRequestExpressionCharacteristic extends NosqlInjecti
   }
 }
 
-private class ReceiverIsHttpResponseExpressionCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic
-{
+private class ReceiverIsHttpResponseExpressionCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic {
   ReceiverIsHttpResponseExpressionCharacteristic() {
     this = "receiver is a HTTP response expression"
   }
@@ -874,8 +842,7 @@ private class ReceiverIsHttpResponseExpressionCharacteristic extends NosqlInject
   }
 }
 
-private class NotDirectArgumentToLikelyExternalLibraryCallOrHeuristicSinkNosqlCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic
-{
+private class NotDirectArgumentToLikelyExternalLibraryCallOrHeuristicSinkNosqlCharacteristic extends NosqlInjectionSinkEndpointFilterCharacteristic {
   NotDirectArgumentToLikelyExternalLibraryCallOrHeuristicSinkNosqlCharacteristic() {
     this = "not a direct argument to a likely external library call or a heuristic sink (nosql)"
   }
@@ -918,8 +885,7 @@ private class NotDirectArgumentToLikelyExternalLibraryCallOrHeuristicSinkNosqlCh
 }
 
 /** An EndpointFilterCharacteristic that indicates that an endpoint is unlikely to be a SQL injection sink. */
-abstract private class SqlInjectionSinkEndpointFilterCharacteristic extends EndpointFilterCharacteristic
-{
+abstract private class SqlInjectionSinkEndpointFilterCharacteristic extends EndpointFilterCharacteristic {
   bindingset[this]
   SqlInjectionSinkEndpointFilterCharacteristic() { any() }
 
@@ -928,12 +894,11 @@ abstract private class SqlInjectionSinkEndpointFilterCharacteristic extends Endp
   ) {
     endpointClass instanceof SqlInjectionSinkType and
     isPositiveIndicator = false and
-    confidence = this.mediumConfidence()
+    confidence = mediumConfidence()
   }
 }
 
-private class PreparedSqlStatementCharacteristic extends SqlInjectionSinkEndpointFilterCharacteristic
-{
+private class PreparedSqlStatementCharacteristic extends SqlInjectionSinkEndpointFilterCharacteristic {
   PreparedSqlStatementCharacteristic() { this = "prepared SQL statement" }
 
   override predicate appliesToEndpoint(DataFlow::Node n) {
@@ -967,8 +932,7 @@ private class HtmlOrRenderingCharacteristic extends SqlInjectionSinkEndpointFilt
   }
 }
 
-private class NotAnArgumentToLikelyExternalLibraryCallOrHeuristicSinkCharacteristic extends SqlInjectionSinkEndpointFilterCharacteristic
-{
+private class NotAnArgumentToLikelyExternalLibraryCallOrHeuristicSinkCharacteristic extends SqlInjectionSinkEndpointFilterCharacteristic {
   NotAnArgumentToLikelyExternalLibraryCallOrHeuristicSinkCharacteristic() {
     this = "not an argument to a likely external library call or a heuristic sink"
   }
@@ -992,8 +956,7 @@ private class NotAnArgumentToLikelyExternalLibraryCallOrHeuristicSinkCharacteris
 }
 
 /** An EndpointFilterCharacteristic that indicates that an endpoint is unlikely to be a tainted path injection sink. */
-abstract private class TaintedPathSinkEndpointFilterCharacteristic extends EndpointFilterCharacteristic
-{
+abstract private class TaintedPathSinkEndpointFilterCharacteristic extends EndpointFilterCharacteristic {
   bindingset[this]
   TaintedPathSinkEndpointFilterCharacteristic() { any() }
 
@@ -1002,12 +965,11 @@ abstract private class TaintedPathSinkEndpointFilterCharacteristic extends Endpo
   ) {
     endpointClass instanceof TaintedPathSinkType and
     isPositiveIndicator = false and
-    confidence = this.mediumConfidence()
+    confidence = mediumConfidence()
   }
 }
 
-private class NotDirectArgumentToLikelyExternalLibraryCallOrHeuristicSinkTaintedPathCharacteristic extends TaintedPathSinkEndpointFilterCharacteristic
-{
+private class NotDirectArgumentToLikelyExternalLibraryCallOrHeuristicSinkTaintedPathCharacteristic extends TaintedPathSinkEndpointFilterCharacteristic {
   NotDirectArgumentToLikelyExternalLibraryCallOrHeuristicSinkTaintedPathCharacteristic() {
     this =
       "not a direct argument to a likely external library call or a heuristic sink (tainted path)"
@@ -1055,12 +1017,11 @@ abstract private class XssSinkEndpointFilterCharacteristic extends EndpointFilte
   ) {
     endpointClass instanceof XssSinkType and
     isPositiveIndicator = false and
-    confidence = this.mediumConfidence()
+    confidence = mediumConfidence()
   }
 }
 
-private class SetStateCallsInReactApplicationsCharacteristic extends XssSinkEndpointFilterCharacteristic
-{
+private class SetStateCallsInReactApplicationsCharacteristic extends XssSinkEndpointFilterCharacteristic {
   SetStateCallsInReactApplicationsCharacteristic() {
     this = "setState calls ought to be safe in react applications"
   }
@@ -1070,8 +1031,7 @@ private class SetStateCallsInReactApplicationsCharacteristic extends XssSinkEndp
   }
 }
 
-private class NotDirectArgumentToLikelyExternalLibraryCallOrHeuristicSinkXssCharacteristic extends XssSinkEndpointFilterCharacteristic
-{
+private class NotDirectArgumentToLikelyExternalLibraryCallOrHeuristicSinkXssCharacteristic extends XssSinkEndpointFilterCharacteristic {
   NotDirectArgumentToLikelyExternalLibraryCallOrHeuristicSinkXssCharacteristic() {
     this = "not a direct argument to a likely external library call or a heuristic sink (xss)"
   }

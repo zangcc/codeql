@@ -13,9 +13,9 @@
 
 import java
 import JakartaExpressionInjectionLib
-import JakartaExpressionInjectionFlow::PathGraph
+import DataFlow::PathGraph
 
-from JakartaExpressionInjectionFlow::PathNode source, JakartaExpressionInjectionFlow::PathNode sink
-where JakartaExpressionInjectionFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, JakartaExpressionInjectionConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "Jakarta Expression Language injection from $@.",
   source.getNode(), "this user input"

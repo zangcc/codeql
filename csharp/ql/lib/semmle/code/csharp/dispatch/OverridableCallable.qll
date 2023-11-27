@@ -162,6 +162,12 @@ class OverridableCallable extends Callable, Overridable {
   }
 }
 
+/** An overridable method. */
+deprecated class OverridableMethod extends Method, OverridableCallable { }
+
+/** An overridable accessor. */
+deprecated class OverridableAccessor extends Accessor, OverridableCallable { }
+
 /** An unbound type. */
 class UnboundDeclarationType extends Type {
   UnboundDeclarationType() { this.isUnboundDeclaration() }

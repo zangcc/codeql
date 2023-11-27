@@ -6,8 +6,8 @@ struct URL
 	init?(string: String) {}
 	init?(string: String, relativeTo: URL?) {}
 }
-protocol DataProtocol { }
-struct Data : DataProtocol {
+
+struct Data {
 	init<S>(_ elements: S) { count = 0 }
 
 	var count: Int

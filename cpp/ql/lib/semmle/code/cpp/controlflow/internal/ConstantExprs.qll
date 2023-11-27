@@ -366,12 +366,12 @@ class CompileTimeConstantInt extends Expr {
   int getIntValue() { result = val }
 }
 
-class CompileTimeVariableExpr extends Expr {
+library class CompileTimeVariableExpr extends Expr {
   CompileTimeVariableExpr() { not this instanceof CompileTimeConstantInt }
 }
 
 /** A helper class for evaluation of expressions. */
-class ExprEvaluator extends int {
+library class ExprEvaluator extends int {
   /*
    * 0 = ConditionEvaluator,
    * 1 = SwitchEvaluator,
@@ -956,7 +956,7 @@ private predicate returnStmt(Function f, Expr value) {
 }
 
 /** A helper class for evaluation of conditions. */
-class ConditionEvaluator extends ExprEvaluator {
+library class ConditionEvaluator extends ExprEvaluator {
   ConditionEvaluator() { this = 0 }
 
   override predicate interesting(Expr e) {
@@ -967,7 +967,7 @@ class ConditionEvaluator extends ExprEvaluator {
 }
 
 /** A helper class for evaluation of switch expressions. */
-class SwitchEvaluator extends ExprEvaluator {
+library class SwitchEvaluator extends ExprEvaluator {
   SwitchEvaluator() { this = 1 }
 
   override predicate interesting(Expr e) { e = getASwitchExpr(_, _) }
@@ -976,7 +976,7 @@ class SwitchEvaluator extends ExprEvaluator {
 private int getSwitchValue(Expr e) { exists(SwitchEvaluator x | result = x.getValue(e)) }
 
 /** A helper class for evaluation of loop entry conditions. */
-class LoopEntryConditionEvaluator extends ExprEvaluator {
+library class LoopEntryConditionEvaluator extends ExprEvaluator {
   LoopEntryConditionEvaluator() { this in [2 .. 3] }
 
   abstract override predicate interesting(Expr e);
@@ -1149,7 +1149,7 @@ class LoopEntryConditionEvaluator extends ExprEvaluator {
 }
 
 /** A helper class for evaluation of while-loop entry conditions. */
-class WhileLoopEntryConditionEvaluator extends LoopEntryConditionEvaluator {
+library class WhileLoopEntryConditionEvaluator extends LoopEntryConditionEvaluator {
   WhileLoopEntryConditionEvaluator() { this = 2 }
 
   override predicate interesting(Expr e) { exists(WhileStmt while | e = while.getCondition()) }
@@ -1162,7 +1162,7 @@ class WhileLoopEntryConditionEvaluator extends LoopEntryConditionEvaluator {
 }
 
 /** A helper class for evaluation of for-loop entry conditions. */
-class ForLoopEntryConditionEvaluator extends LoopEntryConditionEvaluator {
+library class ForLoopEntryConditionEvaluator extends LoopEntryConditionEvaluator {
   ForLoopEntryConditionEvaluator() { this = 3 }
 
   override predicate interesting(Expr e) { exists(ForStmt for | e = for.getCondition()) }

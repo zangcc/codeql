@@ -29,7 +29,7 @@ private import RangeAnalysisUtils
  * The SSA logic comes in two versions: the standard SSA and range-analysis RangeSSA.
  * This class provides the range-analysis SSA logic.
  */
-class RangeSsa extends SsaHelper {
+library class RangeSsa extends SsaHelper {
   RangeSsa() { this = 1 }
 
   /**
@@ -39,6 +39,9 @@ class RangeSsa extends SsaHelper {
     guard_defn(v.getAnAccess(), _, b, _)
   }
 }
+
+/** DEPRECATED: Alias for RangeSsa */
+deprecated class RangeSSA = RangeSsa;
 
 private predicate guard_defn(VariableAccess v, Expr guard, BasicBlock b, boolean branch) {
   guardCondition(guard, v, branch) and
@@ -92,6 +95,15 @@ class RangeSsaDefinition extends ControlFlowNodeBase {
 
   /** Whether this definition is a phi node for variable `v`. */
   predicate isPhiNode(StackVariable v) { exists(RangeSsa x | x.phi_node(v, this)) }
+
+  /**
+   * DEPRECATED: Use isGuardPhi/4 instead
+   * If this definition is a phi node corresponding to a guard,
+   * then return the variable access and the guard.
+   */
+  deprecated predicate isGuardPhi(VariableAccess va, Expr guard, boolean branch) {
+    guard_defn(va, guard, this, branch)
+  }
 
   /**
    * If this definition is a phi node corresponding to a guard,

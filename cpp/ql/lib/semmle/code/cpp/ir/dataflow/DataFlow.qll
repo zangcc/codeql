@@ -8,8 +8,8 @@
  * results than the AST-based library in most scenarios.
  *
  * Unless configured otherwise, _flow_ means that the exact value of
- * the source may reach the sink. To track flow where the exact value
- * may not be preserved, import `semmle.code.cpp.ir.dataflow.TaintTracking`.
+ * the source may reach the sink. We do not track flow across pointer
+ * dereferences or array indexing.
  *
  * To use global (interprocedural) data flow, extend the class
  * `DataFlow::Configuration` as documented on that class. To use local
@@ -22,8 +22,6 @@
 import cpp
 
 module DataFlow {
-  private import semmle.code.cpp.ir.dataflow.internal.DataFlowImplSpecific
-  private import codeql.dataflow.DataFlow
-  import DataFlowMake<CppDataFlow>
+  import semmle.code.cpp.ir.dataflow.internal.DataFlow
   import semmle.code.cpp.ir.dataflow.internal.DataFlowImpl1
 }

@@ -30,7 +30,7 @@ predicate loginMethod(Method m, ControlFlow::SuccessorType flowFrom) {
 /** The `System.Web.SessionState.HttpSessionState` class. */
 class SystemWebSessionStateHttpSessionStateClass extends Class {
   SystemWebSessionStateHttpSessionStateClass() {
-    this.hasFullyQualifiedName("System.Web.SessionState", "HttpSessionState")
+    this.hasQualifiedName("System.Web.SessionState", "HttpSessionState")
   }
 
   /** Gets the `Abandon` method. */
@@ -58,16 +58,16 @@ predicate sessionUse(MemberAccess ma) {
 /** A control flow step that is not sanitised by a call to clear the session. */
 predicate controlStep(ControlFlow::Node s1, ControlFlow::Node s2) {
   s2 = s1.getASuccessor() and
-  not sessionEndMethod(s2.getAstNode().(MethodCall).getTarget())
+  not sessionEndMethod(s2.getElement().(MethodCall).getTarget())
 }
 
 from
   ControlFlow::Node loginCall, Method loginMethod, ControlFlow::Node sessionUse,
   ControlFlow::SuccessorType fromLoginFlow
 where
-  loginMethod = loginCall.getAstNode().(MethodCall).getTarget() and
+  loginMethod = loginCall.getElement().(MethodCall).getTarget() and
   loginMethod(loginMethod, fromLoginFlow) and
-  sessionUse(sessionUse.getAstNode()) and
+  sessionUse(sessionUse.getElement()) and
   controlStep+(loginCall.getASuccessorByType(fromLoginFlow), sessionUse)
 select sessionUse, "This session has not been invalidated following the call to $@.", loginCall,
   loginMethod.getName()

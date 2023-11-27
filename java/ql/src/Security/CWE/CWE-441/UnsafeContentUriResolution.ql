@@ -14,10 +14,10 @@
 
 import java
 import semmle.code.java.security.UnsafeContentUriResolutionQuery
-import UnsafeContentResolutionFlow::PathGraph
+import DataFlow::PathGraph
 
-from UnsafeContentResolutionFlow::PathNode src, UnsafeContentResolutionFlow::PathNode sink
-where UnsafeContentResolutionFlow::flowPath(src, sink)
+from DataFlow::PathNode src, DataFlow::PathNode sink
+where any(UnsafeContentResolutionConf c).hasFlowPath(src, sink)
 select sink.getNode(), src, sink,
   "This ContentResolver method that resolves a URI depends on a $@.", src.getNode(),
   "user-provided value"

@@ -13,19 +13,18 @@ import codeql.swift.security.SqlInjectionExtensions
 /**
  * A taint configuration for tainted data that reaches a SQL sink.
  */
-module SqlInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) { node instanceof FlowSource }
+class SqlInjectionConfig extends TaintTracking::Configuration {
+  SqlInjectionConfig() { this = "SqlInjectionConfig" }
 
-  predicate isSink(DataFlow::Node node) { node instanceof SqlInjectionSink }
+  override predicate isSource(DataFlow::Node node) { node instanceof FlowSource }
 
-  predicate isBarrier(DataFlow::Node barrier) { barrier instanceof SqlInjectionBarrier }
+  override predicate isSink(DataFlow::Node node) { node instanceof SqlInjectionSink }
 
-  predicate isAdditionalFlowStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
-    any(SqlInjectionAdditionalFlowStep s).step(nodeFrom, nodeTo)
+  override predicate isSanitizer(DataFlow::Node sanitizer) {
+    sanitizer instanceof SqlInjectionSanitizer
+  }
+
+  override predicate isAdditionalTaintStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
+    any(SqlInjectionAdditionalTaintStep s).step(nodeFrom, nodeTo)
   }
 }
-
-/**
- * Detect taint flow of tainted data that reaches a SQL sink.
- */
-module SqlInjectionFlow = TaintTracking::Global<SqlInjectionConfig>;

@@ -1,8 +1,12 @@
 import python
 import experimental.meta.ConceptsTest
 
-class DedicatedTest extends DedicatedResponseTest {
-  DedicatedTest() { this = "response_test.py" }
+class DedicatedResponseTest extends HttpServerHttpResponseTest {
+  DedicatedResponseTest() { file.getShortName() = "response_test.py" }
+}
 
-  override predicate isDedicatedFile(File file) { file.getShortName() = this }
+class OtherResponseTest extends HttpServerHttpResponseTest {
+  OtherResponseTest() { not this instanceof DedicatedResponseTest }
+
+  override string getARelevantTag() { result = "HttpResponse" }
 }

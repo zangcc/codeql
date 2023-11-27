@@ -4,17 +4,17 @@ import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.security.MvelInjectionQuery
 import TestUtilities.InlineExpectationsTest
 
-module HasMvelInjectionTest implements TestSig {
-  string getARelevantTag() { result = "hasMvelInjection" }
+class HasMvelInjectionTest extends InlineExpectationsTest {
+  HasMvelInjectionTest() { this = "HasMvelInjectionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasMvelInjection" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasMvelInjection" and
-    exists(DataFlow::Node sink | MvelInjectionFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, MvelInjectionFlowConfig conf | conf.hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<HasMvelInjectionTest>

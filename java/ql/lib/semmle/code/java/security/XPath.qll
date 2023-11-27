@@ -13,7 +13,7 @@ abstract class XPathInjectionSink extends DataFlow::Node { }
 /** A default sink representing methods susceptible to XPath Injection attacks. */
 private class DefaultXPathInjectionSink extends XPathInjectionSink {
   DefaultXPathInjectionSink() {
-    sinkNode(this, "xpath-injection")
+    sinkNode(this, "xpath")
     or
     exists(ClassInstanceExpr constructor |
       constructor.getConstructedType().getASourceSupertype*().hasQualifiedName("org.dom4j", "XPath")

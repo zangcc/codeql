@@ -2,17 +2,19 @@ import java
 import semmle.code.java.security.HardcodedCredentialsApiCallQuery
 import TestUtilities.InlineExpectationsTest
 
-module HardcodedCredentialsApiCallTest implements TestSig {
-  string getARelevantTag() { result = "HardcodedCredentialsApiCall" }
+class HardcodedCredentialsApiCallTest extends InlineExpectationsTest {
+  HardcodedCredentialsApiCallTest() { this = "HardcodedCredentialsApiCallTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "HardcodedCredentialsApiCall" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "HardcodedCredentialsApiCall" and
-    exists(DataFlow::Node sink | HardcodedCredentialApiCallFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, HardcodedCredentialApiCallConfiguration conf |
+      conf.hasFlow(_, sink)
+    |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<HardcodedCredentialsApiCallTest>

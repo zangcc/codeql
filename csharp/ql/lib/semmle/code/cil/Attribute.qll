@@ -12,9 +12,9 @@ class Attribute extends Element, @cil_attribute {
   Method getConstructor() { cil_attribute(this, _, result) }
 
   /** Gets the type of this attribute. */
-  Type getType() { result = this.getConstructor().getDeclaringType() }
+  Type getType() { result = getConstructor().getDeclaringType() }
 
-  override string toString() { result = "[" + this.getType().getName() + "(...)]" }
+  override string toString() { result = "[" + getType().getName() + "(...)]" }
 
   /** Gets the value of the `i`th argument of this attribute. */
   string getArgument(int i) { cil_attribute_positional_argument(this, i, result) }
@@ -23,9 +23,9 @@ class Attribute extends Element, @cil_attribute {
   string getNamedArgument(string name) { cil_attribute_named_argument(this, name, result) }
 
   /** Gets an argument of this attribute, if any. */
-  string getAnArgument() { result = this.getArgument(_) or result = this.getNamedArgument(_) }
+  string getAnArgument() { result = getArgument(_) or result = getNamedArgument(_) }
 
-  override CS::Location getLocation() { result = this.getDeclaration().getLocation() }
+  override CS::Location getLocation() { result = getDeclaration().getLocation() }
 }
 
 /** A generic attribute to a declaration. */

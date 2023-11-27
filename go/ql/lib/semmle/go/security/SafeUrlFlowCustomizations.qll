@@ -19,7 +19,7 @@ module SafeUrlFlow {
   /** An outgoing sanitizer edge for safe URL flow. */
   abstract class SanitizerEdge extends DataFlow::Node { }
 
-  /** A standard library safe URL source. */
+  /** Standard library safe URL sources. */
   class StdlibSource extends Source, DataFlow::FieldReadNode {
     StdlibSource() { this.getField().hasQualifiedName("net/http", "Request", ["Host", "URL"]) }
   }
@@ -33,11 +33,6 @@ module SafeUrlFlow {
 
   /** A function model step using `UnsafeUrlMethod`, considered as a sanitizer for safe URL flow. */
   private class UnsafeUrlMethodEdge extends SanitizerEdge {
-    UnsafeUrlMethodEdge() { this = any(UnsafeUrlMethod um).getACall().getReceiver() }
-  }
-
-  /** Any slicing of the URL, considered as a sanitizer for safe URL flow. */
-  private class StringSlicingEdge extends SanitizerEdge {
-    StringSlicingEdge() { this = any(DataFlow::SliceNode sn) }
+    UnsafeUrlMethodEdge() { this = any(UnsafeUrlMethod um).getAnInputNode(_) }
   }
 }

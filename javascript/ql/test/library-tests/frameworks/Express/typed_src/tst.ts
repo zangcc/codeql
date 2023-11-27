@@ -2,7 +2,6 @@
 
 import * as express from 'express';
 
-function test(x: express.Request, res: express.Response) {
+function test(x: express.Request) {
   x.body;
-  res.status(404);
 }

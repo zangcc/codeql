@@ -4,8 +4,6 @@
 
 private import go
 private import FlowSummaryImpl as FlowSummaryImpl
-private import codeql.util.Unit
-private import DataFlowPrivate as DataFlowPrivate
 
 /**
  * Holds if taint can flow from `src` to `sink` in zero or more
@@ -47,7 +45,7 @@ private Type getElementType(Type containerType) {
  * of `c` at sinks and inputs to additional taint steps.
  */
 bindingset[node]
-predicate defaultImplicitTaintRead(DataFlow::Node node, DataFlow::ContentSet c) {
+predicate defaultImplicitTaintRead(DataFlow::Node node, DataFlow::Content c) {
   exists(Type containerType |
     node instanceof DataFlow::ArgumentNode and
     getElementType*(node.getType()) = containerType
@@ -66,6 +64,14 @@ predicate defaultImplicitTaintRead(DataFlow::Node node, DataFlow::ContentSet c) 
     or
     c.(DataFlow::PointerContent).getPointerType() = containerType
   )
+}
+
+private newtype TUnit = TMkUnit()
+
+/** A singleton class containing a single dummy "unit" value. */
+private class Unit extends TUnit {
+  /** Gets a textual representation of this element. */
+  string toString() { result = "unit" }
 }
 
 /**
@@ -96,8 +102,7 @@ predicate localAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {
   sliceStep(pred, succ) or
   any(FunctionModel fm).taintStep(pred, succ) or
   any(AdditionalTaintStep a).step(pred, succ) or
-  FlowSummaryImpl::Private::Steps::summaryLocalStep(pred.(DataFlowPrivate::FlowSummaryNode)
-        .getSummaryNode(), succ.(DataFlowPrivate::FlowSummaryNode).getSummaryNode(), false)
+  FlowSummaryImpl::Private::Steps::summaryLocalStep(pred, succ, false)
 }
 
 /**
@@ -221,6 +226,13 @@ abstract class DefaultTaintSanitizer extends DataFlow::Node { }
  * but not in local taint.
  */
 predicate defaultTaintSanitizer(DataFlow::Node node) { node instanceof DefaultTaintSanitizer }
+
+/**
+ * DEPRECATED: Use `DefaultTaintSanitizer` instead.
+ *
+ * A sanitizer guard in all global taint flow configurations but not in local taint.
+ */
+abstract deprecated class DefaultTaintSanitizerGuard extends DataFlow::BarrierGuard { }
 
 private predicate equalityTestGuard(DataFlow::Node g, Expr e, boolean outcome) {
   exists(DataFlow::EqualityTestNode eq, DataFlow::Node nonConstNode |
@@ -399,21 +411,5 @@ private predicate listOfConstantsComparisonSanitizerGuard(DataFlow::Node g, Expr
 class ListOfConstantsComparisonSanitizerGuard extends TaintTracking::DefaultTaintSanitizer {
   ListOfConstantsComparisonSanitizerGuard() {
     this = DataFlow::BarrierGuard<listOfConstantsComparisonSanitizerGuard/3>::getABarrierNode()
-  }
-}
-
-/**
- * The `clear` built-in function deletes or zeroes out all elements of a map or slice
- * and therefore acts as a general sanitizer for taint flow to any uses dominated by it.
- */
-private class ClearSanitizer extends DefaultTaintSanitizer {
-  ClearSanitizer() {
-    exists(SsaWithFields var, DataFlow::CallNode call, DataFlow::Node arg | this = var.getAUse() |
-      call = Builtin::clear().getACall() and
-      arg = call.getAnArgument() and
-      arg = var.getAUse() and
-      arg != this and
-      this.getBasicBlock().(ReachableBasicBlock).dominates(this.getBasicBlock())
-    )
   }
 }

@@ -15,8 +15,7 @@ import semmle.code.cpp.models.interfaces.FlowSource
  * The `scanf` family of functions.
  */
 abstract private class ScanfFunctionModel extends ArrayFunction, TaintFunction, AliasFunction,
-  SideEffectFunction
-{
+  SideEffectFunction {
   override predicate hasArrayWithNullTerminator(int bufParam) {
     bufParam = this.(ScanfFunction).getFormatParameterIndex()
   }

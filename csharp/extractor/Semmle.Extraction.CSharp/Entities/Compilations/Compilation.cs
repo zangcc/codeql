@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using System;
 using System.IO;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Semmle.Util;
 
 namespace Semmle.Extraction.CSharp.Entities

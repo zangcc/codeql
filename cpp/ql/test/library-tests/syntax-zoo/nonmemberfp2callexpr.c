@@ -1,6 +1,6 @@
 void (*g())();
 
-static void f() {
+void f() {
 	g()();
 	;
 }

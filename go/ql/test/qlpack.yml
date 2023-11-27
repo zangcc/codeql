@@ -7,4 +7,3 @@ dependencies:
   codeql/go-all: ${workspace}
   codeql/go-examples: ${workspace}
 extractor: go
-warnOnImplicitThis: true

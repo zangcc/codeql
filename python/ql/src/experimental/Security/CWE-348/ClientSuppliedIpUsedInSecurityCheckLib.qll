@@ -16,8 +16,7 @@ private import semmle.python.frameworks.Tornado
 abstract class ClientSuppliedIpUsedInSecurityCheck extends DataFlow::Node { }
 
 private class FlaskClientSuppliedIpUsedInSecurityCheck extends ClientSuppliedIpUsedInSecurityCheck,
-  DataFlow::MethodCallNode
-{
+  DataFlow::MethodCallNode {
   FlaskClientSuppliedIpUsedInSecurityCheck() {
     this = Flask::request().getMember("headers").getMember(["get", "get_all", "getlist"]).getACall() and
     this.getArg(0).asExpr().(StrConst).getText().toLowerCase() = clientIpParameterName()
@@ -25,8 +24,7 @@ private class FlaskClientSuppliedIpUsedInSecurityCheck extends ClientSuppliedIpU
 }
 
 private class DjangoClientSuppliedIpUsedInSecurityCheck extends ClientSuppliedIpUsedInSecurityCheck,
-  DataFlow::MethodCallNode
-{
+  DataFlow::MethodCallNode {
   DjangoClientSuppliedIpUsedInSecurityCheck() {
     exists(DataFlow::Node req, DataFlow::AttrRead headers |
       // a call to request.headers.get or request.META.get
@@ -40,8 +38,7 @@ private class DjangoClientSuppliedIpUsedInSecurityCheck extends ClientSuppliedIp
 }
 
 private class TornadoClientSuppliedIpUsedInSecurityCheck extends ClientSuppliedIpUsedInSecurityCheck,
-  DataFlow::MethodCallNode
-{
+  DataFlow::MethodCallNode {
   TornadoClientSuppliedIpUsedInSecurityCheck() {
     // a call to self.request.headers.get or self.request.headers.get_list inside a tornado requesthandler
     exists(

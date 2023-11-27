@@ -101,10 +101,10 @@ predicate hostnameSanitizingPrefixEdge(DataFlow::Node source, DataFlow::Node sin
  * A check that sanitizes the hostname of a URL.
  */
 class HostnameSanitizerGuard extends TaintTracking::SanitizerGuardNode, StringOps::StartsWith {
-  HostnameSanitizerGuard() { hasHostnameSanitizingSubstring(this.getSubstring()) }
+  HostnameSanitizerGuard() { hasHostnameSanitizingSubstring(getSubstring()) }
 
   override predicate sanitizes(boolean outcome, Expr e) {
-    outcome = this.getPolarity() and
-    e = this.getBaseString().asExpr()
+    outcome = getPolarity() and
+    e = getBaseString().asExpr()
   }
 }

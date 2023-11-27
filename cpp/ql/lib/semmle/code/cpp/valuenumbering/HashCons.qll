@@ -282,10 +282,10 @@ class HashCons extends HCBase {
   }
 
   /** Gets a textual representation of this element. */
-  string toString() { result = this.exampleExpr().toString() }
+  string toString() { result = exampleExpr().toString() }
 
   /** Gets the primary location of this element. */
-  Location getLocation() { result = this.exampleExpr().getLocation() }
+  Location getLocation() { result = exampleExpr().getLocation() }
 }
 
 /**
@@ -372,8 +372,7 @@ private predicate analyzablePointerFieldAccess(PointerFieldAccess access) {
 private predicate mk_PointerFieldAccess(HashCons qualifier, Field target, PointerFieldAccess access) {
   analyzablePointerFieldAccess(access) and
   target = access.getTarget() and
-  qualifier = hashCons(access.getQualifier().getFullyConverted()) and
-  not access instanceof ImplicitThisFieldAccess
+  qualifier = hashCons(access.getQualifier().getFullyConverted())
 }
 
 private predicate analyzableImplicitThisFieldAccess(ImplicitThisFieldAccess access) {
@@ -742,7 +741,7 @@ private predicate mk_FieldCons(
   analyzableClassAggregateLiteral(cal) and
   cal.getUnspecifiedType() = c and
   exists(Expr e |
-    e = cal.getAFieldExpr(f).getFullyConverted() and
+    e = cal.getFieldExpr(f).getFullyConverted() and
     f.getInitializationOrder() = i and
     (
       hc = hashCons(e) and
@@ -758,9 +757,9 @@ private predicate mk_FieldCons(
 private predicate analyzableClassAggregateLiteral(ClassAggregateLiteral cal) {
   forall(int i | exists(cal.getChild(i)) |
     strictcount(cal.getChild(i).getFullyConverted()) = 1 and
-    strictcount(Field f | cal.getChild(i) = cal.getAFieldExpr(f)) = 1 and
+    strictcount(Field f | cal.getChild(i) = cal.getFieldExpr(f)) = 1 and
     strictcount(Field f, int j |
-      cal.getAFieldExpr(f) = cal.getChild(i) and j = f.getInitializationOrder()
+      cal.getFieldExpr(f) = cal.getChild(i) and j = f.getInitializationOrder()
     ) = 1
   )
 }

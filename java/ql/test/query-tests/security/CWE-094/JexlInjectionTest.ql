@@ -2,17 +2,17 @@ import java
 import semmle.code.java.security.JexlInjectionQuery
 import TestUtilities.InlineExpectationsTest
 
-module JexlInjectionTest implements TestSig {
-  string getARelevantTag() { result = "hasJexlInjection" }
+class JexlInjectionTest extends InlineExpectationsTest {
+  JexlInjectionTest() { this = "HasJexlInjectionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasJexlInjection" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasJexlInjection" and
-    exists(DataFlow::Node sink | JexlInjectionFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, JexlInjectionConfig conf | conf.hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<JexlInjectionTest>

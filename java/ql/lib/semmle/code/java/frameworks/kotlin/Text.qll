@@ -8,7 +8,7 @@ class StringsKt extends RefType {
 }
 
 /** A call to the extension method `String.toRegex` from `kotlin.text`. */
-class KtToRegex extends MethodCall {
+class KtToRegex extends MethodAccess {
   KtToRegex() {
     this.getMethod().getDeclaringType() instanceof StringsKt and
     this.getMethod().hasName("toRegex")

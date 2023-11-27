@@ -27,15 +27,15 @@ class FormatMethod extends Method {
         or
         (this.hasName("Write") or this.hasName("WriteLine")) and
         (
-          declType.hasFullyQualifiedName("System", "Console")
+          declType.hasQualifiedName("System", "Console")
           or
-          declType.hasFullyQualifiedName("System.IO", "TextWriter")
+          declType.hasQualifiedName("System.IO", "TextWriter")
           or
-          declType.hasFullyQualifiedName("System.Diagnostics", "Debug") and
+          declType.hasQualifiedName("System.Diagnostics", "Debug") and
           this.getParameter(1).getType() instanceof ArrayType
         )
         or
-        declType.hasFullyQualifiedName("System.Diagnostics", "Trace") and
+        declType.hasQualifiedName("System.Diagnostics", "Trace") and
         (
           this.hasName("TraceError") or
           this.hasName("TraceInformation") or
@@ -43,14 +43,14 @@ class FormatMethod extends Method {
         )
         or
         this.hasName("TraceInformation") and
-        declType.hasFullyQualifiedName("System.Diagnostics", "TraceSource")
+        declType.hasQualifiedName("System.Diagnostics", "TraceSource")
         or
         this.hasName("Print") and
-        declType.hasFullyQualifiedName("System.Diagnostics", "Debug")
+        declType.hasQualifiedName("System.Diagnostics", "Debug")
       )
       or
       this.hasName("Assert") and
-      declType.hasFullyQualifiedName("System.Diagnostics", "Debug") and
+      declType.hasQualifiedName("System.Diagnostics", "Debug") and
       this.getNumberOfParameters() = 4
     )
   }
@@ -65,7 +65,7 @@ class FormatMethod extends Method {
     else
       if
         this.hasName("Assert") and
-        this.getDeclaringType().hasFullyQualifiedName("System.Diagnostics", "Debug")
+        this.getDeclaringType().hasQualifiedName("System.Diagnostics", "Debug")
       then result = 2
       else result = 0
   }

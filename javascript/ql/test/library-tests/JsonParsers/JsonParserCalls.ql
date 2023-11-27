@@ -1,10 +1,10 @@
 import javascript
 
 class Assertion extends DataFlow::CallNode {
-  Assertion() { this.getCalleeName() = "checkJSON" }
+  Assertion() { getCalleeName() = "checkJSON" }
 
   string getMessage() {
-    if not any(JsonParserCall call).getOutput().flowsTo(this.getArgument(0))
+    if not any(JsonParserCall call).getOutput().flowsTo(getArgument(0))
     then result = "Should be JSON parser"
     else result = "OK"
   }

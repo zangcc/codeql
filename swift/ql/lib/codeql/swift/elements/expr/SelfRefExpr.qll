@@ -1,14 +1,14 @@
 private import codeql.swift.elements.expr.DeclRefExpr
-private import codeql.swift.elements.decl.Method
+private import codeql.swift.elements.decl.MethodDecl
 private import codeql.swift.elements.decl.VarDecl
 
 /** A reference to `self`. */
 class SelfRefExpr extends DeclRefExpr {
-  Method method;
+  MethodDecl methodDecl;
 
-  SelfRefExpr() { this.getDecl() = method.getSelfParam() }
+  SelfRefExpr() { this.getDecl() = methodDecl.getSelfParam() }
 
   VarDecl getSelf() { result = this.getDecl() }
 
-  Method getDeclaringMethod() { result = method }
+  MethodDecl getDeclaringMethod() { result = methodDecl }
 }

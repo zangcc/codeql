@@ -6,11 +6,9 @@ import semmle.code.java.frameworks.Networking
 import semmle.code.java.security.HttpsUrls
 
 /**
- * DEPRECATED: Use `HttpsStringToUrlOpenMethodFlow` instead.
- *
  * A taint tracking configuration for HTTP connections.
  */
-deprecated class HttpStringToUrlOpenMethodFlowConfig extends TaintTracking::Configuration {
+class HttpStringToUrlOpenMethodFlowConfig extends TaintTracking::Configuration {
   HttpStringToUrlOpenMethodFlowConfig() { this = "HttpStringToUrlOpenMethodFlowConfig" }
 
   override predicate isSource(DataFlow::Node src) { src.asExpr() instanceof HttpStringLiteral }
@@ -25,25 +23,3 @@ deprecated class HttpStringToUrlOpenMethodFlowConfig extends TaintTracking::Conf
     node.getType() instanceof PrimitiveType or node.getType() instanceof BoxedType
   }
 }
-
-/**
- * A taint tracking configuration for HTTP connections.
- */
-module HttpStringToUrlOpenMethodFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src.asExpr() instanceof HttpStringLiteral }
-
-  predicate isSink(DataFlow::Node sink) { sink instanceof UrlOpenSink }
-
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
-    any(HttpUrlsAdditionalTaintStep c).step(node1, node2)
-  }
-
-  predicate isBarrier(DataFlow::Node node) {
-    node.getType() instanceof PrimitiveType or node.getType() instanceof BoxedType
-  }
-}
-
-/**
- * Detect taint flow of HTTP connections.
- */
-module HttpStringToUrlOpenMethodFlow = TaintTracking::Global<HttpStringToUrlOpenMethodFlowConfig>;

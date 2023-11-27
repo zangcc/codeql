@@ -17,6 +17,9 @@ abstract class TranslatedCondition extends ConditionBase {
 
   final override Language::AST getAst() { result = expr }
 
+  /** DEPRECATED: Alias for getAst */
+  deprecated override Language::AST getAST() { result = this.getAst() }
+
   final Expr getExpr() { result = expr }
 
   final override Callable getFunction() { result = expr.getEnclosingCallable() }
@@ -25,8 +28,7 @@ abstract class TranslatedCondition extends ConditionBase {
 }
 
 abstract class TranslatedFlexibleCondition extends TranslatedCondition, ConditionContext,
-  TTranslatedFlexibleCondition
-{
+  TTranslatedFlexibleCondition {
   TranslatedFlexibleCondition() { this = TTranslatedFlexibleCondition(expr) }
 
   final override TranslatedElement getChild(int id) { id = 0 and result = this.getOperand() }
@@ -154,8 +156,7 @@ class TranslatedLogicalOrExpr extends TranslatedBinaryLogicalOperation {
 }
 
 class TranslatedValueCondition extends TranslatedCondition, ValueConditionBase,
-  TTranslatedValueCondition
-{
+  TTranslatedValueCondition {
   TranslatedValueCondition() { this = TTranslatedValueCondition(expr) }
 
   override TranslatedExpr getValueExpr() { result = getTranslatedExpr(expr) }

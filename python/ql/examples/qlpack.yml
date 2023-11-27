@@ -4,4 +4,3 @@ groups:
   - examples
 dependencies:
   codeql/python-all: ${workspace}
-warnOnImplicitThis: true

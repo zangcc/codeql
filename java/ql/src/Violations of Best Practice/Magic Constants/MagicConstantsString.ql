@@ -37,13 +37,13 @@ predicate trivialContext(Literal e) {
   or
   e.getParent() instanceof AssignAddExpr
   or
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     ma.getMethod().getName() = "append" and
     (e = ma.getAnArgument() or e = ma.getQualifier())
   )
   or
   // Standard property in a call to `System.getProperty()`.
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     ma.getMethod().getName() = "getProperty" and
     e = ma.getAnArgument() and
     ma.getMethod().getDeclaringType() instanceof TypeSystem and

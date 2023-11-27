@@ -1,0 +1,56 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "WordexpTainted.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "71aeec42ce2f60e7e2d20ea62cb6c1e212e14394"
+  debugInfo: "315a40523ef42ff233da3bf85a69da80c15489b0"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "9b5e259022b0f1a351f34958343011698159b2c7"
+- cached: "044d74fa556004cf073fbebb429a14e249bb9b1f"
+  debugInfo: "296fac4aafe90fc632aa91c1156dcabb6b9194f2"
+- cached: "d06004fe75ab6afcce284a7da2f0c5b710c30e8e"
+  debugInfo: "1ed4579742394b5cda2b067c49b244b4da91d72a"
+- cached: "5a7f9fbc1550c93084b1c41446939bca46efe511"
+  debugInfo: "405b6885887f80dcd635162d3584537873f67649"
+- cached: "3a65a71867a3302b9ca6acc6adcc6746d306ce4b"
+  debugInfo: "b08bb56690f373a507cef134a9438768d7d5ac0b"
+- cached: "edeec5474c60e245e25d33a39a9e53be74577b2e"
+  debugInfo: "8cf44260239dd0fb8e571ab58c192b352f72741b"
+- cached: "6c8b3996f913a2c301248eb9686264937fe1493c"
+  debugInfo: "7b98f3cbe311dfde8a21bbc232cd99e1050d050d"
+- cached: "7543171f31eeb07fa757382853836916e6046f54"
+  debugInfo: "27fe12072de0b025d40cf4f4c63f873dd468b2b7"
+- cached: "2d767ba4406dfca141d0aa23440972a3f47c8648"
+  debugInfo: "2c2c72b80ac01386ad3c22c5852e44168ad9301d"
+- cached: "c6ce827f1f72c88858b02b5427bb8905409a3c5d"
+  debugInfo: "5a24b6e4946ddf8de86ed240e9458397f02a2c54"
+- cached: "ab8d406f732ef99ab821b1b6ecbf6a1f2b0ec605"
+  debugInfo: "bb466661bfefa22b4d22dbeff1e4edb31472be5e"
+- cached: "3bf6b25cb8f58a4a528d6873a7fbe4b0a653afa0"
+  debugInfo: "07b23df5ab474def9bc809d796939fb76cfb7b38"
+- cached: "1fecd39a7421f9c365e9f29a1581bd2deab23880"
+  debugInfo: "3176e2475474afa032b313b53ed2ad78464fe85c"
+- cached: "2ef7e25a08ff7392723b1154815d3a061895c9ce"
+  debugInfo: "1043c4236545942a8c809b0d2b1cbaf2711c6a70"
+- cached: "378f45db5c3a5cedfcc8d66f831ad01bbe9b79a6"
+  debugInfo: "161541e501fd58de661901e380af5264565c41d8"
+- cached: "1bb3a319847b5381d924b76316cb9dbedb21e57d"
+  debugInfo: "eca7a69594d8932bf37e44eefcd72aefc85352c3"
+- cached: "40f98925f6b22f135e2c7fa316931c42d1a96103"
+  debugInfo: "cc55ec3e0f73d706734ff2b4d5c51c1292c38a71"
+- cached: "e1bf5565de8cb3d6282c5738a34340fcc54c0492"
+  debugInfo: "ab943b636e6581758da2e4f9e47493d4af88594b"
+results:
+  edges:
+    resultArranger: "2\"a\"ei12\"b\"ei12"
+  nodes:
+    resultArranger: "3\"n\"ei12\"key\"s\"val\"s"
+  subpaths:
+    resultArranger: "4\"arg\"ei12\"par\"ei12\"ret\"ei12\"out\"ei12"
+  '#select':
+    resultArranger: "40ei12\"sourceNode\"ei12\"sinkNode\"ei120s"
+inputsDigest: "cca5992b4b4ce958625f60e7b2fdecdf3919fab8"

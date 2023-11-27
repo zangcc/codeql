@@ -13,7 +13,7 @@
 
 import java
 
-from MethodCall ma, Method m, MainMethod main
+from MethodAccess ma, Method m, MainMethod main
 where
   ma.getQualifier().getType().getCompilationUnit().getPackage().getName().matches("javax.swing%") and
   (

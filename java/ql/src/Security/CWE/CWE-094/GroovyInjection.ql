@@ -13,9 +13,9 @@
 
 import java
 import semmle.code.java.security.GroovyInjectionQuery
-import GroovyInjectionFlow::PathGraph
+import DataFlow::PathGraph
 
-from GroovyInjectionFlow::PathNode source, GroovyInjectionFlow::PathNode sink
-where GroovyInjectionFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, GroovyInjectionConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "Groovy script depends on a $@.", source.getNode(),
   "user-provided value"

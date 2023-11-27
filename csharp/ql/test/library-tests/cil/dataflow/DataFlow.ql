@@ -3,9 +3,9 @@
  */
 
 import csharp
-import Flow::PathGraph
+import DataFlow
 
-private predicate relevantPathNode(Flow::PathNode n) {
+private predicate relevantPathNode(PathNode n) {
   exists(File f | f = n.getNode().getLocation().getFile() |
     f.fromSource()
     or
@@ -13,37 +13,35 @@ private predicate relevantPathNode(Flow::PathNode n) {
   )
 }
 
-query predicate edges(Flow::PathNode a, Flow::PathNode b) {
-  Flow::PathGraph::edges(a, b) and
+query predicate edges(PathNode a, PathNode b) {
+  PathGraph::edges(a, b) and
   relevantPathNode(a) and
   relevantPathNode(b)
 }
 
-query predicate nodes(Flow::PathNode n, string key, string val) {
-  Flow::PathGraph::nodes(n, key, val) and
+query predicate nodes(PathNode n, string key, string val) {
+  PathGraph::nodes(n, key, val) and
   relevantPathNode(n)
 }
 
-query predicate subpaths(
-  Flow::PathNode arg, Flow::PathNode par, Flow::PathNode ret, Flow::PathNode out
-) {
-  Flow::PathGraph::subpaths(arg, par, ret, out) and
+query predicate subpaths(PathNode arg, PathNode par, PathNode ret, PathNode out) {
+  PathGraph::subpaths(arg, par, ret, out) and
   relevantPathNode(arg) and
   relevantPathNode(par) and
   relevantPathNode(ret) and
   relevantPathNode(out)
 }
 
-module FlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source.asExpr() instanceof Literal }
+class FlowConfig extends Configuration {
+  FlowConfig() { this = "FlowConfig" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(Node source) { source.asExpr() instanceof Literal }
+
+  override predicate isSink(Node sink) {
     exists(LocalVariable decl | sink.asExpr() = decl.getInitializer())
   }
 }
 
-module Flow = DataFlow::Global<FlowConfig>;
-
-from Flow::PathNode source, Flow::PathNode sink
-where Flow::flowPath(source, sink)
+from PathNode source, PathNode sink, FlowConfig config
+where config.hasFlowPath(source, sink)
 select source, sink, sink, "$@", sink, sink.toString()

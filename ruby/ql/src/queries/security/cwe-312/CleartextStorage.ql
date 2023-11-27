@@ -16,9 +16,10 @@
 import codeql.ruby.AST
 import codeql.ruby.security.CleartextStorageQuery
 import codeql.ruby.security.CleartextStorageCustomizations::CleartextStorage
-import CleartextStorageFlow::PathGraph
+import codeql.ruby.DataFlow
+import DataFlow::PathGraph
 
-from CleartextStorageFlow::PathNode source, CleartextStorageFlow::PathNode sink
-where CleartextStorageFlow::flowPath(source, sink)
+from Configuration config, DataFlow::PathNode source, DataFlow::PathNode sink
+where config.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This stores sensitive data returned by $@ as clear text.",
   source.getNode(), source.getNode().(Source).describe()

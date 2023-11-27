@@ -18,5 +18,3 @@
      - ``python``
    * - Ruby
      - ``ruby``
-   * - Swift
-     - ``swift``

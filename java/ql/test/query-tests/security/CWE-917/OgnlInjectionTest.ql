@@ -2,17 +2,17 @@ import java
 import semmle.code.java.security.OgnlInjectionQuery
 import TestUtilities.InlineExpectationsTest
 
-module OgnlInjectionTest implements TestSig {
-  string getARelevantTag() { result = "hasOgnlInjection" }
+class OgnlInjectionTest extends InlineExpectationsTest {
+  OgnlInjectionTest() { this = "HasOgnlInjection" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasOgnlInjection" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasOgnlInjection" and
-    exists(DataFlow::Node sink | OgnlInjectionFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, OgnlInjectionFlowConfig conf | conf.hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<OgnlInjectionTest>

@@ -13,27 +13,23 @@ import codeql.swift.security.CleartextStoragePreferencesExtensions
  * A taint configuration from sensitive information to expressions that are
  * stored as preferences.
  */
-module CleartextStoragePreferencesConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) { node.asExpr() instanceof SensitiveExpr }
+class CleartextStorageConfig extends TaintTracking::Configuration {
+  CleartextStorageConfig() { this = "CleartextStorageConfig" }
 
-  predicate isSink(DataFlow::Node node) { node instanceof CleartextStoragePreferencesSink }
+  override predicate isSource(DataFlow::Node node) { node.asExpr() instanceof SensitiveExpr }
 
-  predicate isBarrier(DataFlow::Node barrier) {
-    barrier instanceof CleartextStoragePreferencesBarrier
+  override predicate isSink(DataFlow::Node node) { node instanceof CleartextStoragePreferencesSink }
+
+  override predicate isSanitizer(DataFlow::Node sanitizer) {
+    sanitizer instanceof CleartextStoragePreferencesSanitizer
   }
 
-  predicate isAdditionalFlowStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
-    any(CleartextStoragePreferencesAdditionalFlowStep s).step(nodeFrom, nodeTo)
+  override predicate isAdditionalTaintStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
+    any(CleartextStoragePreferencesAdditionalTaintStep s).step(nodeFrom, nodeTo)
   }
 
-  predicate isBarrierIn(DataFlow::Node node) {
+  override predicate isSanitizerIn(DataFlow::Node node) {
     // make sources barriers so that we only report the closest instance
-    isSource(node)
+    this.isSource(node)
   }
 }
-
-/**
- * Detect taint flow of sensitive information to expressions that are stored
- * as preferences.
- */
-module CleartextStoragePreferencesFlow = TaintTracking::Global<CleartextStoragePreferencesConfig>;

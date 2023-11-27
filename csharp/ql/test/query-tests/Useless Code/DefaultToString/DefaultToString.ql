@@ -8,7 +8,7 @@ class MyDefaultToStringType extends DefaultToStringType {
     string filepath, int startline, int startcolumn, int endline, int endcolumn
   ) {
     exists(Location l | l = this.getLocation() |
-      if this.fromSource()
+      if l instanceof SourceLocation
       then l.hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn)
       else
         any(EmptyLocation el).hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn)

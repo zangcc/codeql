@@ -21,7 +21,7 @@ class Synched extends Stmt {
   }
 }
 
-from MethodCall ma, SynchronizedStmt synch
+from MethodAccess ma, SynchronizedStmt synch
 where
   ma.getMethod().hasName("wait") and
   ma.getMethod().getDeclaringType().hasQualifiedName("java.lang", "Object") and

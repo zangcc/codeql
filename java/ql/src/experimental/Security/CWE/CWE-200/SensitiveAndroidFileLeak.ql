@@ -14,25 +14,27 @@ import java
 import semmle.code.java.controlflow.Guards
 import AndroidFileIntentSink
 import AndroidFileIntentSource
-import AndroidFileLeakFlow::PathGraph
+import DataFlow::PathGraph
 
 private predicate startsWithSanitizer(Guard g, Expr e, boolean branch) {
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     g = ma and
     ma.getMethod().hasName("startsWith") and
-    e = [ma.getQualifier(), ma.getQualifier().(MethodCall).getQualifier()] and
+    e = [ma.getQualifier(), ma.getQualifier().(MethodAccess).getQualifier()] and
     branch = false
   )
 }
 
-module AndroidFileLeakConfig implements DataFlow::ConfigSig {
+class AndroidFileLeakConfig extends TaintTracking::Configuration {
+  AndroidFileLeakConfig() { this = "AndroidFileLeakConfig" }
+
   /**
    * Holds if `src` is a read of some Intent-typed variable guarded by a check like
    * `requestCode == someCode`, where `requestCode` is the first
    * argument to `Activity.onActivityResult` and `someCode` is
    * any request code used in a call to `startActivityForResult(intent, someCode)`.
    */
-  predicate isSource(DataFlow::Node src) {
+  override predicate isSource(DataFlow::Node src) {
     exists(
       OnActivityForResultMethod oafr, ConditionBlock cb, CompileTimeConstantExpr cc,
       VarAccess intentVar
@@ -48,10 +50,10 @@ module AndroidFileLeakConfig implements DataFlow::ConfigSig {
   }
 
   /** Holds if it is a sink of file access in Android. */
-  predicate isSink(DataFlow::Node sink) { sink instanceof AndroidFileSink }
+  override predicate isSink(DataFlow::Node sink) { sink instanceof AndroidFileSink }
 
-  predicate isAdditionalFlowStep(DataFlow::Node prev, DataFlow::Node succ) {
-    exists(MethodCall aema, AsyncTaskRunInBackgroundMethod arm |
+  override predicate isAdditionalTaintStep(DataFlow::Node prev, DataFlow::Node succ) {
+    exists(MethodAccess aema, AsyncTaskRunInBackgroundMethod arm |
       // fileAsyncTask.execute(params) will invoke doInBackground(params) of FileAsyncTask
       aema.getQualifier().getType() = arm.getDeclaringType() and
       aema.getMethod() instanceof ExecuteAsyncTaskMethod and
@@ -59,7 +61,7 @@ module AndroidFileLeakConfig implements DataFlow::ConfigSig {
       succ.asParameter() = arm.getParameter(0)
     )
     or
-    exists(MethodCall csma, ServiceOnStartCommandMethod ssm, ClassInstanceExpr ce |
+    exists(MethodAccess csma, ServiceOnStartCommandMethod ssm, ClassInstanceExpr ce |
       // An intent passed to startService will later be passed to the onStartCommand event of the corresponding service
       csma.getMethod() instanceof ContextStartServiceMethod and
       ce.getConstructedType() instanceof TypeIntent and // Intent intent = new Intent(context, FileUploader.class);
@@ -70,14 +72,12 @@ module AndroidFileLeakConfig implements DataFlow::ConfigSig {
     )
   }
 
-  predicate isBarrier(DataFlow::Node node) {
+  override predicate isSanitizer(DataFlow::Node node) {
     node = DataFlow::BarrierGuard<startsWithSanitizer/3>::getABarrierNode()
   }
 }
 
-module AndroidFileLeakFlow = TaintTracking::Global<AndroidFileLeakConfig>;
-
-from AndroidFileLeakFlow::PathNode source, AndroidFileLeakFlow::PathNode sink
-where AndroidFileLeakFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, AndroidFileLeakConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "Leaking arbitrary Android file from $@.", source.getNode(),
   "this user input"

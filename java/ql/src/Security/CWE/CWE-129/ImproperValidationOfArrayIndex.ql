@@ -11,16 +11,26 @@
  */
 
 import java
-import semmle.code.java.security.internal.ArraySizing
-import semmle.code.java.security.ImproperValidationOfArrayIndexQuery
-import ImproperValidationOfArrayIndexFlow::PathGraph
+import ArraySizing
+import semmle.code.java.dataflow.FlowSources
+import DataFlow::PathGraph
 
-from
-  ImproperValidationOfArrayIndexFlow::PathNode source,
-  ImproperValidationOfArrayIndexFlow::PathNode sink, CheckableArrayAccess arrayAccess
+class Conf extends TaintTracking::Configuration {
+  Conf() { this = "RemoteUserInputTocanThrowOutOfBoundsDueToEmptyArrayConfig" }
+
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) {
+    any(CheckableArrayAccess caa).canThrowOutOfBounds(sink.asExpr())
+  }
+
+  override predicate isSanitizer(DataFlow::Node node) { node.getType() instanceof BooleanType }
+}
+
+from DataFlow::PathNode source, DataFlow::PathNode sink, CheckableArrayAccess arrayAccess
 where
   arrayAccess.canThrowOutOfBounds(sink.getNode().asExpr()) and
-  ImproperValidationOfArrayIndexFlow::flowPath(source, sink)
+  any(Conf conf).hasFlowPath(source, sink)
 select arrayAccess.getIndexExpr(), source, sink,
   "This index depends on a $@ which can cause an ArrayIndexOutOfBoundsException.", source.getNode(),
   "user-provided value"

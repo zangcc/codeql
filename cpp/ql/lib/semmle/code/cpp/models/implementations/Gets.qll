@@ -14,8 +14,7 @@ import semmle.code.cpp.models.interfaces.FlowSource
  * The standard functions `fgets` and `fgetws`.
  */
 private class FgetsFunction extends DataFlowFunction, TaintFunction, ArrayFunction, AliasFunction,
-  SideEffectFunction, RemoteFlowSourceFunction
-{
+  SideEffectFunction, RemoteFlowSourceFunction {
   FgetsFunction() {
     // fgets(str, num, stream)
     // fgetws(wstr, num, stream)
@@ -49,10 +48,10 @@ private class FgetsFunction extends DataFlowFunction, TaintFunction, ArrayFuncti
   }
 
   override predicate hasRemoteFlowSource(FunctionOutput output, string description) {
-    (
-      output.isParameterDeref(0) or
-      output.isReturnValueDeref()
-    ) and
+    output.isParameterDeref(0) and
+    description = "string read by " + this.getName()
+    or
+    output.isReturnValue() and
     description = "string read by " + this.getName()
   }
 
@@ -70,8 +69,7 @@ private class FgetsFunction extends DataFlowFunction, TaintFunction, ArrayFuncti
  * The standard functions `gets`.
  */
 private class GetsFunction extends DataFlowFunction, ArrayFunction, AliasFunction,
-  SideEffectFunction, LocalFlowSourceFunction
-{
+  SideEffectFunction, LocalFlowSourceFunction {
   GetsFunction() {
     // gets(str)
     this.hasGlobalOrStdOrBslName("gets")
@@ -99,10 +97,10 @@ private class GetsFunction extends DataFlowFunction, ArrayFunction, AliasFunctio
   }
 
   override predicate hasLocalFlowSource(FunctionOutput output, string description) {
-    (
-      output.isParameterDeref(0) or
-      output.isReturnValueDeref()
-    ) and
+    output.isParameterDeref(0) and
+    description = "string read by " + this.getName()
+    or
+    output.isReturnValue() and
     description = "string read by " + this.getName()
   }
 

@@ -7,7 +7,7 @@ module ControlFlow {
   private import semmle.code.csharp.controlflow.BasicBlocks as BBs
   import semmle.code.csharp.controlflow.internal.SuccessorType
   private import SuccessorTypes
-  private import internal.ControlFlowGraphImpl as Impl
+  private import internal.ControlFlowGraphImpl
   private import internal.Splitting as Splitting
 
   /**
@@ -25,16 +25,18 @@ module ControlFlow {
    * Only nodes that can be reached from the callable entry point are included in
    * the CFG.
    */
-  class Node extends Impl::Node {
-    /** Gets the control flow element that this node corresponds to, if any. */
-    final ControlFlowElement getAstNode() { result = super.getAstNode() }
+  class Node extends TCfgNode {
+    /** Gets a textual representation of this control flow node. */
+    string toString() { none() }
 
-    /**
-     * DEPRECATED: Use `getAstNode` instead.
-     *
-     * Gets the control flow element that this node corresponds to, if any.
-     */
-    deprecated ControlFlowElement getElement() { result = this.getAstNode() }
+    /** Gets the control flow element that this node corresponds to, if any. */
+    ControlFlowElement getElement() { none() }
+
+    /** Gets the location of this control flow node. */
+    Location getLocation() { result = this.getElement().getLocation() }
+
+    /** Holds if this control flow node has conditional successors. */
+    predicate isCondition() { exists(this.getASuccessorByType(any(ConditionalSuccessor e))) }
 
     /** Gets the basic block that this control flow node belongs to. */
     BasicBlock getBasicBlock() { result.getANode() = this }
@@ -181,7 +183,7 @@ module ControlFlow {
     }
 
     /** Gets a successor node of a given type, if any. */
-    Node getASuccessorByType(SuccessorType t) { result = this.getASuccessor(t) }
+    Node getASuccessorByType(SuccessorType t) { result = getASuccessor(this, t) }
 
     /** Gets an immediate successor, if any. */
     Node getASuccessor() { result = this.getASuccessorByType(_) }
@@ -232,39 +234,80 @@ module ControlFlow {
       result = this.getASuccessorByType(any(BooleanSuccessor t | t.getValue() = false))
     }
 
+    /** Holds if this node has more than one predecessor. */
+    predicate isJoin() { strictcount(this.getAPredecessor()) > 1 }
+
+    /** Holds if this node has more than one successor. */
+    predicate isBranch() { strictcount(this.getASuccessor()) > 1 }
+
     /** Gets the enclosing callable of this control flow node. */
-    final Callable getEnclosingCallable() { result = Impl::getNodeCfgScope(this) }
+    final Callable getEnclosingCallable() { result = getNodeCfgScope(this) }
   }
 
   /** Provides different types of control flow nodes. */
   module Nodes {
     /** A node for a callable entry point. */
-    class EntryNode extends Node instanceof Impl::EntryNode {
+    class EntryNode extends Node, TEntryNode {
       /** Gets the callable that this entry applies to. */
-      Callable getCallable() { result = this.getScope() }
+      Callable getCallable() { this = TEntryNode(result) }
 
       override BasicBlocks::EntryBlock getBasicBlock() { result = Node.super.getBasicBlock() }
+
+      private Assignable getAssignable() { this = TEntryNode(result) }
+
+      override Location getLocation() {
+        result in [this.getCallable().getLocation(), this.getAssignable().getLocation()]
+      }
+
+      override string toString() {
+        result = "enter " + [this.getCallable().toString(), this.getAssignable().toString()]
+      }
     }
 
     /** A node for a callable exit point, annotated with the type of exit. */
-    class AnnotatedExitNode extends Node instanceof Impl::AnnotatedExitNode {
-      /** Holds if this node represent a normal exit. */
-      final predicate isNormal() { super.isNormal() }
+    class AnnotatedExitNode extends Node, TAnnotatedExitNode {
+      private CfgScope scope;
+      private boolean normal;
+
+      AnnotatedExitNode() { this = TAnnotatedExitNode(scope, normal) }
 
       /** Gets the callable that this exit applies to. */
-      Callable getCallable() { result = this.getScope() }
+      CfgScope getCallable() { result = scope }
+
+      /** Holds if this node represents a normal exit. */
+      predicate isNormal() { normal = true }
 
       override BasicBlocks::AnnotatedExitBlock getBasicBlock() {
         result = Node.super.getBasicBlock()
       }
+
+      override Location getLocation() { result = scope.getLocation() }
+
+      override string toString() {
+        exists(string s |
+          normal = true and s = "normal"
+          or
+          normal = false and s = "abnormal"
+        |
+          result = "exit " + scope + " (" + s + ")"
+        )
+      }
     }
 
     /** A node for a callable exit point. */
-    class ExitNode extends Node instanceof Impl::ExitNode {
+    class ExitNode extends Node, TExitNode {
+      private CfgScope scope;
+
+      ExitNode() { this = TExitNode(scope) }
+
       /** Gets the callable that this exit applies to. */
-      Callable getCallable() { result = this.getScope() }
+      Callable getCallable() { result = scope }
 
       override BasicBlocks::ExitBlock getBasicBlock() { result = Node.super.getBasicBlock() }
+
+      override Location getLocation() { result = scope.getLocation() }
+
+      override string toString() { result = "exit " + scope }
     }
 
     /**
@@ -274,19 +317,35 @@ module ControlFlow {
      * the element is in unreachable (dead) code, and multiple when there are
      * different splits for the element.
      */
-    class ElementNode extends Node instanceof Impl::AstCfgNode {
+    class ElementNode extends Node, TElementNode {
+      private Splits splits;
+      private ControlFlowElement cfe;
+
+      ElementNode() { this = TElementNode(_, cfe, splits) }
+
+      override ControlFlowElement getElement() { result = cfe }
+
+      override string toString() {
+        result = "[" + this.getSplitsString() + "] " + cfe.toString()
+        or
+        not exists(this.getSplitsString()) and result = cfe.toString()
+      }
+
       /** Gets a comma-separated list of strings for each split in this node, if any. */
-      final string getSplitsString() { result = super.getSplitsString() }
+      string getSplitsString() {
+        result = splits.toString() and
+        result != ""
+      }
 
       /** Gets a split for this control flow node, if any. */
-      final Split getASplit() { result = super.getASplit() }
+      Split getASplit() { result = splits.getASplit() }
     }
 
     /** A control-flow node for an expression. */
     class ExprNode extends ElementNode {
       Expr e;
 
-      ExprNode() { e = unique(Expr e_ | e_ = this.getAstNode() | e_) }
+      ExprNode() { e = unique(Expr e_ | e_ = this.getElement() | e_) }
 
       /** Gets the expression that this control-flow node belongs to. */
       Expr getExpr() { result = e }

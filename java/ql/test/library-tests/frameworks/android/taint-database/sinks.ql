@@ -4,27 +4,28 @@ import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.security.QueryInjection
 import TestUtilities.InlineExpectationsTest
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
-    source.asExpr().(MethodCall).getMethod().hasName("taint")
+class Conf extends TaintTracking::Configuration {
+  Conf() { this = "qltest:dataflow:android::flow" }
+
+  override predicate isSource(DataFlow::Node source) {
+    source.asExpr().(MethodAccess).getMethod().hasName("taint")
   }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof QueryInjectionSink }
+  override predicate isSink(DataFlow::Node sink) { sink instanceof QueryInjectionSink }
 }
 
-module Flow = TaintTracking::Global<Config>;
+class SinkTest extends InlineExpectationsTest {
+  SinkTest() { this = "SinkTest" }
 
-module SinkTest implements TestSig {
-  string getARelevantTag() { result = "taintReachesSink" }
+  override string getARelevantTag() { result = "taintReachesSink" }
 
-  predicate hasActualResult(Location l, string element, string tag, string value) {
+  override predicate hasActualResult(Location l, string element, string tag, string value) {
     tag = "taintReachesSink" and
     value = "" and
-    exists(DataFlow::Node source | Flow::flow(source, _) |
+    exists(Conf conf, DataFlow::Node source |
+      conf.hasFlow(source, _) and
       l = source.getLocation() and
       element = source.toString()
     )
   }
 }
-
-import MakeTest<SinkTest>

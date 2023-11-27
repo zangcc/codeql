@@ -39,6 +39,8 @@ module Glog {
     StringFormatter() { this.getName().matches("%f") }
 
     override int getFormatStringIndex() { result = super.getFirstPrintedArg() }
+
+    override int getFirstFormattedParameterIndex() { result = super.getFirstPrintedArg() + 1 }
   }
 
   private class GlogCall extends LoggerCall::Range, DataFlow::CallNode {
@@ -47,7 +49,7 @@ module Glog {
     GlogCall() { this = callee.getACall() }
 
     override DataFlow::Node getAMessageComponent() {
-      result = this.getSyntacticArgument(any(int i | i >= callee.getFirstPrintedArg()))
+      result = this.getArgument(any(int i | i >= callee.getFirstPrintedArg()))
     }
   }
 }

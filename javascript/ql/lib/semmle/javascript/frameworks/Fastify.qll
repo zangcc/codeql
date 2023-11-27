@@ -154,6 +154,12 @@ module Fastify {
 
     override DataFlow::SourceNode getServer() { result = server }
 
+    /**
+     * DEPRECATED: Use `getARouteHandlerNode` instead.
+     * Gets an argument that represents a route handler being registered.
+     */
+    deprecated DataFlow::Node getARouteHandlerExpr() { result = this.getARouteHandlerNode() }
+
     /**  Gets an argument that represents a route handler being registered. */
     DataFlow::Node getARouteHandlerNode() {
       if methodName = "route"
@@ -162,8 +168,7 @@ module Fastify {
     }
   }
 
-  private class ShorthandRoutingTreeSetup extends Routing::RouteSetup::MethodCall instanceof RouteSetup
-  {
+  private class ShorthandRoutingTreeSetup extends Routing::RouteSetup::MethodCall instanceof RouteSetup {
     ShorthandRoutingTreeSetup() { not this.getMethodName() = "route" }
 
     override string getRelativePath() { result = this.getArgument(0).getStringValue() }
@@ -345,8 +350,7 @@ module Fastify {
    * An invocation that sets a single header of the HTTP response.
    */
   private class SetOneHeader extends Http::Servers::StandardHeaderDefinition,
-    DataFlow::MethodCallNode
-  {
+    DataFlow::MethodCallNode {
     RouteHandler rh;
 
     SetOneHeader() {

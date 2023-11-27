@@ -1,18 +1,33 @@
 import java
 import semmle.code.java.dataflow.TaintTracking
 import semmle.code.java.dataflow.FlowSources
-import TestUtilities.InlineFlowTest
+import TestUtilities.InlineExpectationsTest
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node n) {
-    n.asExpr().(MethodCall).getMethod().hasName("taint")
+class Conf extends TaintTracking::Configuration {
+  Conf() { this = "qltest:frameworks:ratpack" }
+
+  override predicate isSource(DataFlow::Node n) {
+    n.asExpr().(MethodAccess).getMethod().hasName("taint")
     or
-    n instanceof ThreatModelFlowSource
+    n instanceof RemoteFlowSource
   }
 
-  predicate isSink(DataFlow::Node n) {
-    exists(MethodCall ma | ma.getMethod().hasName("sink") | n.asExpr() = ma.getAnArgument())
+  override predicate isSink(DataFlow::Node n) {
+    exists(MethodAccess ma | ma.getMethod().hasName("sink") | n.asExpr() = ma.getAnArgument())
   }
 }
 
-import TaintFlowTest<Config>
+class HasFlowTest extends InlineExpectationsTest {
+  HasFlowTest() { this = "HasFlowTest" }
+
+  override string getARelevantTag() { result = "hasTaintFlow" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
+    tag = "hasTaintFlow" and
+    exists(DataFlow::Node sink, Conf conf | conf.hasFlowTo(sink) |
+      sink.getLocation() = location and
+      element = sink.toString() and
+      value = ""
+    )
+  }
+}

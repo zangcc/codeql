@@ -2,7 +2,7 @@ import java
 
 class RelevantAnnotatable extends Annotatable {
   RelevantAnnotatable() {
-    this.getCompilationUnit().hasName("Annotatable") and this.getCompilationUnit().fromSource()
+    getCompilationUnit().hasName("Annotatable") and getCompilationUnit().fromSource()
   }
 }
 

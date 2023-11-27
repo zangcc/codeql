@@ -12,10 +12,8 @@ import SensitiveApi
  */
 private class HardcodedByteArray extends ArrayCreationExpr {
   HardcodedByteArray() {
-    this.getType().(Array).getElementType().(PrimitiveType).getName() = "byte" and
-    forex(Expr elem | elem = this.getInit().getAChildExpr() |
-      elem instanceof CompileTimeConstantExpr
-    )
+    getType().(Array).getElementType().(PrimitiveType).getName() = "byte" and
+    forex(Expr elem | elem = getInit().getAChildExpr() | elem instanceof CompileTimeConstantExpr)
   }
 }
 
@@ -26,10 +24,8 @@ private class HardcodedByteArray extends ArrayCreationExpr {
  */
 private class HardcodedCharArray extends ArrayCreationExpr {
   HardcodedCharArray() {
-    this.getType().(Array).getElementType().(PrimitiveType).getName() = "char" and
-    forex(Expr elem | elem = this.getInit().getAChildExpr() |
-      elem instanceof CompileTimeConstantExpr
-    )
+    getType().(Array).getElementType().(PrimitiveType).getName() = "char" and
+    forex(Expr elem | elem = getInit().getAChildExpr() | elem instanceof CompileTimeConstantExpr)
   }
 }
 
@@ -58,7 +54,17 @@ abstract class CredentialsSink extends Expr {
  * credentials.
  */
 class CredentialsApiSink extends CredentialsSink {
-  CredentialsApiSink() { this = any(CredentialsSinkNode csn).asExpr() }
+  CredentialsApiSink() {
+    exists(Call call, int i |
+      this = call.getArgument(i) and
+      (
+        javaApiCallableUsernameParam(call.getCallee(), i) or
+        javaApiCallablePasswordParam(call.getCallee(), i) or
+        javaApiCallableCryptoKeyParam(call.getCallee(), i) or
+        otherApiCallableCredentialParam(call.getCallee(), i)
+      )
+    )
+  }
 }
 
 /**
@@ -66,7 +72,7 @@ class CredentialsApiSink extends CredentialsSink {
  */
 class PasswordVariable extends Variable {
   PasswordVariable() {
-    this.getName().regexpMatch("(?i)(encrypted|old|new)?pass(wd|word|code|phrase)(chars|value)?")
+    getName().regexpMatch("(?i)(encrypted|old|new)?pass(wd|word|code|phrase)(chars|value)?")
   }
 }
 
@@ -74,7 +80,7 @@ class PasswordVariable extends Variable {
  * A variable whose name indicates that it may hold a user name.
  */
 class UsernameVariable extends Variable {
-  UsernameVariable() { this.getName().regexpMatch("(?i)(user|username)") }
+  UsernameVariable() { getName().regexpMatch("(?i)(user|username)") }
 }
 
 /**

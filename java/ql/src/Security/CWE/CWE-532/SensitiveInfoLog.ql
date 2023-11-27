@@ -13,9 +13,9 @@
 
 import java
 import semmle.code.java.security.SensitiveLoggingQuery
-import SensitiveLoggerFlow::PathGraph
+import PathGraph
 
-from SensitiveLoggerFlow::PathNode source, SensitiveLoggerFlow::PathNode sink
-where SensitiveLoggerFlow::flowPath(source, sink)
+from SensitiveLoggerConfiguration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This $@ is written to a log file.", source.getNode(),
   "potentially sensitive information"

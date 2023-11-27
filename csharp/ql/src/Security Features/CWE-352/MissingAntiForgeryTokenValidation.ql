@@ -19,7 +19,7 @@ import semmle.code.csharp.frameworks.system.web.Mvc
 /** An `AuthorizationFilter` that calls the `AntiForgery.Validate` method. */
 class AntiForgeryAuthorizationFilter extends AuthorizationFilter {
   AntiForgeryAuthorizationFilter() {
-    this.getOnAuthorizationMethod().calls*(any(AntiForgeryClass a).getValidateMethod())
+    getOnAuthorizationMethod().calls*(any(AntiForgeryClass a).getValidateMethod())
   }
 }
 

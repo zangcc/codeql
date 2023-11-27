@@ -13,23 +13,37 @@
  */
 
 import java
-import semmle.code.java.dataflow.DataFlow
-import semmle.code.java.security.ArithmeticCommon
-import semmle.code.java.security.ArithmeticTaintedQuery
+import semmle.code.java.dataflow.FlowSources
+import ArithmeticCommon
+import DataFlow::PathGraph
 
-module Flow =
-  DataFlow::MergePathGraph<RemoteUserInputOverflow::PathNode, RemoteUserInputUnderflow::PathNode,
-    RemoteUserInputOverflow::PathGraph, RemoteUserInputUnderflow::PathGraph>;
+class RemoteUserInputOverflowConfig extends TaintTracking::Configuration {
+  RemoteUserInputOverflowConfig() { this = "ArithmeticTainted.ql:RemoteUserInputOverflowConfig" }
 
-import Flow::PathGraph
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
 
-from Flow::PathNode source, Flow::PathNode sink, ArithExpr exp, string effect
+  override predicate isSink(DataFlow::Node sink) { overflowSink(_, sink.asExpr()) }
+
+  override predicate isSanitizer(DataFlow::Node n) { overflowBarrier(n) }
+}
+
+class RemoteUserInputUnderflowConfig extends TaintTracking::Configuration {
+  RemoteUserInputUnderflowConfig() { this = "ArithmeticTainted.ql:RemoteUserInputUnderflowConfig" }
+
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) { underflowSink(_, sink.asExpr()) }
+
+  override predicate isSanitizer(DataFlow::Node n) { underflowBarrier(n) }
+}
+
+from DataFlow::PathNode source, DataFlow::PathNode sink, ArithExpr exp, string effect
 where
-  RemoteUserInputOverflow::flowPath(source.asPathNode1(), sink.asPathNode1()) and
+  any(RemoteUserInputOverflowConfig c).hasFlowPath(source, sink) and
   overflowSink(exp, sink.getNode().asExpr()) and
   effect = "overflow"
   or
-  RemoteUserInputUnderflow::flowPath(source.asPathNode2(), sink.asPathNode2()) and
+  any(RemoteUserInputUnderflowConfig c).hasFlowPath(source, sink) and
   underflowSink(exp, sink.getNode().asExpr()) and
   effect = "underflow"
 select exp, source, sink,

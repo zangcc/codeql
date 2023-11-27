@@ -1,5 +1,6 @@
-using System.IO;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Semmle.Extraction.Entities;
+using System.IO;
 
 namespace Semmle.Extraction.CSharp.Entities
 {
@@ -15,8 +16,11 @@ namespace Semmle.Extraction.CSharp.Entities
             trapFile.preprocessor_directive_active(this, Symbol.IsActive);
             trapFile.preprocessor_directive_location(this, Context.CreateLocation(ReportingLocation));
 
-            var compilation = Compilation.Create(Context);
-            trapFile.preprocessor_directive_compilation(this, compilation);
+            if (!Context.Extractor.Mode.HasFlag(ExtractorMode.Standalone))
+            {
+                var compilation = Compilation.Create(Context);
+                trapFile.preprocessor_directive_compilation(this, compilation);
+            }
         }
 
         protected abstract void PopulatePreprocessor(TextWriter trapFile);

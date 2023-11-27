@@ -20,7 +20,7 @@ actor Y {
 @MainActor
 class Z {
   static func foo(_: Int, _:Int) {}
-  nonisolated class func bar() {}
+  class func bar() {}
   func baz(_: Int) {}
 
   init() {

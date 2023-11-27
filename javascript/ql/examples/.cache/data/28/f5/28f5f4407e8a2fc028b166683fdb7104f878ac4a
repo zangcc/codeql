@@ -1,0 +1,14 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "iife.ql"
+dbscheme: "4d00210ca570d55c4833af11d3372b774dbc63f2"
+stages:
+- cached: "dfd452c74160976f40bf0f3904cf9710381ae7e1"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+results:
+  '#select':
+    resultArranger: "1\"c\"ei12"
+inputsDigest: "28f5f4407e8a2fc028b166683fdb7104f878ac4a"

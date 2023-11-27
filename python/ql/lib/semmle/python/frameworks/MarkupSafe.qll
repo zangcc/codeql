@@ -83,7 +83,7 @@ private module MarkupSafeModel {
     }
 
     /** Taint propagation for `markupsafe.Markup`. */
-    private class AdditionalTaintStep extends TaintTracking::AdditionalTaintStep {
+    private class AddtionalTaintStep extends TaintTracking::AdditionalTaintStep {
       override predicate step(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
         nodeTo.(ClassInstantiation).getArg(0) = nodeFrom
       }
@@ -92,13 +92,16 @@ private module MarkupSafeModel {
 
   /** Any escaping performed via the `markupsafe` package. */
   abstract private class MarkupSafeEscape extends Escaping::Range {
-    override string getKind() { result in [Escaping::getHtmlKind(), Escaping::getXmlKind()] }
+    override string getKind() {
+      // TODO: this package claims to escape for both HTML and XML, but for now we don't
+      // model XML.
+      result = Escaping::getHtmlKind()
+    }
   }
 
   /** A call to any of the escaping functions in `markupsafe` */
   private class MarkupSafeEscapeCall extends Markup::InstanceSource, MarkupSafeEscape,
-    DataFlow::CallCfgNode
-  {
+    DataFlow::CallCfgNode {
     MarkupSafeEscapeCall() {
       this = API::moduleImport("markupsafe").getMember(["escape", "escape_silent"]).getACall()
       or
@@ -138,8 +141,7 @@ private module MarkupSafeModel {
 
   /** A escape from %-style string format with `markupsafe.Markup` as the format string. */
   private class MarkupEscapeFromPercentStringFormat extends MarkupSafeEscape,
-    Markup::PercentStringFormat
-  {
+    Markup::PercentStringFormat {
     override DataFlow::Node getAnInput() {
       result.asCfgNode() = node.getRight() and
       not result = Markup::instance()

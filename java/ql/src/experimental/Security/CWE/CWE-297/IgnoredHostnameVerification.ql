@@ -15,7 +15,7 @@ import java
 import semmle.code.java.security.Encryption
 
 /** A `HostnameVerifier.verify()` call that is not wrapped in another `HostnameVerifier`. */
-private class HostnameVerificationCall extends MethodCall {
+private class HostnameVerificationCall extends MethodAccess {
   HostnameVerificationCall() {
     this.getMethod() instanceof HostnameVerifierVerify and
     not this.getCaller() instanceof HostnameVerifierVerify

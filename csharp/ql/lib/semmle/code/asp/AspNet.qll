@@ -186,7 +186,7 @@ class PageDirective extends AspDirective {
    */
   ValueOrRefType getInheritedType() {
     exists(string qualifier, string type |
-      result.hasFullyQualifiedName(qualifier, type) and
+      result.hasQualifiedName(qualifier, type) and
       splitQualifiedName(this.getInheritedTypeQualifiedName(), qualifier, type)
     )
   }

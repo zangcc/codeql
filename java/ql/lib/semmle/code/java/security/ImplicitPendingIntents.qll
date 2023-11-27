@@ -54,17 +54,16 @@ private class IntentCreationSource extends ImplicitPendingIntentSource {
 
 private class SendPendingIntent extends ImplicitPendingIntentSink {
   SendPendingIntent() {
-    // intent redirection sinks are method calls that start Android components
-    sinkNode(this, "intent-redirection") and
+    sinkNode(this, "intent-start") and
     // implicit intents can't be started as services since API 21
-    not exists(MethodCall ma, Method m |
+    not exists(MethodAccess ma, Method m |
       ma.getMethod() = m and
       m.getDeclaringType().getAnAncestor() instanceof TypeContext and
       m.getName().matches(["start%Service%", "bindService%"]) and
       this.asExpr() = ma.getArgument(0)
     )
     or
-    sinkNode(this, "pending-intents")
+    sinkNode(this, "pending-intent-sent")
   }
 
   override predicate hasState(DataFlow::FlowState state) { state = "MutablePendingIntent" }

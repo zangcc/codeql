@@ -1,7 +1,7 @@
 /** Provides default definitions to be used in XXE queries. */
 
 import java
-private import semmle.code.java.dataflow.TaintTracking
+private import semmle.code.java.dataflow.TaintTracking2
 private import semmle.code.java.security.XmlParsers
 import semmle.code.java.security.Xxe
 
@@ -11,7 +11,7 @@ import semmle.code.java.security.Xxe
  */
 private class DefaultXxeSink extends XxeSink {
   DefaultXxeSink() {
-    not SafeSaxSourceFlow::flowTo(this) and
+    not exists(SafeSaxSourceFlowConfig safeSource | safeSource.hasFlowTo(this)) and
     exists(XmlParserCall parse |
       parse.getSink() = this.asExpr() and
       not parse.isSafe()
@@ -22,12 +22,14 @@ private class DefaultXxeSink extends XxeSink {
 /**
  * A taint-tracking configuration for safe XML readers used to parse XML documents.
  */
-private module SafeSaxSourceFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src.asExpr() instanceof SafeSaxSource }
+private class SafeSaxSourceFlowConfig extends TaintTracking2::Configuration {
+  SafeSaxSourceFlowConfig() { this = "SafeSaxSourceFlowConfig" }
 
-  predicate isSink(DataFlow::Node sink) { sink.asExpr() = any(XmlParserCall parse).getSink() }
+  override predicate isSource(DataFlow::Node src) { src.asExpr() instanceof SafeSaxSource }
 
-  int fieldFlowBranchLimit() { result = 0 }
+  override predicate isSink(DataFlow::Node sink) {
+    sink.asExpr() = any(XmlParserCall parse).getSink()
+  }
+
+  override int fieldFlowBranchLimit() { result = 0 }
 }
-
-private module SafeSaxSourceFlow = TaintTracking::Global<SafeSaxSourceFlowConfig>;

@@ -23,12 +23,12 @@ class ExcludeDebuggingProfilingLogging extends ExcludedConstantField {
           "log"
         ]
     |
-      this.getName().regexpMatch(".*(?i)" + validFieldName + ".*")
+      getName().regexpMatch(".*(?i)" + validFieldName + ".*")
     ) and
     // Boolean type
     (
-      this.getType().hasName("boolean") or
-      this.getType().(BoxedType).hasQualifiedName("java.lang", "Boolean")
+      getType().hasName("boolean") or
+      getType().(BoxedType).hasQualifiedName("java.lang", "Boolean")
     )
   }
 }

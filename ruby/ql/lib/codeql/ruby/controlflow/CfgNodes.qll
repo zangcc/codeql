@@ -6,25 +6,62 @@ private import codeql.ruby.dataflow.SSA
 private import codeql.ruby.ast.internal.Constant
 private import codeql.ruby.ast.internal.Literal
 private import ControlFlowGraph
-private import internal.ControlFlowGraphImpl as CfgImpl
+private import internal.ControlFlowGraphImpl
+private import internal.Splitting
 
 /** An entry node for a given scope. */
-class EntryNode extends CfgNode, CfgImpl::EntryNode {
+class EntryNode extends CfgNode, TEntryNode {
   override string getAPrimaryQlClass() { result = "EntryNode" }
 
+  private CfgScope scope;
+
+  EntryNode() { this = TEntryNode(scope) }
+
   final override EntryBasicBlock getBasicBlock() { result = super.getBasicBlock() }
+
+  final override Location getLocation() { result = scope.getLocation() }
+
+  final override string toString() { result = "enter " + scope }
 }
 
 /** An exit node for a given scope, annotated with the type of exit. */
-class AnnotatedExitNode extends CfgNode, CfgImpl::AnnotatedExitNode {
+class AnnotatedExitNode extends CfgNode, TAnnotatedExitNode {
   override string getAPrimaryQlClass() { result = "AnnotatedExitNode" }
 
+  private CfgScope scope;
+  private boolean normal;
+
+  AnnotatedExitNode() { this = TAnnotatedExitNode(scope, normal) }
+
+  /** Holds if this node represent a normal exit. */
+  final predicate isNormal() { normal = true }
+
   final override AnnotatedExitBasicBlock getBasicBlock() { result = super.getBasicBlock() }
+
+  final override Location getLocation() { result = scope.getLocation() }
+
+  final override string toString() {
+    exists(string s |
+      normal = true and s = "normal"
+      or
+      normal = false and s = "abnormal"
+    |
+      result = "exit " + scope + " (" + s + ")"
+    )
+  }
 }
 
 /** An exit node for a given scope. */
-class ExitNode extends CfgNode, CfgImpl::ExitNode {
+class ExitNode extends CfgNode, TExitNode {
   override string getAPrimaryQlClass() { result = "ExitNode" }
+
+  private CfgScope scope;
+
+  ExitNode() { this = TExitNode(scope) }
+
+  final override Location getLocation() { result = scope.getLocation() }
+
+  final override string toString() { result = "exit " + scope }
 }
 
 /**
@@ -34,21 +71,54 @@ class ExitNode extends CfgNode, CfgImpl::ExitNode {
  * (dead) code or not important for control flow, and multiple when there are different
  * splits for the AST node.
  */
-class AstCfgNode extends CfgNode, CfgImpl::AstCfgNode {
+class AstCfgNode extends CfgNode, TElementNode {
   /** Gets the name of the primary QL class for this node. */
   override string getAPrimaryQlClass() { result = "AstCfgNode" }
+
+  private Splits splits;
+  AstNode e;
+
+  AstCfgNode() { this = TElementNode(_, e, splits) }
+
+  final override AstNode getNode() { result = e }
+
+  override Location getLocation() { result = e.getLocation() }
+
+  final override string toString() {
+    exists(string s | s = e.toString() |
+      result = "[" + this.getSplitsString() + "] " + s
+      or
+      not exists(this.getSplitsString()) and result = s
+    )
+  }
+
+  /** Gets a comma-separated list of strings for each split in this node, if any. */
+  final string getSplitsString() {
+    result = splits.toString() and
+    result != ""
+  }
+
+  /** Gets a split for this control flow node, if any. */
+  final Split getASplit() { result = splits.getASplit() }
 }
 
 /** A control-flow node that wraps an AST expression. */
 class ExprCfgNode extends AstCfgNode {
   override string getAPrimaryQlClass() { result = "ExprCfgNode" }
 
-  Expr e;
+  override Expr e;
 
-  ExprCfgNode() { e = this.getAstNode() }
+  ExprCfgNode() { e = this.getNode() }
 
   /** Gets the underlying expression. */
   Expr getExpr() { result = e }
+
+  /**
+   * DEPRECATED: Use `getConstantValue` instead.
+   *
+   * Gets the textual (constant) value of this expression, if any.
+   */
+  deprecated string getValueText() { result = this.getConstantValue().toString() }
 
   /** Gets the constant value of this expression, if any. */
   ConstantValue getConstantValue() { result = getConstantValue(this) }
@@ -60,12 +130,12 @@ class ReturningCfgNode extends AstCfgNode {
 
   ReturningStmt s;
 
-  ReturningCfgNode() { s = this.getAstNode() }
+  ReturningCfgNode() { s = this.getNode() }
 
   /** Gets the node of the returned value, if any. */
   ExprCfgNode getReturnedValueNode() {
     result = this.getAPredecessor() and
-    result.getAstNode() = s.getValue()
+    result.getNode() = s.getValue()
   }
 }
 
@@ -73,19 +143,17 @@ class ReturningCfgNode extends AstCfgNode {
 class StringComponentCfgNode extends AstCfgNode {
   override string getAPrimaryQlClass() { result = "StringComponentCfgNode" }
 
-  StringComponentCfgNode() { this.getAstNode() instanceof StringComponent }
+  StringComponentCfgNode() { this.getNode() instanceof StringComponent }
 
   /** Gets the constant value of this string component. */
-  ConstantValue getConstantValue() {
-    result = this.getAstNode().(StringComponent).getConstantValue()
-  }
+  ConstantValue getConstantValue() { result = this.getNode().(StringComponent).getConstantValue() }
 }
 
 /** A control-flow node that wraps a `RegExpComponent` AST expression. */
 class RegExpComponentCfgNode extends StringComponentCfgNode {
   override string getAPrimaryQlClass() { result = "RegExpComponentCfgNode" }
 
-  RegExpComponentCfgNode() { this.getAstNode() instanceof RegExpComponent }
+  RegExpComponentCfgNode() { e instanceof RegExpComponent }
 }
 
 private AstNode desugar(AstNode n) {
@@ -118,7 +186,7 @@ abstract private class ChildMapping extends AstNode {
   cached
   predicate hasCfgChild(AstNode child, CfgNode cfn, CfgNode cfnChild) {
     this.reachesBasicBlock(child, cfn, cfnChild.getBasicBlock()) and
-    cfnChild.getAstNode() = desugar(child)
+    cfnChild.getNode() = desugar(child)
   }
 }
 
@@ -135,7 +203,7 @@ abstract private class ExprChildMapping extends Expr, ChildMapping {
     exists(BasicBlock mid |
       this.reachesBasicBlock(child, cfn, mid) and
       bb = mid.getAPredecessor() and
-      not mid.getANode().getAstNode() = child
+      not mid.getANode().getNode() = child
     )
   }
 }
@@ -149,13 +217,13 @@ abstract private class NonExprChildMapping extends ChildMapping {
   pragma[nomagic]
   override predicate reachesBasicBlock(AstNode child, CfgNode cfn, BasicBlock bb) {
     this.relevantChild(child) and
-    cfn.getAstNode() = this and
+    cfn.getNode() = this and
     bb.getANode() = cfn
     or
     exists(BasicBlock mid |
       this.reachesBasicBlock(child, cfn, mid) and
       bb = mid.getASuccessor() and
-      not mid.getANode().getAstNode() = child
+      not mid.getANode().getNode() = child
     )
   }
 }
@@ -175,42 +243,6 @@ module ExprNodes {
     override Literal getExpr() { result = super.getExpr() }
   }
 
-  private class ControlExprChildMapping extends ExprChildMapping, ControlExpr {
-    override predicate relevantChild(AstNode n) { none() }
-  }
-
-  /** A control-flow node that wraps a `ControlExpr` AST expression. */
-  class ControlExprCfgNode extends ExprCfgNode {
-    override string getAPrimaryQlClass() { result = "ControlExprCfgNode" }
-
-    override ControlExprChildMapping e;
-
-    override ControlExpr getExpr() { result = super.getExpr() }
-  }
-
-  private class LhsExprChildMapping extends ExprChildMapping, LhsExpr {
-    override predicate relevantChild(AstNode n) { none() }
-  }
-
-  /** A control-flow node that wraps a `LhsExpr` AST expression. */
-  class LhsExprCfgNode extends ExprCfgNode {
-    override string getAPrimaryQlClass() { result = "LhsExprCfgNode" }
-
-    override LhsExprChildMapping e;
-
-    override LhsExpr getExpr() { result = super.getExpr() }
-
-    /**
-     * DEPRECATED: use `getVariable` instead.
-     *
-     * Gets a variable used in (or introduced by) this LHS.
-     */
-    deprecated Variable getAVariable() { result = e.(VariableAccess).getVariable() }
-
-    /** Gets the variable used in (or introduced by) this LHS. */
-    Variable getVariable() { result = e.(VariableAccess).getVariable() }
-  }
-
   private class AssignExprChildMapping extends ExprChildMapping, AssignExpr {
     override predicate relevantChild(AstNode n) { n = this.getAnOperand() }
   }
@@ -221,10 +253,10 @@ module ExprNodes {
 
     override AssignExprChildMapping e;
 
-    final override AssignExpr getExpr() { result = super.getExpr() }
+    final override AssignExpr getExpr() { result = ExprCfgNode.super.getExpr() }
 
     /** Gets the LHS of this assignment. */
-    final LhsExprCfgNode getLhs() { e.hasCfgChild(e.getLeftOperand(), this, result) }
+    final ExprCfgNode getLhs() { e.hasCfgChild(e.getLeftOperand(), this, result) }
 
     /** Gets the RHS of this assignment. */
     final ExprCfgNode getRhs() { e.hasCfgChild(e.getRightOperand(), this, result) }
@@ -290,7 +322,7 @@ module ExprNodes {
 
     override BlockArgumentChildMapping e;
 
-    final override BlockArgument getExpr() { result = super.getExpr() }
+    final override BlockArgument getExpr() { result = ExprCfgNode.super.getExpr() }
 
     /** Gets the value of this block argument. */
     final ExprCfgNode getValue() { e.hasCfgChild(e.getValue(), this, result) }
@@ -365,7 +397,7 @@ module ExprNodes {
 
     override CaseExprChildMapping e;
 
-    final override CaseExpr getExpr() { result = super.getExpr() }
+    final override CaseExpr getExpr() { result = ExprCfgNode.super.getExpr() }
 
     /** Gets the expression being compared, if any. */
     final ExprCfgNode getValue() { e.hasCfgChild(e.getValue(), this, result) }
@@ -386,11 +418,9 @@ module ExprNodes {
 
   /** A control-flow node that wraps an `InClause` AST expression. */
   class InClauseCfgNode extends AstCfgNode {
-    private InClauseChildMapping e;
-
-    InClauseCfgNode() { e = this.getAstNode() }
-
     override string getAPrimaryQlClass() { result = "InClauseCfgNode" }
+
+    override InClauseChildMapping e;
 
     /** Gets the pattern in this `in`-clause. */
     final AstCfgNode getPattern() { e.hasCfgChild(e.getPattern(), this, result) }
@@ -408,60 +438,56 @@ module ExprNodes {
     predicate patternReachesBasicBlock(int i, CfgNode cfnPattern, BasicBlock bb) {
       exists(Expr pattern |
         pattern = this.getPattern(i) and
-        cfnPattern.getAstNode() = pattern and
+        cfnPattern.getNode() = pattern and
         bb.getANode() = cfnPattern
       )
       or
       exists(BasicBlock mid |
         this.patternReachesBasicBlock(i, cfnPattern, mid) and
         bb = mid.getASuccessor() and
-        not mid.getANode().getAstNode() = this
+        not mid.getANode().getNode() = this
       )
     }
 
     predicate bodyReachesBasicBlock(CfgNode cfnBody, BasicBlock bb) {
       exists(Stmt body |
         body = this.getBody() and
-        cfnBody.getAstNode() = body and
+        cfnBody.getNode() = body and
         bb.getANode() = cfnBody
       )
       or
       exists(BasicBlock mid |
         this.bodyReachesBasicBlock(cfnBody, mid) and
         bb = mid.getAPredecessor() and
-        not mid.getANode().getAstNode() = this
+        not mid.getANode().getNode() = this
       )
     }
   }
 
   /** A control-flow node that wraps a `WhenClause` AST expression. */
   class WhenClauseCfgNode extends AstCfgNode {
-    private WhenClauseChildMapping e;
-
-    WhenClauseCfgNode() { e = this.getAstNode() }
-
     override string getAPrimaryQlClass() { result = "WhenClauseCfgNode" }
+
+    override WhenClauseChildMapping e;
 
     /** Gets the body of this `when`-clause. */
     final ExprCfgNode getBody() {
-      result.getAstNode() = desugar(e.getBody()) and
+      result.getNode() = desugar(e.getBody()) and
       e.bodyReachesBasicBlock(result, this.getBasicBlock())
     }
 
     /** Gets the `i`th pattern this `when`-clause. */
     final ExprCfgNode getPattern(int i) {
-      result.getAstNode() = desugar(e.getPattern(i)) and
+      result.getNode() = desugar(e.getPattern(i)) and
       e.patternReachesBasicBlock(i, result, this.getBasicBlock())
     }
   }
 
   /** A control-flow node that wraps a `CasePattern`. */
   class CasePatternCfgNode extends AstCfgNode {
-    CasePattern e;
-
-    CasePatternCfgNode() { e = this.getAstNode() }
-
     override string getAPrimaryQlClass() { result = "CasePatternCfgNode" }
+
+    override CasePattern e;
   }
 
   private class ArrayPatternChildMapping extends NonExprChildMapping, ArrayPattern {
@@ -605,7 +631,7 @@ module ExprNodes {
 
     override ConditionalExprChildMapping e;
 
-    final override ConditionalExpr getExpr() { result = super.getExpr() }
+    final override ConditionalExpr getExpr() { result = ExprCfgNode.super.getExpr() }
 
     /** Gets the condition expression. */
     final ExprCfgNode getCondition() { e.hasCfgChild(e.getCondition(), this, result) }
@@ -643,7 +669,7 @@ module ExprNodes {
 
     override StmtSequenceChildMapping e;
 
-    final override StmtSequence getExpr() { result = super.getExpr() }
+    final override StmtSequence getExpr() { result = ExprCfgNode.super.getExpr() }
 
     /** Gets the last statement in this sequence, if any. */
     final ExprCfgNode getLastStmt() { e.hasCfgChild(e.getLastStmt(), this, result) }
@@ -659,7 +685,7 @@ module ExprNodes {
 
     override ForExprChildMapping e;
 
-    final override ForExpr getExpr() { result = super.getExpr() }
+    final override ForExpr getExpr() { result = ExprCfgNode.super.getExpr() }
 
     /** Gets the value being iterated over. */
     final ExprCfgNode getValue() { e.hasCfgChild(e.getValue(), this, result) }
@@ -682,7 +708,7 @@ module ExprNodes {
 
     override PairChildMapping e;
 
-    final override Pair getExpr() { result = super.getExpr() }
+    final override Pair getExpr() { result = ExprCfgNode.super.getExpr() }
 
     /**
      * Gets the key expression of this pair.
@@ -701,30 +727,16 @@ module ExprNodes {
 
     override VariableAccess e;
 
-    override VariableAccess getExpr() { result = super.getExpr() }
-
-    /** Gets the variable that is being accessed. */
-    Variable getVariable() { result = this.getExpr().getVariable() }
+    final override VariableAccess getExpr() { result = ExprCfgNode.super.getExpr() }
   }
 
   /** A control-flow node that wraps a `VariableReadAccess` AST expression. */
-  class VariableReadAccessCfgNode extends VariableAccessCfgNode {
+  class VariableReadAccessCfgNode extends ExprCfgNode {
     override string getAPrimaryQlClass() { result = "VariableReadAccessCfgNode" }
 
     override VariableReadAccess e;
 
-    override VariableReadAccess getExpr() { result = super.getExpr() }
-  }
-
-  /** A control-flow node that wraps a `LocalVariableReadAccess` AST expression. */
-  class LocalVariableReadAccessCfgNode extends VariableReadAccessCfgNode {
-    override string getAPrimaryQlClass() { result = "LocalVariableReadAccessCfgNode" }
-
-    override LocalVariableReadAccess e;
-
-    final override LocalVariableReadAccess getExpr() { result = super.getExpr() }
-
-    final override LocalVariable getVariable() { result = super.getVariable() }
+    final override VariableReadAccess getExpr() { result = ExprCfgNode.super.getExpr() }
   }
 
   private class InstanceVariableAccessMapping extends ExprChildMapping, InstanceVariableAccess {
@@ -737,7 +749,7 @@ module ExprNodes {
 
     override InstanceVariableAccessMapping e;
 
-    override InstanceVariableAccess getExpr() { result = super.getExpr() }
+    override InstanceVariableAccess getExpr() { result = ExprCfgNode.super.getExpr() }
 
     /**
      * Gets the synthetic receiver (`self`) of this instance variable access.
@@ -750,57 +762,21 @@ module ExprNodes {
   }
 
   /** A control-flow node that wraps a `SelfVariableAccess` AST expression. */
-  class SelfVariableAccessCfgNode extends VariableAccessCfgNode {
+  class SelfVariableAccessCfgNode extends ExprCfgNode {
     final override string getAPrimaryQlClass() { result = "SelfVariableAccessCfgNode" }
 
     override SelfVariableAccessMapping e;
 
-    override SelfVariableAccess getExpr() { result = super.getExpr() }
-  }
-
-  private class VariableWriteAccessChildMapping extends ExprChildMapping, VariableWriteAccess {
-    override predicate relevantChild(AstNode n) { this.isExplicitWrite(n) }
+    override SelfVariableAccess getExpr() { result = ExprCfgNode.super.getExpr() }
   }
 
   /** A control-flow node that wraps a `VariableWriteAccess` AST expression. */
-  class VariableWriteAccessCfgNode extends VariableAccessCfgNode {
-    /**
-     * Holds if this access is a write access belonging to the explicit
-     * assignment `assignment`. For example, in
-     *
-     * ```rb
-     * a = foo
-     * ```
-     *
-     * both `a` is write accesses belonging to the assignment `a = foo`.
-     */
-    predicate isExplicitWrite(AssignExprCfgNode assignment) { this = assignment.getLhs() }
-
-    /**
-     * Holds if this access is a write access belonging to an implicit assignment.
-     */
-    predicate isImplicitWrite() { e.isImplicitWrite() }
-
+  class VariableWriteAccessCfgNode extends ExprCfgNode {
     override string getAPrimaryQlClass() { result = "VariableWriteAccessCfgNode" }
 
-    override VariableWriteAccessChildMapping e;
+    override VariableWriteAccess e;
 
-    override VariableWriteAccess getExpr() { result = super.getExpr() }
-  }
-
-  private class LocalVariableWriteAccessChildMapping extends VariableWriteAccessChildMapping,
-    LocalVariableWriteAccess
-  { }
-
-  /** A control-flow node that wraps a `LocalVariableWriteAccess` AST expression. */
-  class LocalVariableWriteAccessCfgNode extends VariableWriteAccessCfgNode {
-    override string getAPrimaryQlClass() { result = "LocalVariableWriteAccessCfgNode" }
-
-    override LocalVariableWriteAccessChildMapping e;
-
-    final override LocalVariableWriteAccess getExpr() { result = super.getExpr() }
-
-    final override LocalVariable getVariable() { result = super.getVariable() }
+    final override VariableWriteAccess getExpr() { result = ExprCfgNode.super.getExpr() }
   }
 
   /** A control-flow node that wraps a `ConstantReadAccess` AST expression. */
@@ -809,7 +785,7 @@ module ExprNodes {
 
     override ConstantReadAccess e;
 
-    final override ConstantReadAccess getExpr() { result = super.getExpr() }
+    final override ConstantReadAccess getExpr() { result = ExprCfgNode.super.getExpr() }
   }
 
   /** A control-flow node that wraps a `ConstantWriteAccess` AST expression. */
@@ -818,36 +794,36 @@ module ExprNodes {
 
     override ConstantWriteAccess e;
 
-    final override ConstantWriteAccess getExpr() { result = super.getExpr() }
+    final override ConstantWriteAccess getExpr() { result = ExprCfgNode.super.getExpr() }
   }
 
   /** A control-flow node that wraps an `InstanceVariableReadAccess` AST expression. */
   class InstanceVariableReadAccessCfgNode extends InstanceVariableAccessCfgNode {
-    InstanceVariableReadAccessCfgNode() { this.getAstNode() instanceof InstanceVariableReadAccess }
+    InstanceVariableReadAccessCfgNode() { this.getNode() instanceof InstanceVariableReadAccess }
 
     override string getAPrimaryQlClass() { result = "InstanceVariableReadAccessCfgNode" }
 
-    final override InstanceVariableReadAccess getExpr() { result = super.getExpr() }
+    final override InstanceVariableReadAccess getExpr() {
+      result = InstanceVariableAccessCfgNode.super.getExpr()
+    }
   }
 
   /** A control-flow node that wraps an `InstanceVariableWriteAccess` AST expression. */
   class InstanceVariableWriteAccessCfgNode extends InstanceVariableAccessCfgNode {
-    InstanceVariableWriteAccessCfgNode() {
-      this.getAstNode() instanceof InstanceVariableWriteAccess
-    }
+    InstanceVariableWriteAccessCfgNode() { this.getNode() instanceof InstanceVariableWriteAccess }
 
     override string getAPrimaryQlClass() { result = "InstanceVariableWriteAccessCfgNode" }
 
-    final override InstanceVariableWriteAccess getExpr() { result = super.getExpr() }
+    final override InstanceVariableWriteAccess getExpr() {
+      result = InstanceVariableAccessCfgNode.super.getExpr()
+    }
   }
 
   /** A control-flow node that wraps a `StringInterpolationComponent` AST expression. */
   class StringInterpolationComponentCfgNode extends StringComponentCfgNode, StmtSequenceCfgNode {
     override string getAPrimaryQlClass() { result = "StringInterpolationComponentCfgNode" }
 
-    StringInterpolationComponentCfgNode() {
-      this.getAstNode() instanceof StringInterpolationComponent
-    }
+    StringInterpolationComponentCfgNode() { this.getNode() instanceof StringInterpolationComponent }
 
     final override ConstantValue getConstantValue() {
       result = StmtSequenceCfgNode.super.getConstantValue()
@@ -858,9 +834,7 @@ module ExprNodes {
   class RegExpInterpolationComponentCfgNode extends RegExpComponentCfgNode, StmtSequenceCfgNode {
     override string getAPrimaryQlClass() { result = "RegExpInterpolationComponentCfgNode" }
 
-    RegExpInterpolationComponentCfgNode() {
-      this.getAstNode() instanceof RegExpInterpolationComponent
-    }
+    RegExpInterpolationComponentCfgNode() { this.getNode() instanceof RegExpInterpolationComponent }
 
     final override ConstantValue getConstantValue() {
       result = StmtSequenceCfgNode.super.getConstantValue()
@@ -887,10 +861,10 @@ module ExprNodes {
   }
 
   /** A control-flow node that wraps a `StringLiteral` AST expression. */
-  class StringLiteralCfgNode extends StringlikeLiteralCfgNode {
-    StringLiteralCfgNode() { e instanceof StringLiteral }
-
+  class StringLiteralCfgNode extends ExprCfgNode {
     override string getAPrimaryQlClass() { result = "StringLiteralCfgNode" }
+
+    override StringLiteral e;
 
     final override StringLiteral getExpr() { result = super.getExpr() }
   }
@@ -960,7 +934,8 @@ module ExprNodes {
       exists(ConstantReadAccess array |
         array = this.getReceiver().getExpr() and
         e.(MethodCall).getMethodName() = "[]" and
-        array.getModule().getQualifiedName() = "Array"
+        array.getName() = "Array" and
+        array.hasGlobalScope()
       )
     }
   }
@@ -974,10 +949,11 @@ module ExprNodes {
     override string getAPrimaryQlClass() { result = "HashLiteralCfgNode" }
 
     HashLiteralCfgNode() {
-      exists(ConstantReadAccess hash |
-        hash = this.getReceiver().getExpr() and
+      exists(ConstantReadAccess array |
+        array = this.getReceiver().getExpr() and
         e.(MethodCall).getMethodName() = "[]" and
-        hash.getModule().getQualifiedName() = "Hash"
+        array.getName() = "Hash" and
+        array.hasGlobalScope()
       )
     }
 

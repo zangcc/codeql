@@ -8,6 +8,12 @@ private import semmle.javascript.security.TaintedUrlSuffix
 import DomBasedXssCustomizations::DomBasedXss
 private import Xss::Shared as Shared
 
+/** DEPRECATED. Use `Configuration`. */
+deprecated class HtmlInjectionConfiguration = Configuration;
+
+/** DEPRECATED. Use `Configuration`. */
+deprecated class JQueryHtmlOrSelectorInjectionConfiguration = Configuration;
+
 /**
  * A sink that is not a URL write or a JQuery selector,
  * assumed to be a value that is interpreted as HTML.
@@ -86,9 +92,13 @@ class Configuration extends TaintTracking::Configuration {
     // we assume that `.join()` calls have a prefix, and thus block the prefix label.
     node = any(DataFlow::MethodCallNode call | call.getMethodName() = "join") and
     lbl = prefixLabel()
-    or
-    isOptionallySanitizedNode(node) and
-    lbl = [DataFlow::FlowLabel::taint(), prefixLabel(), TaintedUrlSuffix::label()]
+  }
+
+  override predicate isSanitizerEdge(
+    DataFlow::Node pred, DataFlow::Node succ, DataFlow::FlowLabel label
+  ) {
+    isOptionallySanitizedEdge(pred, succ) and
+    label = [DataFlow::FlowLabel::taint(), prefixLabel(), TaintedUrlSuffix::label()]
   }
 
   override predicate isAdditionalFlowStep(
@@ -112,20 +122,11 @@ class Configuration extends TaintTracking::Configuration {
     TaintedUrlSuffix::step(src, trg, TaintedUrlSuffix::label(), DataFlow::FlowLabel::taint()) and
     inlbl = TaintedUrlSuffix::label() and
     outlbl = prefixLabel()
-    or
-    exists(DataFlow::FunctionNode callback, DataFlow::Node arg |
-      any(JQuery::MethodCall c).interpretsArgumentAsHtml(arg) and
-      callback = arg.getABoundFunctionValue(_) and
-      src = callback.getReturnNode() and
-      trg = callback and
-      inlbl = outlbl
-    )
   }
 }
 
 private class PrefixStringSanitizerActivated extends TaintTracking::SanitizerGuardNode,
-  PrefixStringSanitizer
-{
+  PrefixStringSanitizer {
   PrefixStringSanitizerActivated() { this = this }
 }
 
@@ -137,7 +138,6 @@ private class QuoteGuard extends TaintTracking::SanitizerGuardNode, Shared::Quot
   QuoteGuard() { this = this }
 }
 
-private class ContainsHtmlGuard extends TaintTracking::SanitizerGuardNode, Shared::ContainsHtmlGuard
-{
+private class ContainsHtmlGuard extends TaintTracking::SanitizerGuardNode, Shared::ContainsHtmlGuard {
   ContainsHtmlGuard() { this = this }
 }

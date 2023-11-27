@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using Semmle.Extraction.Entities;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 
 namespace Semmle.Extraction.CSharp.Entities
 {

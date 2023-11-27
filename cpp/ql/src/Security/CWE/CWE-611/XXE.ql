@@ -14,42 +14,38 @@
 
 import cpp
 import XML
-import XxeFlow::PathGraph
+import DataFlow::PathGraph
 
 /**
  * A configuration for tracking XML objects and their states.
  */
-module XxeConfig implements DataFlow::StateConfigSig {
-  class FlowState = TXxeFlowState;
+class XxeConfiguration extends DataFlow::Configuration {
+  XxeConfiguration() { this = "XXEConfiguration" }
 
-  predicate isSource(DataFlow::Node node, FlowState flowstate) {
+  override predicate isSource(DataFlow::Node node, string flowstate) {
     any(XmlLibrary l).configurationSource(node, flowstate)
   }
 
-  predicate isSink(DataFlow::Node node, FlowState flowstate) {
+  override predicate isSink(DataFlow::Node node, string flowstate) {
     any(XmlLibrary l).configurationSink(node, flowstate)
   }
 
-  predicate isAdditionalFlowStep(
-    DataFlow::Node node1, FlowState state1, DataFlow::Node node2, FlowState state2
+  override predicate isAdditionalFlowStep(
+    DataFlow::Node node1, string state1, DataFlow::Node node2, string state2
   ) {
     // create additional flow steps for `XxeFlowStateTransformer`s
-    state2 = node2.asIndirectExpr().(XxeFlowStateTransformer).transform(state1) and
+    state2 = node2.asConvertedExpr().(XxeFlowStateTransformer).transform(state1) and
     DataFlow::simpleLocalFlowStep(node1, node2)
   }
 
-  predicate isBarrier(DataFlow::Node node, FlowState flowstate) {
+  override predicate isBarrier(DataFlow::Node node, string flowstate) {
     // when the flowstate is transformed at a call node, block the original
     // flowstate value.
-    node.asIndirectExpr().(XxeFlowStateTransformer).transform(flowstate) != flowstate
+    node.asConvertedExpr().(XxeFlowStateTransformer).transform(flowstate) != flowstate
   }
-
-  predicate neverSkip(DataFlow::Node node) { none() }
 }
 
-module XxeFlow = DataFlow::GlobalWithState<XxeConfig>;
-
-from XxeFlow::PathNode source, XxeFlow::PathNode sink
-where XxeFlow::flowPath(source, sink)
+from XxeConfiguration conf, DataFlow::PathNode source, DataFlow::PathNode sink
+where conf.hasFlowPath(source, sink)
 select sink, source, sink,
   "This $@ is not configured to prevent an XML external entity (XXE) attack.", source, "XML parser"

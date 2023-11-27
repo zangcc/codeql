@@ -15,26 +15,28 @@ import java
 import experimental.semmle.code.java.security.SpringUrlRedirect
 import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.controlflow.Guards
-import SpringUrlRedirectFlow::PathGraph
+import DataFlow::PathGraph
 
 private predicate startsWithSanitizer(Guard g, Expr e, boolean branch) {
-  g.(MethodCall).getMethod().hasName("startsWith") and
-  g.(MethodCall).getMethod().getDeclaringType() instanceof TypeString and
-  g.(MethodCall).getMethod().getNumberOfParameters() = 1 and
-  e = g.(MethodCall).getQualifier() and
+  g.(MethodAccess).getMethod().hasName("startsWith") and
+  g.(MethodAccess).getMethod().getDeclaringType() instanceof TypeString and
+  g.(MethodAccess).getMethod().getNumberOfParameters() = 1 and
+  e = g.(MethodAccess).getQualifier() and
   branch = true
 }
 
-module SpringUrlRedirectFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+class SpringUrlRedirectFlowConfig extends TaintTracking::Configuration {
+  SpringUrlRedirectFlowConfig() { this = "SpringUrlRedirectFlowConfig" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof SpringUrlRedirectSink }
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
 
-  predicate isAdditionalFlowStep(DataFlow::Node fromNode, DataFlow::Node toNode) {
+  override predicate isSink(DataFlow::Node sink) { sink instanceof SpringUrlRedirectSink }
+
+  override predicate isAdditionalTaintStep(DataFlow::Node fromNode, DataFlow::Node toNode) {
     springUrlRedirectTaintStep(fromNode, toNode)
   }
 
-  predicate isBarrier(DataFlow::Node node) {
+  override predicate isSanitizer(DataFlow::Node node) {
     // Exclude the case where the left side of the concatenated string is not `redirect:`.
     // E.g: `String url = "/path?token=" + request.getParameter("token");`
     // Note this is quite a broad sanitizer (it will also sanitize the right-hand side of `url = "http://" + request.getParameter("token")`);
@@ -44,7 +46,7 @@ module SpringUrlRedirectFlowConfig implements DataFlow::ConfigSig {
       not ae instanceof RedirectBuilderExpr
     )
     or
-    exists(MethodCall ma, int index |
+    exists(MethodAccess ma, int index |
       ma.getMethod().hasName("format") and
       ma.getMethod().getDeclaringType() instanceof TypeString and
       ma.getArgument(index) = node.asExpr() and
@@ -60,9 +62,7 @@ module SpringUrlRedirectFlowConfig implements DataFlow::ConfigSig {
   }
 }
 
-module SpringUrlRedirectFlow = TaintTracking::Global<SpringUrlRedirectFlowConfig>;
-
-from SpringUrlRedirectFlow::PathNode source, SpringUrlRedirectFlow::PathNode sink
-where SpringUrlRedirectFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, SpringUrlRedirectFlowConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "Potentially untrusted URL redirection due to $@.",
   source.getNode(), "user-provided value"

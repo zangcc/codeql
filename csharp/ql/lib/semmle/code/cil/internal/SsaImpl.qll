@@ -1,7 +1,7 @@
 private import cil
 private import codeql.ssa.Ssa as SsaImplCommon
 
-private module SsaInput implements SsaImplCommon::InputSig<CIL::Location> {
+private module SsaInput implements SsaImplCommon::InputSig {
   class BasicBlock = CIL::BasicBlock;
 
   BasicBlock getImmediateBasicBlockDominator(BasicBlock bb) { result = bb.getImmediateDominator() }
@@ -29,7 +29,7 @@ private module SsaInput implements SsaImplCommon::InputSig<CIL::Location> {
   }
 }
 
-import SsaImplCommon::Make<CIL::Location, SsaInput>
+import SsaImplCommon::Make<SsaInput>
 
 cached
 private module Cached {

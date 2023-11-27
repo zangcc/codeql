@@ -1,9 +1,9 @@
 /**
  * Provides queries to pretty-print a C++ AST as a graph.
  *
- * By default, this will print the AST for all functions and global and namespace variables in
- * the database. To change this behavior, extend `PrintASTConfiguration` and override
- * `shouldPrintDeclaration` to hold for only the declarations you wish to view the AST for.
+ * By default, this will print the AST for all functions in the database. To change this behavior,
+ * extend `PrintASTConfiguration` and override `shouldPrintFunction` to hold for only the functions
+ * you wish to view the AST for.
  */
 
 import cpp
@@ -12,7 +12,7 @@ private import semmle.code.cpp.Print
 private newtype TPrintAstConfiguration = MkPrintAstConfiguration()
 
 /**
- * The query can extend this class to control which declarations are printed.
+ * The query can extend this class to control which functions are printed.
  */
 class PrintAstConfiguration extends TPrintAstConfiguration {
   /**
@@ -21,16 +21,17 @@ class PrintAstConfiguration extends TPrintAstConfiguration {
   string toString() { result = "PrintASTConfiguration" }
 
   /**
-   * Holds if the AST for `decl` should be printed. By default, holds for all
-   * functions and global and namespace variables. Currently, does not support any
-   * other declaration types.
+   * Holds if the AST for `func` should be printed. By default, holds for all
+   * functions.
    */
-  predicate shouldPrintDeclaration(Declaration decl) { any() }
+  predicate shouldPrintFunction(Function func) { any() }
 }
 
-private predicate shouldPrintDeclaration(Declaration decl) {
-  exists(PrintAstConfiguration config | config.shouldPrintDeclaration(decl)) and
-  (decl instanceof Function or decl instanceof GlobalOrNamespaceVariable)
+/** DEPRECATED: Alias for PrintAstConfiguration */
+deprecated class PrintASTConfiguration = PrintAstConfiguration;
+
+private predicate shouldPrintFunction(Function func) {
+  exists(PrintAstConfiguration config | config.shouldPrintFunction(func))
 }
 
 bindingset[s]
@@ -71,7 +72,7 @@ private predicate locationSortKeys(Locatable ast, string file, int line, int col
   )
 }
 
-private Declaration getAnEnclosingDeclaration(Locatable ast) {
+private Function getEnclosingFunction(Locatable ast) {
   result = ast.(Expr).getEnclosingFunction()
   or
   result = ast.(Stmt).getEnclosingFunction()
@@ -79,10 +80,6 @@ private Declaration getAnEnclosingDeclaration(Locatable ast) {
   result = ast.(Initializer).getExpr().getEnclosingFunction()
   or
   result = ast.(Parameter).getFunction()
-  or
-  result = ast.(Expr).getEnclosingDeclaration()
-  or
-  result = ast.(Initializer).getDeclaration()
   or
   result = ast
 }
@@ -92,21 +89,21 @@ private Declaration getAnEnclosingDeclaration(Locatable ast) {
  * nodes for things like parameter lists and constructor init lists.
  */
 private newtype TPrintAstNode =
-  TAstNode(Locatable ast) { shouldPrintDeclaration(getAnEnclosingDeclaration(ast)) } or
+  TAstNode(Locatable ast) { shouldPrintFunction(getEnclosingFunction(ast)) } or
   TDeclarationEntryNode(DeclStmt stmt, DeclarationEntry entry) {
     // We create a unique node for each pair of (stmt, entry), to avoid having one node with
     // multiple parents due to extractor bug CPP-413.
     stmt.getADeclarationEntry() = entry and
-    shouldPrintDeclaration(stmt.getEnclosingFunction())
+    shouldPrintFunction(stmt.getEnclosingFunction())
   } or
-  TParametersNode(Function func) { shouldPrintDeclaration(func) } or
+  TParametersNode(Function func) { shouldPrintFunction(func) } or
   TConstructorInitializersNode(Constructor ctor) {
     ctor.hasEntryPoint() and
-    shouldPrintDeclaration(ctor)
+    shouldPrintFunction(ctor)
   } or
   TDestructorDestructionsNode(Destructor dtor) {
     dtor.hasEntryPoint() and
-    shouldPrintDeclaration(dtor)
+    shouldPrintFunction(dtor)
   }
 
 /**
@@ -133,7 +130,7 @@ class PrintAstNode extends TPrintAstNode {
     // The exact value of `childIndex` doesn't matter, as long as we preserve the correct order.
     result =
       rank[childIndex](PrintAstNode child, int nonConvertedIndex, boolean isConverted |
-        this.childAndAccessorPredicate(child, _, nonConvertedIndex, isConverted)
+        childAndAccessorPredicate(child, _, nonConvertedIndex, isConverted)
       |
         // Unconverted children come first, then sort by original child index within each group.
         child order by isConverted, nonConvertedIndex
@@ -146,7 +143,7 @@ class PrintAstNode extends TPrintAstNode {
    */
   private PrintAstNode getConvertedChild(int childIndex) {
     exists(Expr expr |
-      expr = this.getChildInternal(childIndex).(AstNode).getAst() and
+      expr = getChildInternal(childIndex).(AstNode).getAst() and
       expr.getFullyConverted() instanceof Conversion and
       result.(AstNode).getAst() = expr.getFullyConverted() and
       not expr instanceof Conversion
@@ -158,21 +155,21 @@ class PrintAstNode extends TPrintAstNode {
    * at index `childIndex`, if that node has any conversions.
    */
   private string getConvertedChildAccessorPredicate(int childIndex) {
-    exists(this.getConvertedChild(childIndex)) and
-    result = this.getChildAccessorPredicateInternal(childIndex) + ".getFullyConverted()"
+    exists(getConvertedChild(childIndex)) and
+    result = getChildAccessorPredicateInternal(childIndex) + ".getFullyConverted()"
   }
 
   /**
    * Holds if this node should be printed in the output. By default, all nodes
-   * within functions and global and namespace variables are printed, but the query
-   * can override `PrintASTConfiguration.shouldPrintDeclaration` to filter the output.
+   * within a function are printed, but the query can override
+   * `PrintASTConfiguration.shouldPrintFunction` to filter the output.
    */
-  final predicate shouldPrint() { shouldPrintDeclaration(this.getEnclosingDeclaration()) }
+  final predicate shouldPrint() { shouldPrintFunction(getEnclosingFunction()) }
 
   /**
    * Gets the children of this node.
    */
-  final PrintAstNode getAChild() { result = this.getChild(_) }
+  final PrintAstNode getAChild() { result = getChild(_) }
 
   /**
    * Gets the parent of this node, if any.
@@ -190,7 +187,7 @@ class PrintAstNode extends TPrintAstNode {
    */
   string getProperty(string key) {
     key = "semmle.label" and
-    result = this.toString()
+    result = toString()
   }
 
   /**
@@ -204,12 +201,12 @@ class PrintAstNode extends TPrintAstNode {
   private predicate childAndAccessorPredicate(
     PrintAstNode child, string childPredicate, int nonConvertedIndex, boolean isConverted
   ) {
-    child = this.getChildInternal(nonConvertedIndex) and
-    childPredicate = this.getChildAccessorPredicateInternal(nonConvertedIndex) and
+    child = getChildInternal(nonConvertedIndex) and
+    childPredicate = getChildAccessorPredicateInternal(nonConvertedIndex) and
     isConverted = false
     or
-    child = this.getConvertedChild(nonConvertedIndex) and
-    childPredicate = this.getConvertedChildAccessorPredicate(nonConvertedIndex) and
+    child = getConvertedChild(nonConvertedIndex) and
+    childPredicate = getConvertedChildAccessorPredicate(nonConvertedIndex) and
     isConverted = true
   }
 
@@ -221,7 +218,7 @@ class PrintAstNode extends TPrintAstNode {
     // The exact value of `childIndex` doesn't matter, as long as we preserve the correct order.
     result =
       rank[childIndex](string childPredicate, int nonConvertedIndex, boolean isConverted |
-        this.childAndAccessorPredicate(_, childPredicate, nonConvertedIndex, isConverted)
+        childAndAccessorPredicate(_, childPredicate, nonConvertedIndex, isConverted)
       |
         // Unconverted children come first, then sort by original child index within each group.
         childPredicate order by isConverted, nonConvertedIndex
@@ -235,17 +232,13 @@ class PrintAstNode extends TPrintAstNode {
   abstract string getChildAccessorPredicateInternal(int childIndex);
 
   /**
-   * Gets the `Declaration` that contains this node.
+   * Gets the `Function` that contains this node.
    */
-  private Declaration getEnclosingDeclaration() { result = this.getParent*().getDeclaration() }
-
-  /**
-   * Gets the `Declaration` this node represents.
-   */
-  private Declaration getDeclaration() {
-    result = this.(AstNode).getAst() and shouldPrintDeclaration(result)
-  }
+  private Function getEnclosingFunction() { result = getParent*().(FunctionNode).getFunction() }
 }
+
+/** DEPRECATED: Alias for PrintAstNode */
+deprecated class PrintASTNode = PrintAstNode;
 
 /**
  * Class that restricts the elements that we compute `qlClass` for.
@@ -260,7 +253,7 @@ private class PrintableElement extends Element {
   }
 
   pragma[noinline]
-  string getAPrimaryQlClass0() { result = this.getAPrimaryQlClass() }
+  string getAPrimaryQlClass0() { result = getAPrimaryQlClass() }
 }
 
 /**
@@ -288,8 +281,11 @@ abstract class BaseAstNode extends PrintAstNode {
   final Locatable getAst() { result = ast }
 
   /** DEPRECATED: Alias for getAst */
-  deprecated Locatable getAST() { result = this.getAst() }
+  deprecated Locatable getAST() { result = getAst() }
 }
+
+/** DEPRECATED: Alias for BaseAstNode */
+deprecated class BaseASTNode = BaseAstNode;
 
 /**
  * A node representing an AST node other than a `DeclarationEntry`.
@@ -297,6 +293,9 @@ abstract class BaseAstNode extends PrintAstNode {
 abstract class AstNode extends BaseAstNode, TAstNode {
   AstNode() { this = TAstNode(ast) }
 }
+
+/** DEPRECATED: Alias for AstNode */
+deprecated class ASTNode = AstNode;
 
 /**
  * A node representing an `Expr`.
@@ -312,7 +311,7 @@ class ExprNode extends AstNode {
     result = super.getProperty(key)
     or
     key = "Value" and
-    result = qlClass(expr) + this.getValue()
+    result = qlClass(expr) + getValue()
     or
     key = "Type" and
     result = qlClass(expr.getType()) + expr.getType().toString()
@@ -322,7 +321,7 @@ class ExprNode extends AstNode {
   }
 
   override string getChildAccessorPredicateInternal(int childIndex) {
-    result = getChildAccessorWithoutConversions(ast, this.getChildInternal(childIndex).getAst())
+    result = getChildAccessorWithoutConversions(ast, getChildInternal(childIndex).getAst())
   }
 
   /**
@@ -442,7 +441,7 @@ class StmtNode extends AstNode {
   }
 
   override string getChildAccessorPredicateInternal(int childIndex) {
-    result = getChildAccessorWithoutConversions(ast, this.getChildInternal(childIndex).getAst())
+    result = getChildAccessorWithoutConversions(ast, getChildInternal(childIndex).getAst())
   }
 }
 
@@ -518,7 +517,7 @@ class ParametersNode extends PrintAstNode, TParametersNode {
   }
 
   override string getChildAccessorPredicateInternal(int childIndex) {
-    exists(this.getChildInternal(childIndex)) and
+    exists(getChildInternal(childIndex)) and
     result = "getParameter(" + childIndex.toString() + ")"
   }
 
@@ -545,7 +544,7 @@ class ConstructorInitializersNode extends PrintAstNode, TConstructorInitializers
   }
 
   final override string getChildAccessorPredicateInternal(int childIndex) {
-    exists(this.getChildInternal(childIndex)) and
+    exists(getChildInternal(childIndex)) and
     result = "getInitializer(" + childIndex.toString() + ")"
   }
 
@@ -572,7 +571,7 @@ class DestructorDestructionsNode extends PrintAstNode, TDestructorDestructionsNo
   }
 
   final override string getChildAccessorPredicateInternal(int childIndex) {
-    exists(this.getChildInternal(childIndex)) and
+    exists(getChildInternal(childIndex)) and
     result = "getDestruction(" + childIndex.toString() + ")"
   }
 
@@ -582,52 +581,15 @@ class DestructorDestructionsNode extends PrintAstNode, TDestructorDestructionsNo
   final Destructor getDestructor() { result = dtor }
 }
 
-abstract private class FunctionOrGlobalOrNamespaceVariableNode extends AstNode {
-  override string toString() { result = qlClass(ast) + getIdentityString(ast) }
-
-  private int getOrder() {
-    this =
-      rank[result](FunctionOrGlobalOrNamespaceVariableNode node, Declaration decl, string file,
-        int line, int column |
-        node.getAst() = decl and
-        locationSortKeys(decl, file, line, column)
-      |
-        node order by file, line, column, getIdentityString(decl)
-      )
-  }
-
-  override string getProperty(string key) {
-    result = super.getProperty(key)
-    or
-    key = "semmle.order" and result = this.getOrder().toString()
-  }
-}
-
-/**
- * A node representing a `GlobalOrNamespaceVariable`.
- */
-class GlobalOrNamespaceVariableNode extends FunctionOrGlobalOrNamespaceVariableNode {
-  GlobalOrNamespaceVariable var;
-
-  GlobalOrNamespaceVariableNode() { var = ast }
-
-  override PrintAstNode getChildInternal(int childIndex) {
-    childIndex = 0 and
-    result.(AstNode).getAst() = var.getInitializer()
-  }
-
-  override string getChildAccessorPredicateInternal(int childIndex) {
-    childIndex = 0 and result = "getInitializer()"
-  }
-}
-
 /**
  * A node representing a `Function`.
  */
-class FunctionNode extends FunctionOrGlobalOrNamespaceVariableNode {
+class FunctionNode extends AstNode {
   Function func;
 
   FunctionNode() { func = ast }
+
+  override string toString() { result = qlClass(func) + getIdentityString(func) }
 
   override PrintAstNode getChildInternal(int childIndex) {
     childIndex = 0 and
@@ -652,10 +614,31 @@ class FunctionNode extends FunctionOrGlobalOrNamespaceVariableNode {
     or
     childIndex = 3 and result = "<destructions>"
   }
+
+  private int getOrder() {
+    this =
+      rank[result](FunctionNode node, Function function, string file, int line, int column |
+        node.getAst() = function and
+        locationSortKeys(function, file, line, column)
+      |
+        node order by file, line, column, getIdentityString(function)
+      )
+  }
+
+  override string getProperty(string key) {
+    result = super.getProperty(key)
+    or
+    key = "semmle.order" and result = getOrder().toString()
+  }
+
+  /**
+   * Gets the `Function` this node represents.
+   */
+  final Function getFunction() { result = func }
 }
 
 private string getChildAccessorWithoutConversions(Locatable parent, Element child) {
-  shouldPrintDeclaration(getAnEnclosingDeclaration(parent)) and
+  shouldPrintFunction(getEnclosingFunction(parent)) and
   (
     exists(Stmt s | s = parent |
       namedStmtChildPredicates(s, child, result)
@@ -674,7 +657,7 @@ private string getChildAccessorWithoutConversions(Locatable parent, Element chil
 }
 
 private predicate namedStmtChildPredicates(Locatable s, Element e, string pred) {
-  shouldPrintDeclaration(getAnEnclosingDeclaration(s)) and
+  shouldPrintFunction(getEnclosingFunction(s)) and
   (
     exists(int n | s.(BlockStmt).getStmt(n) = e and pred = "getStmt(" + n + ")")
     or
@@ -762,22 +745,20 @@ private predicate namedStmtChildPredicates(Locatable s, Element e, string pred) 
 }
 
 private predicate namedExprChildPredicates(Expr expr, Element ele, string pred) {
-  shouldPrintDeclaration(expr.getEnclosingDeclaration()) and
+  shouldPrintFunction(expr.getEnclosingFunction()) and
   (
     expr.(Access).getTarget() = ele and pred = "getTarget()"
     or
     expr.(VariableAccess).getQualifier() = ele and pred = "getQualifier()"
     or
-    expr.(FunctionAccess).getQualifier() = ele and pred = "getQualifier()"
-    or
     exists(Field f |
-      expr.(ClassAggregateLiteral).getAFieldExpr(f) = ele and
-      pred = "getAFieldExpr(" + f.toString() + ")"
+      expr.(ClassAggregateLiteral).getFieldExpr(f) = ele and
+      pred = "getFieldExpr(" + f.toString() + ")"
     )
     or
     exists(int n |
-      expr.(ArrayOrVectorAggregateLiteral).getAnElementExpr(n) = ele and
-      pred = "getAnElementExpr(" + n.toString() + ")"
+      expr.(ArrayOrVectorAggregateLiteral).getElementExpr(n) = ele and
+      pred = "getElementExpr(" + n.toString() + ")"
     )
     or
     expr.(AlignofExprOperator).getExprOperand() = ele and pred = "getExprOperand()"
@@ -826,11 +807,17 @@ private predicate namedExprChildPredicates(Expr expr, Element ele, string pred) 
     or
     expr.(Conversion).getExpr() = ele and pred = "getExpr()"
     or
-    expr.(DeleteOrDeleteArrayExpr).getDeallocatorCall() = ele and pred = "getDeallocatorCall()"
+    expr.(DeleteArrayExpr).getAllocatorCall() = ele and pred = "getAllocatorCall()"
     or
-    expr.(DeleteOrDeleteArrayExpr).getDestructorCall() = ele and pred = "getDestructorCall()"
+    expr.(DeleteArrayExpr).getDestructorCall() = ele and pred = "getDestructorCall()"
     or
-    expr.(DeleteOrDeleteArrayExpr).getExpr() = ele and pred = "getExpr()"
+    expr.(DeleteArrayExpr).getExpr() = ele and pred = "getExpr()"
+    or
+    expr.(DeleteExpr).getAllocatorCall() = ele and pred = "getAllocatorCall()"
+    or
+    expr.(DeleteExpr).getDestructorCall() = ele and pred = "getDestructorCall()"
+    or
+    expr.(DeleteExpr).getExpr() = ele and pred = "getExpr()"
     or
     expr.(DestructorFieldDestruction).getExpr() = ele and pred = "getExpr()"
     or

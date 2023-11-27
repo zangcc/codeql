@@ -4,7 +4,7 @@ import semmle.code.csharp.controlflow.internal.ControlFlowGraphImpl
 import semmle.code.csharp.dataflow.internal.SsaImpl as SsaImpl
 
 class CallableWithSplitting extends Callable {
-  CallableWithSplitting() { this = any(SplitAstNode n).getEnclosingCallable() }
+  CallableWithSplitting() { this = any(SplitControlFlowElement e).getEnclosingCallable() }
 }
 
 query predicate defReadInconsistency(
@@ -57,8 +57,8 @@ query predicate readReadInconsistency(
     not PreSsa::adjacentReadPairSameVar(read1, read2) and
     // Exclude split CFG elements because SSA may be more precise than pre-SSA
     // in those cases
-    not read1 instanceof SplitAstNode and
-    not read2 instanceof SplitAstNode
+    not read1 instanceof SplitControlFlowElement and
+    not read2 instanceof SplitControlFlowElement
   )
 }
 
@@ -78,7 +78,7 @@ query predicate phiInconsistency(
       |
         edef.getADefinition() = adef and
         phi.definesAt(_, bb, _) and
-        cfe = bb.getFirstNode().getAstNode()
+        cfe = bb.getFirstNode().getElement()
       )
     )
     or
@@ -89,7 +89,7 @@ query predicate phiInconsistency(
       edef = phi.getAnUltimateDefinition() and
       edef.getADefinition() = adef and
       phi.definesAt(_, bb, _) and
-      cfe = bb.getFirstNode().getAstNode() and
+      cfe = bb.getFirstNode().getElement() and
       not exists(PreSsa::PhiNode prePhi |
         adef = prePhi.getAnInput+().getDefinition() and
         cfe = prePhi.getBasicBlock().getFirstElement()

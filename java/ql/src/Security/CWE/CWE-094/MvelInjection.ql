@@ -13,9 +13,9 @@
 
 import java
 import semmle.code.java.security.MvelInjectionQuery
-import MvelInjectionFlow::PathGraph
+import DataFlow::PathGraph
 
-from MvelInjectionFlow::PathNode source, MvelInjectionFlow::PathNode sink
-where MvelInjectionFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, MvelInjectionFlowConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "MVEL expression depends on a $@.", source.getNode(),
   "user-provided value"

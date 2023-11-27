@@ -19,9 +19,3 @@ enum GenericEnum<T> {
     case none
     case some(T)
 }
-
-enum EnumWithNamedParams {
-    case nodata1(v: Void)
-    case intdata(i: Int)
-    case tuple(i: Int, s: String, d: Double)
-}

@@ -3,6 +3,7 @@ private import codeql.swift.elements.expr.BinaryExpr
 private import codeql.swift.elements.expr.PrefixUnaryExpr
 private import codeql.swift.elements.expr.DotSyntaxCallExpr
 private import codeql.swift.elements.expr.DeclRefExpr
+private import codeql.swift.elements.decl.ConcreteFuncDecl
 
 private predicate unaryHasName(PrefixUnaryExpr e, string name) {
   e.getStaticTarget().getName() = name

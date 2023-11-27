@@ -6,7 +6,7 @@
  * @problem.severity error
  * @security-severity 7.5
  * @precision high
- * @id swift/cleartext-logging
+ * @id swift/clear-text-logging
  * @tags security
  *       external/cwe/cwe-312
  *       external/cwe/cwe-359
@@ -16,11 +16,9 @@
 import swift
 import codeql.swift.dataflow.DataFlow
 import codeql.swift.security.CleartextLoggingQuery
-import CleartextLoggingFlow::PathGraph
+import DataFlow::PathGraph
 
-from CleartextLoggingFlow::PathNode source, CleartextLoggingFlow::PathNode sink
-where CleartextLoggingFlow::flowPath(source, sink)
-select sink.getNode(), source, sink,
-  "This operation writes '" + sink.toString() +
-    "' to a log file. It may contain unencrypted sensitive data from $@.", source,
-  source.getNode().toString()
+from DataFlow::PathNode src, DataFlow::PathNode sink
+where any(CleartextLoggingConfiguration c).hasFlowPath(src, sink)
+select sink.getNode(), src, sink, "This $@ is written to a log file.", src.getNode(),
+  "potentially sensitive information"

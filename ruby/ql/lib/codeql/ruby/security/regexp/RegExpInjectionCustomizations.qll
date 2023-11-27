@@ -28,6 +28,13 @@ module RegExpInjection {
   abstract class Sink extends DataFlow::Node { }
 
   /**
+   * DEPRECATED: Use `Sanitizer` instead.
+   *
+   * A sanitizer guard for regexp injection vulnerabilities.
+   */
+  abstract deprecated class SanitizerGuard extends DataFlow::BarrierGuard { }
+
+  /**
    * A data flow sanitized for regexp injection vulnerabilities.
    */
   abstract class Sanitizer extends DataFlow::Node { }
@@ -66,8 +73,7 @@ module RegExpInjection {
    * sanitizer-guard.
    */
   class StringConstArrayInclusionCallAsSanitizer extends Sanitizer,
-    StringConstArrayInclusionCallBarrier
-  { }
+    StringConstArrayInclusionCallBarrier { }
 
   /**
    * A call to `Regexp.escape` (or its alias, `Regexp.quote`), considered as a

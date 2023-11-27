@@ -15,6 +15,7 @@
 
 import go
 import semmle.go.security.InsecureFeatureFlag::InsecureFeatureFlag
+import DataFlow::PathGraph
 
 /**
  * A flag indicating the program is in debug or development mode, or that stack
@@ -43,16 +44,22 @@ class DebugStackFunction extends Function {
   DebugStackFunction() { this.hasQualifiedName("runtime/debug", "Stack") }
 }
 
-module StackTraceExposureConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
-    source.(DataFlow::PostUpdateNode).getPreUpdateNode() =
+/**
+ * A taint-tracking configuration that looks for stack traces being written to
+ * an HTTP response body without an intervening debug- or development-mode conditional.
+ */
+class StackTraceExposureConfig extends TaintTracking::Configuration {
+  StackTraceExposureConfig() { this = "StackTraceExposureConfig" }
+
+  override predicate isSource(DataFlow::Node node) {
+    node.(DataFlow::PostUpdateNode).getPreUpdateNode() =
       any(StackFunction f).getACall().getArgument(0) or
-    source = any(DebugStackFunction f).getACall().getResult()
+    node = any(DebugStackFunction f).getACall().getResult()
   }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof Http::ResponseBody }
+  override predicate isSink(DataFlow::Node node) { node instanceof Http::ResponseBody }
 
-  predicate isBarrier(DataFlow::Node node) {
+  override predicate isSanitizer(DataFlow::Node node) {
     // Sanitise everything controlled by an is-debug-mode check.
     // Imprecision: I don't try to guess which arm of a branch is intended
     // to mean debug mode, and which is production mode.
@@ -64,16 +71,8 @@ module StackTraceExposureConfig implements DataFlow::ConfigSig {
   }
 }
 
-/**
- * Tracks taint flow for reasoning about stack traces being written to an HTTP
- * response body without an intervening debug- or development-mode conditional.
- */
-module StackTraceExposureFlow = TaintTracking::Global<StackTraceExposureConfig>;
-
-import StackTraceExposureFlow::PathGraph
-
-from StackTraceExposureFlow::PathNode source, StackTraceExposureFlow::PathNode sink
-where StackTraceExposureFlow::flowPath(source, sink)
+from StackTraceExposureConfig cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
 select sink.getNode(), source, sink,
   "HTTP response depends on $@ and may be exposed to an external user.", source.getNode(),
   "stack trace information"

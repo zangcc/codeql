@@ -159,54 +159,26 @@ private predicate fieldAddressValueNumber(
   tvalueNumber(instr.getObjectAddress()) = objectAddress
 }
 
-pragma[nomagic]
-private predicate binaryValueNumber0(
-  BinaryInstruction instr, IRFunction irFunc, Opcode opcode, boolean isLeft,
-  TValueNumber valueNumber
-) {
-  not instr instanceof PointerArithmeticInstruction and
-  instr.getEnclosingIRFunction() = irFunc and
-  instr.getOpcode() = opcode and
-  (
-    isLeft = true and
-    tvalueNumber(instr.getLeft()) = valueNumber
-    or
-    isLeft = false and
-    tvalueNumber(instr.getRight()) = valueNumber
-  )
-}
-
 private predicate binaryValueNumber(
   BinaryInstruction instr, IRFunction irFunc, Opcode opcode, TValueNumber leftOperand,
   TValueNumber rightOperand
 ) {
-  binaryValueNumber0(instr, irFunc, opcode, true, leftOperand) and
-  binaryValueNumber0(instr, irFunc, opcode, false, rightOperand)
-}
-
-pragma[nomagic]
-private predicate pointerArithmeticValueNumber0(
-  PointerArithmeticInstruction instr, IRFunction irFunc, Opcode opcode, int elementSize,
-  boolean isLeft, TValueNumber valueNumber
-) {
   instr.getEnclosingIRFunction() = irFunc and
+  not instr instanceof PointerArithmeticInstruction and
   instr.getOpcode() = opcode and
-  instr.getElementSize() = elementSize and
-  (
-    isLeft = true and
-    tvalueNumber(instr.getLeft()) = valueNumber
-    or
-    isLeft = false and
-    tvalueNumber(instr.getRight()) = valueNumber
-  )
+  tvalueNumber(instr.getLeft()) = leftOperand and
+  tvalueNumber(instr.getRight()) = rightOperand
 }
 
 private predicate pointerArithmeticValueNumber(
   PointerArithmeticInstruction instr, IRFunction irFunc, Opcode opcode, int elementSize,
   TValueNumber leftOperand, TValueNumber rightOperand
 ) {
-  pointerArithmeticValueNumber0(instr, irFunc, opcode, elementSize, true, leftOperand) and
-  pointerArithmeticValueNumber0(instr, irFunc, opcode, elementSize, false, rightOperand)
+  instr.getEnclosingIRFunction() = irFunc and
+  instr.getOpcode() = opcode and
+  instr.getElementSize() = elementSize and
+  tvalueNumber(instr.getLeft()) = leftOperand and
+  tvalueNumber(instr.getRight()) = rightOperand
 }
 
 private predicate unaryValueNumber(
@@ -231,28 +203,14 @@ private predicate inheritanceConversionValueNumber(
   unique( | | instr.getDerivedClass()) = derivedClass
 }
 
-pragma[nomagic]
-private predicate loadTotalOverlapValueNumber0(
-  LoadTotalOverlapInstruction instr, IRFunction irFunc, IRType type, TValueNumber valueNumber,
-  boolean isAddress
-) {
-  instr.getEnclosingIRFunction() = irFunc and
-  instr.getResultIRType() = type and
-  (
-    isAddress = true and
-    tvalueNumberOfOperand(instr.getSourceAddressOperand()) = valueNumber
-    or
-    isAddress = false and
-    tvalueNumber(instr.getSourceValueOperand().getAnyDef()) = valueNumber
-  )
-}
-
 private predicate loadTotalOverlapValueNumber(
   LoadTotalOverlapInstruction instr, IRFunction irFunc, IRType type, TValueNumber memOperand,
   TValueNumber operand
 ) {
-  loadTotalOverlapValueNumber0(instr, irFunc, type, operand, true) and
-  loadTotalOverlapValueNumber0(instr, irFunc, type, memOperand, false)
+  instr.getEnclosingIRFunction() = irFunc and
+  tvalueNumber(instr.getAnOperand().(MemoryOperand).getAnyDef()) = memOperand and
+  tvalueNumberOfOperand(instr.getAnOperand().(AddressOperand)) = operand and
+  instr.getResultIRType() = type
 }
 
 /**

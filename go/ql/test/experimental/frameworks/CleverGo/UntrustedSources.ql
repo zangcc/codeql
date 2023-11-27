@@ -2,10 +2,12 @@ import go
 import TestUtilities.InlineExpectationsTest
 import experimental.frameworks.CleverGo
 
-module UntrustedFlowSourceTest implements TestSig {
-  string getARelevantTag() { result = "untrustedFlowSource" }
+class UntrustedFlowSourceTest extends InlineExpectationsTest {
+  UntrustedFlowSourceTest() { this = "UntrustedFlowSourceTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "untrustedFlowSource" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "untrustedFlowSource" and
     exists(DataFlow::CallNode sinkCall, DataFlow::ArgumentNode arg |
       sinkCall.getCalleeName() = "sink" and
@@ -19,5 +21,3 @@ module UntrustedFlowSourceTest implements TestSig {
     )
   }
 }
-
-import MakeTest<UntrustedFlowSourceTest>

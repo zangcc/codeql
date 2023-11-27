@@ -2,17 +2,17 @@ import java
 import semmle.code.java.security.InsecureBasicAuthQuery
 import TestUtilities.InlineExpectationsTest
 
-module HasInsecureBasicAuthTest implements TestSig {
-  string getARelevantTag() { result = "hasInsecureBasicAuth" }
+class HasInsecureBasicAuthTest extends InlineExpectationsTest {
+  HasInsecureBasicAuthTest() { this = "HasInsecureBasicAuthTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasInsecureBasicAuth" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasInsecureBasicAuth" and
-    exists(DataFlow::Node sink | InsecureBasicAuthFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, BasicAuthFlowConfig conf | conf.hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<HasInsecureBasicAuthTest>

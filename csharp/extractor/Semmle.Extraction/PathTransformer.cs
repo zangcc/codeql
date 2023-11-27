@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Diagnostics.CodeAnalysis;
 using Semmle.Util;
 using Semmle.Util.Logging;
 

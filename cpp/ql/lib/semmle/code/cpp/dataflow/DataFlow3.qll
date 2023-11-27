@@ -11,12 +11,6 @@
 
 import cpp
 
-/**
- * DEPRECATED: Use `semmle.code.cpp.dataflow.new.DataFlow3` instead.
- *
- * Provides classes for performing local (intra-procedural) and
- * global (inter-procedural) data flow analyses.
- */
-deprecated module DataFlow3 {
+module DataFlow3 {
   import semmle.code.cpp.dataflow.internal.DataFlowImpl3
 }

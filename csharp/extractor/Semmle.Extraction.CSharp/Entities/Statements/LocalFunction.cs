@@ -1,8 +1,9 @@
-﻿using System.IO;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Semmle.Extraction.Kinds;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
+using Semmle.Extraction.Entities;
+using System.IO;
 
 namespace Semmle.Extraction.CSharp.Entities.Statements
 {
@@ -34,7 +35,7 @@ namespace Semmle.Extraction.CSharp.Entities.Statements
         {
             if (Symbol is null)
             {
-                Context.ExtractionError("Could not get local function symbol", null, Context.CreateLocation(this.ReportingLocation), severity: Semmle.Util.Logging.Severity.Warning);
+                Context.ExtractionError("Could not get local function symbol", null, Context.CreateLocation(this.ReportingLocation), severity: Util.Logging.Severity.Warning);
                 return;
             }
 

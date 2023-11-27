@@ -10,24 +10,26 @@
  */
 
 import csharp
-import HashWithoutSalt::PathGraph
+import semmle.code.csharp.dataflow.DataFlow2
+import semmle.code.csharp.dataflow.TaintTracking2
+import DataFlow::PathGraph
 
 /** The C# class `Windows.Security.Cryptography.Core.HashAlgorithmProvider`. */
 class HashAlgorithmProvider extends RefType {
   HashAlgorithmProvider() {
-    this.hasFullyQualifiedName("Windows.Security.Cryptography.Core", "HashAlgorithmProvider")
+    this.hasQualifiedName("Windows.Security.Cryptography.Core", "HashAlgorithmProvider")
   }
 }
 
 /** The C# class `System.Security.Cryptography.HashAlgorithm`. */
 class HashAlgorithm extends RefType {
-  HashAlgorithm() { this.hasFullyQualifiedName("System.Security.Cryptography", "HashAlgorithm") }
+  HashAlgorithm() { this.hasQualifiedName("System.Security.Cryptography", "HashAlgorithm") }
 }
 
 /** The C# class `System.Security.Cryptography.KeyedHashAlgorithm`. */
 class KeyedHashAlgorithm extends RefType {
   KeyedHashAlgorithm() {
-    this.hasFullyQualifiedName("System.Security.Cryptography", "KeyedHashAlgorithm")
+    this.hasQualifiedName("System.Security.Cryptography", "KeyedHashAlgorithm")
   }
 }
 
@@ -75,7 +77,7 @@ predicate isHashCall(MethodCall mc) {
 
 /** Holds if there is another hashing method call. */
 predicate hasAnotherHashCall(MethodCall mc) {
-  exists(MethodCall mc2, DataFlow::Node src, DataFlow::Node sink |
+  exists(MethodCall mc2, DataFlow2::Node src, DataFlow2::Node sink |
     isHashCall(mc2) and
     mc2 != mc and
     (
@@ -95,10 +97,10 @@ predicate hasAnotherHashCall(MethodCall mc) {
 predicate hasFurtherProcessing(MethodCall mc) {
   mc.getTarget().fromLibrary() and
   (
-    mc.getTarget().hasFullyQualifiedName("System", "Array", "Copy") or // Array.Copy(passwordHash, 0, password.Length), 0, key, 0, keyLen);
-    mc.getTarget().hasFullyQualifiedName("System", "String", "Concat") or // string.Concat(passwordHash, saltkey)
-    mc.getTarget().hasFullyQualifiedName("System", "Buffer", "BlockCopy") or // Buffer.BlockCopy(passwordHash, 0, allBytes, 0, 20)
-    mc.getTarget().hasFullyQualifiedName("System", "String", "Format") // String.Format("{0}:{1}:{2}", username, salt, password)
+    mc.getTarget().hasQualifiedName("System", "Array", "Copy") or // Array.Copy(passwordHash, 0, password.Length), 0, key, 0, keyLen);
+    mc.getTarget().hasQualifiedName("System", "String", "Concat") or // string.Concat(passwordHash, saltkey)
+    mc.getTarget().hasQualifiedName("System", "Buffer", "BlockCopy") or // Buffer.BlockCopy(passwordHash, 0, allBytes, 0, 20)
+    mc.getTarget().hasQualifiedName("System", "String", "Format") // String.Format("{0}:{1}:{2}", username, salt, password)
   )
 }
 
@@ -118,10 +120,12 @@ predicate hasHashAncestor(MethodCall mc) {
  * Taint configuration tracking flow from an expression whose name suggests it holds
  * password data to a method call that generates a hash without a salt.
  */
-module HashWithoutSaltConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source.asExpr() instanceof PasswordVarExpr }
+class HashWithoutSaltConfiguration extends TaintTracking::Configuration {
+  HashWithoutSaltConfiguration() { this = "HashWithoutSaltConfiguration" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node source) { source.asExpr() instanceof PasswordVarExpr }
+
+  override predicate isSink(DataFlow::Node sink) {
     exists(MethodCall mc |
       sink.asExpr() = mc.getArgument(0) and
       isHashCall(mc) and
@@ -137,17 +141,17 @@ module HashWithoutSaltConfig implements DataFlow::ConfigSig {
           c.getTarget()
               .getDeclaringType()
               .getABaseType*()
-              .hasFullyQualifiedName("System.Security.Cryptography", "DeriveBytes")
+              .hasQualifiedName("System.Security.Cryptography", "DeriveBytes")
         ) and
         DataFlow::localExprFlow(mc, c.getAnArgument())
       )
     )
   }
 
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+  override predicate isAdditionalTaintStep(DataFlow::Node node1, DataFlow::Node node2) {
     exists(MethodCall mc |
       mc.getTarget()
-          .hasFullyQualifiedName("Windows.Security.Cryptography", "CryptographicBuffer",
+          .hasQualifiedName("Windows.Security.Cryptography", "CryptographicBuffer",
             "ConvertStringToBinary") and
       mc.getArgument(0) = node1.asExpr() and
       mc = node2.asExpr()
@@ -162,7 +166,7 @@ module HashWithoutSaltConfig implements DataFlow::ConfigSig {
    *  `byte[] saltedPassword = sha256.ComputeHash(rawSalted);`
    *  Or the password is concatenated with a salt as a string.
    */
-  predicate isBarrier(DataFlow::Node node) {
+  override predicate isSanitizer(DataFlow::Node node) {
     exists(MethodCall mc |
       hasFurtherProcessing(mc) and
       mc.getAnArgument() = node.asExpr()
@@ -176,7 +180,7 @@ module HashWithoutSaltConfig implements DataFlow::ConfigSig {
       c.getTarget()
           .getDeclaringType()
           .getABaseType*()
-          .hasFullyQualifiedName("System.Security.Cryptography", "DeriveBytes")
+          .hasQualifiedName("System.Security.Cryptography", "DeriveBytes")
     )
     or
     // a salt or key is included in subclasses of `KeyedHashAlgorithm`
@@ -190,9 +194,7 @@ module HashWithoutSaltConfig implements DataFlow::ConfigSig {
   }
 }
 
-module HashWithoutSalt = TaintTracking::Global<HashWithoutSaltConfig>;
-
-from HashWithoutSalt::PathNode source, HashWithoutSalt::PathNode sink
-where HashWithoutSalt::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, HashWithoutSaltConfiguration c
+where c.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "$@ is hashed without a salt.", source.getNode(),
   "The password"

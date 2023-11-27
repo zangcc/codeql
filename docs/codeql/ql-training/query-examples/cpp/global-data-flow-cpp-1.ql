@@ -1,14 +1,14 @@
 import cpp
 import semmle.code.cpp.dataflow.TaintTracking
 
-module TaintedFormatConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { /* TBD */ }
+class TaintedFormatConfig extends TaintTracking::Configuration {
+  TaintedFormatConfig() { this = "TaintedFormatConfig" }
 
-  predicate isSink(DataFlow::Node sink) { /* TBD */ }
+  override predicate isSource(DataFlow::Node source) { /* TBD */ }
+
+  override predicate isSink(DataFlow::Node sink) { /* TBD */ }
 }
 
-module TaintedFormatFlow = TaintTracking::Global<TaintedFormatConfig>;
-
-from DataFlow::Node source, DataFlow::Node sink
-where TaintedFormatFlow::flow(source, sink)
+from TaintedFormatConfig cfg, DataFlow::Node source, DataFlow::Node sink
+where cfg.hasFlow(source, sink)
 select sink, "This format string may be derived from a $@.", source, "user-controlled value"

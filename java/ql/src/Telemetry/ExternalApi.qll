@@ -8,7 +8,31 @@ private import semmle.code.java.dataflow.FlowSummary
 private import semmle.code.java.dataflow.internal.DataFlowPrivate
 private import semmle.code.java.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
 private import semmle.code.java.dataflow.TaintTracking
-private import semmle.code.java.dataflow.internal.ModelExclusions
+
+pragma[nomagic]
+private predicate isTestPackage(Package p) {
+  p.getName()
+      .matches([
+          "org.junit%", "junit.%", "org.mockito%", "org.assertj%",
+          "com.github.tomakehurst.wiremock%", "org.hamcrest%", "org.springframework.test.%",
+          "org.springframework.mock.%", "org.springframework.boot.test.%", "reactor.test%",
+          "org.xmlunit%", "org.testcontainers.%", "org.opentest4j%", "org.mockserver%",
+          "org.powermock%", "org.skyscreamer.jsonassert%", "org.rnorth.visibleassertions",
+          "org.openqa.selenium%", "com.gargoylesoftware.htmlunit%", "org.jboss.arquillian.testng%",
+          "org.testng%"
+        ])
+}
+
+/**
+ * A test library.
+ */
+private class TestLibrary extends RefType {
+  TestLibrary() { isTestPackage(this.getPackage()) }
+}
+
+private string containerAsJar(Container container) {
+  if container instanceof JarFile then result = container.getBaseName() else result = "rt.jar"
+}
 
 /** Holds if the given callable is not worth supporting. */
 private predicate isUninteresting(Callable c) {
@@ -27,23 +51,14 @@ class ExternalApi extends Callable {
    */
   string getApiName() {
     result =
-      this.getDeclaringType().getPackage() + "." +
-        this.getDeclaringType().getSourceDeclaration().nestedName() + "#" + this.getName() +
-        paramsString(this)
-  }
-
-  private string getJarName() {
-    result = this.getCompilationUnit().getParentContainer*().(JarFile).getBaseName()
+      this.getDeclaringType().getPackage() + "." + this.getDeclaringType().getSourceDeclaration() +
+        "#" + this.getName() + paramsString(this)
   }
 
   /**
    * Gets the jar file containing this API. Normalizes the Java Runtime to "rt.jar" despite the presence of modules.
    */
-  string jarContainer() {
-    result = this.getJarName()
-    or
-    not exists(this.getJarName()) and result = "rt.jar"
-  }
+  string jarContainer() { result = containerAsJar(this.getCompilationUnit().getParentContainer*()) }
 
   /** Gets a node that is an input to a call to this API. */
   private DataFlow::Node getAnInput() {
@@ -79,7 +94,7 @@ class ExternalApi extends Callable {
 
   /** Holds if this API is a known neutral. */
   pragma[nomagic]
-  predicate isNeutral() { this instanceof FlowSummaryImpl::Public::NeutralCallable }
+  predicate isNeutral() { this = any(FlowSummaryImpl::Public::NeutralCallable nsc).asCallable() }
 
   /**
    * Holds if this API is supported by existing CodeQL libraries, that is, it is either a
@@ -90,10 +105,13 @@ class ExternalApi extends Callable {
   }
 }
 
+/** DEPRECATED: Alias for ExternalApi */
+deprecated class ExternalAPI = ExternalApi;
+
 /**
  * Gets the limit for the number of results produced by a telemetry query.
  */
-int resultLimit() { result = 100 }
+int resultLimit() { result = 1000 }
 
 /**
  * Holds if it is relevant to count usages of `api`.

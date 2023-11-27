@@ -21,8 +21,7 @@ private module Chi {
    * Methods that extract URL parameters, considered as a source of untrusted flow.
    */
   private class UserControlledRequestMethod extends UntrustedFlowSource::Range,
-    DataFlow::MethodCallNode
-  {
+    DataFlow::MethodCallNode {
     UserControlledRequestMethod() {
       this.getTarget().hasQualifiedName(packagePath(), "Context", "URLParam")
     }

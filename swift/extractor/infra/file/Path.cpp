@@ -1,21 +1,17 @@
 #include "swift/extractor/infra/file/Path.h"
-
 #include <iostream>
 #include <unistd.h>
 
-#include "swift/extractor/infra/file/FsLogger.h"
-
-using namespace std::string_view_literals;
-
 namespace codeql {
 
-using namespace fs_logger;
-
 static bool shouldCanonicalize() {
-  for (auto var : {"CODEQL_PRESERVE_SYMLINKS", "SEMMLE_PRESERVE_SYMLINKS"}) {
-    if (auto preserve = getenv(var); preserve && preserve == "true"sv) {
-      return false;
-    }
+  auto preserve = getenv("CODEQL_PRESERVE_SYMLINKS");
+  if (preserve && std::string(preserve) == "true") {
+    return false;
+  }
+  preserve = getenv("SEMMLE_PRESERVE_SYMLINKS");
+  if (preserve && std::string(preserve) == "true") {
+    return false;
   }
   return true;
 }
@@ -30,13 +26,8 @@ std::filesystem::path resolvePath(const std::filesystem::path& path) {
     ret = std::filesystem::absolute(path, ec);
   }
   if (ec) {
-    if (ec.value() == ENOENT) {
-      // this is pretty normal, nothing to spam about
-      LOG_DEBUG("resolving non-existing {}", path);
-    } else {
-      LOG_WARNING("cannot get {} path for {} ({})", canonicalize ? "canonical" : "absolute", path,
-                  ec);
-    }
+    std::cerr << "Cannot get " << (canonicalize ? "canonical" : "absolute") << " path: " << path
+              << ": " << ec.message() << "\n";
     return path;
   }
   return ret;

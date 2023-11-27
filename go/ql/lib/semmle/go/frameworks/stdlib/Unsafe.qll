@@ -11,7 +11,7 @@ module Unsafe {
     FunctionOutput outp;
 
     FunctionModels() {
-      this.hasQualifiedName("unsafe", ["String", "StringData", "Slice", "SliceData"]) and
+      hasQualifiedName("unsafe", ["String", "StringData", "Slice", "SliceData"]) and
       (inp.isParameter(0) and outp.isResult())
     }
 

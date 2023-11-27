@@ -3,10 +3,12 @@ private import semmle.python.dataflow.new.DataFlow
 private import semmle.python.frameworks.internal.PoorMansFunctionResolution
 import TestUtilities.InlineExpectationsTest
 
-module InlinePoorMansFunctionResolutionTest implements TestSig {
-  string getARelevantTag() { result = "resolved" }
+class InlinePoorMansFunctionResolutionTest extends InlineExpectationsTest {
+  InlinePoorMansFunctionResolutionTest() { this = "InlinePoorMansFunctionResolutionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "resolved" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Function func, DataFlow::Node ref |
       ref = poorMansFunctionTracker(func) and
@@ -24,5 +26,3 @@ module InlinePoorMansFunctionResolutionTest implements TestSig {
     )
   }
 }
-
-import MakeTest<InlinePoorMansFunctionResolutionTest>

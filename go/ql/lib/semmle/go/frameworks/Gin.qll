@@ -35,6 +35,22 @@ private module Gin {
     }
   }
 
+  private class ParamsGet extends TaintTracking::FunctionModel, Method {
+    ParamsGet() { this.hasQualifiedName(packagePath(), "Params", "Get") }
+
+    override predicate hasTaintFlow(FunctionInput inp, FunctionOutput outp) {
+      inp.isReceiver() and outp.isResult(0)
+    }
+  }
+
+  private class ParamsByName extends TaintTracking::FunctionModel, Method {
+    ParamsByName() { this.hasQualifiedName(packagePath(), "Params", "ByName") }
+
+    override predicate hasTaintFlow(FunctionInput inp, FunctionOutput outp) {
+      inp.isReceiver() and outp.isResult()
+    }
+  }
+
   /**
    * A call to a method on `Context` struct that unmarshals data into a target.
    */
@@ -52,27 +68,5 @@ private module Gin {
         this = FunctionOutput::parameter(0).getExitNode(call)
       )
     }
-  }
-
-  /**
-   * The File system access sinks
-   */
-  class FsOperations extends FileSystemAccess::Range, DataFlow::CallNode {
-    int pathArg;
-
-    FsOperations() {
-      exists(Method m |
-        (
-          m.hasQualifiedName(packagePath(), "Context", ["File", "FileAttachment"]) and
-          pathArg = 0
-          or
-          m.hasQualifiedName(packagePath(), "Context", "SaveUploadedFile") and
-          pathArg = 1
-        ) and
-        this = m.getACall()
-      )
-    }
-
-    override DataFlow::Node getAPathArgument() { result = this.getArgument(pathArg) }
   }
 }

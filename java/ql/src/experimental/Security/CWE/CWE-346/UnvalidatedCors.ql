@@ -14,12 +14,13 @@ import java
 import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.frameworks.Servlets
 import semmle.code.java.dataflow.TaintTracking
-import CorsOriginFlow::PathGraph
+import semmle.code.java.dataflow.TaintTracking2
+import DataFlow::PathGraph
 
 /**
  *  Holds if `header` sets `Access-Control-Allow-Credentials` to `true`. This ensures fair chances of exploitability.
  */
-private predicate setsAllowCredentials(MethodCall header) {
+private predicate setsAllowCredentials(MethodAccess header) {
   (
     header.getMethod() instanceof ResponseSetHeaderMethod or
     header.getMethod() instanceof ResponseAddHeaderMethod
@@ -29,16 +30,16 @@ private predicate setsAllowCredentials(MethodCall header) {
   header.getArgument(1).(CompileTimeConstantExpr).getStringValue().toLowerCase() = "true"
 }
 
-private class CorsProbableCheckAccess extends MethodCall {
+private class CorsProbableCheckAccess extends MethodAccess {
   CorsProbableCheckAccess() {
-    this.getMethod().hasName("contains") and
-    this.getMethod().getDeclaringType().getASourceSupertype*() instanceof CollectionType
+    getMethod().hasName("contains") and
+    getMethod().getDeclaringType().getASourceSupertype*() instanceof CollectionType
     or
-    this.getMethod().hasName("containsKey") and
-    this.getMethod().getDeclaringType().getASourceSupertype*() instanceof MapType
+    getMethod().hasName("containsKey") and
+    getMethod().getDeclaringType().getASourceSupertype*() instanceof MapType
     or
-    this.getMethod().hasName("equals") and
-    this.getQualifier().getType() instanceof TypeString
+    getMethod().hasName("equals") and
+    getQualifier().getType() instanceof TypeString
   }
 }
 
@@ -47,26 +48,25 @@ private Expr getAccessControlAllowOriginHeaderName() {
 }
 
 /**
- * A taint-tracking configuration for flow from a source node to CorsProbableCheckAccess methods.
+ * This taintflow2 configuration checks if there is a flow from source node towards CorsProbableCheckAccess methods.
  */
-module CorsSourceReachesCheckConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { CorsOriginFlow::flow(source, _) }
+class CorsSourceReachesCheckConfig extends TaintTracking2::Configuration {
+  CorsSourceReachesCheckConfig() { this = "CorsOriginConfig" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node source) { any(CorsOriginConfig c).hasFlow(source, _) }
+
+  override predicate isSink(DataFlow::Node sink) {
     sink.asExpr() = any(CorsProbableCheckAccess check).getAnArgument()
   }
 }
 
-/**
- * Taint-tracking flow from a source node to CorsProbableCheckAccess methods.
- */
-module CorsSourceReachesCheckFlow = TaintTracking::Global<CorsSourceReachesCheckConfig>;
+private class CorsOriginConfig extends TaintTracking::Configuration {
+  CorsOriginConfig() { this = "CorsOriginConfig" }
 
-private module CorsOriginConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
 
-  predicate isSink(DataFlow::Node sink) {
-    exists(MethodCall corsHeader, MethodCall allowCredentialsHeader |
+  override predicate isSink(DataFlow::Node sink) {
+    exists(MethodAccess corsHeader, MethodAccess allowCredentialsHeader |
       (
         corsHeader.getMethod() instanceof ResponseSetHeaderMethod or
         corsHeader.getMethod() instanceof ResponseAddHeaderMethod
@@ -79,11 +79,9 @@ private module CorsOriginConfig implements DataFlow::ConfigSig {
   }
 }
 
-private module CorsOriginFlow = TaintTracking::Global<CorsOriginConfig>;
-
-from CorsOriginFlow::PathNode source, CorsOriginFlow::PathNode sink
-where
-  CorsOriginFlow::flowPath(source, sink) and
-  not CorsSourceReachesCheckFlow::flow(source.getNode(), _)
+from
+  DataFlow::PathNode source, DataFlow::PathNode sink, CorsOriginConfig conf,
+  CorsSourceReachesCheckConfig sanconf
+where conf.hasFlowPath(source, sink) and not sanconf.hasFlow(source.getNode(), _)
 select sink.getNode(), source, sink, "CORS header is being set using user controlled value $@.",
   source.getNode(), "user-provided value"

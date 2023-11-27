@@ -4,7 +4,7 @@
  * @kind path-problem
  * @problem.severity warning
  * @security-severity 9.3
- * @precision medium
+ * @precision high
  * @id swift/unsafe-js-eval
  * @tags security
  *       external/cwe/cwe-094
@@ -15,11 +15,12 @@
 import swift
 import codeql.swift.dataflow.DataFlow
 import codeql.swift.security.UnsafeJsEvalQuery
-import UnsafeJsEvalFlow::PathGraph
+import DataFlow::PathGraph
 
 from
-  UnsafeJsEvalFlow::PathNode sourceNode, UnsafeJsEvalFlow::PathNode sinkNode, UnsafeJsEvalSink sink
+  UnsafeJsEvalConfig config, DataFlow::PathNode sourceNode, DataFlow::PathNode sinkNode,
+  UnsafeJsEvalSink sink
 where
-  UnsafeJsEvalFlow::flowPath(sourceNode, sinkNode) and
+  config.hasFlowPath(sourceNode, sinkNode) and
   sink = sinkNode.getNode()
 select sink, sourceNode, sinkNode, "Evaluation of uncontrolled JavaScript from a remote source."

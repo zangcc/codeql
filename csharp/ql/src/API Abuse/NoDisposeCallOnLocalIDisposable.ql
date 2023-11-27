@@ -24,8 +24,10 @@ private class ReturnNode extends DataFlow::ExprNode {
   }
 }
 
-module DisposeCallOnLocalIDisposableConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) {
+private class Conf extends DataFlow::Configuration {
+  Conf() { this = "NoDisposeCallOnLocalIDisposable" }
+
+  override predicate isSource(DataFlow::Node node) {
     node.asExpr() =
       any(LocalScopeDisposableCreation disposable |
         // Only care about library types - user types often have spurious IDisposable declarations
@@ -35,7 +37,7 @@ module DisposeCallOnLocalIDisposableConfig implements DataFlow::ConfigSig {
       )
   }
 
-  predicate isSink(DataFlow::Node node) {
+  override predicate isSink(DataFlow::Node node) {
     // Things that return may be disposed elsewhere
     node instanceof ReturnNode
     or
@@ -78,27 +80,23 @@ module DisposeCallOnLocalIDisposableConfig implements DataFlow::ConfigSig {
     )
   }
 
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+  override predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
     node2.asExpr() =
       any(LocalScopeDisposableCreation other | other.getAnArgument() = node1.asExpr())
   }
 
-  predicate isBarrierOut(DataFlow::Node node) {
-    isSink(node) and
+  override predicate isBarrierOut(DataFlow::Node node) {
+    this.isSink(node) and
     not node instanceof ReturnNode
   }
 }
 
-module DisposeCallOnLocalIDisposable = DataFlow::Global<DisposeCallOnLocalIDisposableConfig>;
-
 /** Holds if `disposable` may not be disposed. */
 predicate mayNotBeDisposed(LocalScopeDisposableCreation disposable) {
-  exists(DataFlow::ExprNode e |
+  exists(Conf conf, DataFlow::ExprNode e |
     e.getExpr() = disposable and
-    DisposeCallOnLocalIDisposableConfig::isSource(e) and
-    not exists(DataFlow::Node sink |
-      DisposeCallOnLocalIDisposable::flow(DataFlow::exprNode(disposable), sink)
-    |
+    conf.isSource(e) and
+    not exists(DataFlow::Node sink | conf.hasFlow(DataFlow::exprNode(disposable), sink) |
       sink instanceof ReturnNode
       implies
       sink.getEnclosingCallable() = disposable.getEnclosingCallable()

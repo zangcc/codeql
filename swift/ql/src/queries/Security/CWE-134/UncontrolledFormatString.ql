@@ -13,9 +13,9 @@
 import swift
 import codeql.swift.dataflow.DataFlow
 import codeql.swift.security.UncontrolledFormatStringQuery
-import TaintedFormatFlow::PathGraph
+import DataFlow::PathGraph
 
-from TaintedFormatFlow::PathNode sourceNode, TaintedFormatFlow::PathNode sinkNode
-where TaintedFormatFlow::flowPath(sourceNode, sinkNode)
+from TaintedFormatConfiguration config, DataFlow::PathNode sourceNode, DataFlow::PathNode sinkNode
+where config.hasFlowPath(sourceNode, sinkNode)
 select sinkNode.getNode(), sourceNode, sinkNode, "This format string depends on $@.",
   sourceNode.getNode(), "this user-provided value"

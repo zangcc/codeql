@@ -178,9 +178,6 @@ module Ssa {
 
     /** Gets the location of this SSA definition. */
     Location getLocation() { result = this.getControlFlowNode().getLocation() }
-
-    /** Gets the scope of this SSA definition. */
-    CfgScope getScope() { result = this.getBasicBlock().getScope() }
   }
 
   /**
@@ -192,7 +189,7 @@ module Ssa {
    * ```
    */
   class WriteDefinition extends Definition, SsaImpl::WriteDefinition {
-    private VariableWriteAccessCfgNode write;
+    private VariableWriteAccess write;
 
     WriteDefinition() {
       exists(BasicBlock bb, int i, Variable v |
@@ -202,7 +199,7 @@ module Ssa {
     }
 
     /** Gets the underlying write access. */
-    final VariableWriteAccessCfgNode getWriteAccess() { result = write }
+    final VariableWriteAccess getWriteAccess() { result = write }
 
     /**
      * Holds if this SSA definition represents a direct assignment of `value`
@@ -216,9 +213,9 @@ module Ssa {
       )
     }
 
-    final override string toString() { result = write.toString() }
+    final override string toString() { result = Definition.super.toString() }
 
-    final override Location getLocation() { result = write.getLocation() }
+    final override Location getLocation() { result = this.getControlFlowNode().getLocation() }
   }
 
   /**
@@ -256,16 +253,14 @@ module Ssa {
    * `x` is inserted at the start of `m`.
    */
   class UninitializedDefinition extends Definition, SsaImpl::WriteDefinition {
-    private Variable v;
-
     UninitializedDefinition() {
-      exists(BasicBlock bb, int i |
+      exists(BasicBlock bb, int i, Variable v |
         this.definesAt(v, bb, i) and
         SsaImpl::uninitializedWrite(bb, i, v)
       )
     }
 
-    final override string toString() { result = "<uninitialized> " + v }
+    final override string toString() { result = "<uninitialized>" }
 
     final override Location getLocation() { result = this.getBasicBlock().getLocation() }
   }
@@ -294,27 +289,9 @@ module Ssa {
       )
     }
 
-    final override string toString() { result = "<captured entry> " + this.getSourceVariable() }
+    final override string toString() { result = "<captured> " + this.getSourceVariable() }
 
     override Location getLocation() { result = this.getBasicBlock().getLocation() }
-  }
-
-  /**
-   * An SSA definition inserted at the beginning of a scope to represent a captured `self` variable.
-   * For example, in
-   *
-   * ```rb
-   * def m(x)
-   *   x.tap do |x|
-   *     foo(x)
-   *   end
-   * end
-   * ```
-   *
-   * an entry definition for `self` is inserted at the start of the `do` block.
-   */
-  class CapturedSelfDefinition extends CapturedEntryDefinition {
-    CapturedSelfDefinition() { this.getSourceVariable() instanceof SelfVariable }
   }
 
   /**
@@ -347,7 +324,7 @@ module Ssa {
      */
     final Definition getPriorDefinition() { result = SsaImpl::uncertainWriteDefinitionInput(this) }
 
-    override string toString() { result = "<captured exit> " + this.getSourceVariable() }
+    override string toString() { result = this.getControlFlowNode().toString() }
   }
 
   /**

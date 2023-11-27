@@ -5,6 +5,7 @@ private import codeql.ruby.ApiGraphs
 private import codeql.ruby.Concepts
 private import codeql.ruby.dataflow.FlowSummary
 private import codeql.ruby.frameworks.data.ModelsAsData
+private import codeql.ruby.dataflow.internal.DataFlowImplForPathname
 
 /**
  * Modeling of the `Pathname` class from the Ruby standard library.
@@ -27,11 +28,13 @@ module Pathname {
    */
   class PathnameInstance extends FileNameSource {
     cached
-    PathnameInstance() { PathnameFlow::flowTo(this) }
+    PathnameInstance() { any(PathnameConfiguration c).hasFlowTo(this) }
   }
 
-  private module PathnameConfig implements DataFlow::ConfigSig {
-    predicate isSource(DataFlow::Node source) {
+  private class PathnameConfiguration extends Configuration {
+    PathnameConfiguration() { this = "PathnameConfiguration" }
+
+    override predicate isSource(DataFlow::Node source) {
       // A call to `Pathname.new`.
       source = API::getTopLevelMember("Pathname").getAnInstantiation()
       or
@@ -39,9 +42,9 @@ module Pathname {
       source = API::getTopLevelMember("Pathname").getAMethodCall(["getwd", "pwd",])
     }
 
-    predicate isSink(DataFlow::Node sink) { any() }
+    override predicate isSink(DataFlow::Node sink) { any() }
 
-    predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+    override predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
       node2 =
         any(DataFlow::CallNode c |
           c.getReceiver() = node1 and
@@ -53,8 +56,6 @@ module Pathname {
         )
     }
   }
-
-  private module PathnameFlow = DataFlow::Global<PathnameConfig>;
 
   /** A call where the receiver is a `Pathname`. */
   class PathnameCall extends DataFlow::CallNode {
@@ -99,8 +100,7 @@ module Pathname {
   }
 
   private class PathnamePermissionModification extends FileSystemPermissionModification::Range,
-    PathnameCall
-  {
+    PathnameCall {
     private DataFlow::Node permissionArg;
 
     PathnamePermissionModification() {

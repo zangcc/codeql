@@ -49,20 +49,18 @@ def out():
     captureOut2()
     SINK(sinkO2) #$ MISSING:captured
 
-    nonSink1 = ""
+    nonSink0 = ""
     def captureOut1NotCalled():
-        nonlocal nonSink1
-        nonSink1 = SOURCE
-    SINK_F(nonSink1)
+        nonlocal nonSink0
+        nonSink0 = SOURCE
+    SINK_F(nonSink0)
 
-    nonSink2 = ""
     def captureOut2NotCalled():
-        # notice that `m` is not called
         def m():
-            nonlocal nonSink2
-            nonSink2 = SOURCE
+            nonlocal nonSink0
+            nonSink0 = SOURCE
     captureOut2NotCalled()
-    SINK_F(nonSink2)
+    SINK_F(nonSink0)
 
 @expects(4)
 def test_out():
@@ -85,20 +83,18 @@ def through(tainted):
     captureOut2()
     SINK(sinkO2) #$ MISSING:captured
 
-    nonSink1 = ""
+    nonSink0 = ""
     def captureOut1NotCalled():
-        nonlocal nonSink1
-        nonSink1 = tainted
-    SINK_F(nonSink1)
+        nonlocal nonSink0
+        nonSink0 = tainted
+    SINK_F(nonSink0)
 
-    nonSink2 = ""
     def captureOut2NotCalled():
-        # notice that `m` is not called
         def m():
-            nonlocal nonSink2
-            nonSink2 = tainted
+            nonlocal nonSink0
+            nonSink0 = tainted
     captureOut2NotCalled()
-    SINK_F(nonSink2)
+    SINK_F(nonSink0)
 
 @expects(4)
 def test_through():

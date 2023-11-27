@@ -216,7 +216,7 @@ def m_partition
     sink b[0] # $ hasTaintFlow=a
     sink b[1] # $ hasTaintFlow=a
     sink b[2] # $ hasTaintFlow=a
-    sink b[3] # $ hasTaintFlow=a (because of the flow summary for Array#partition)
+    sink b[3]
 end
 
 def m_replace

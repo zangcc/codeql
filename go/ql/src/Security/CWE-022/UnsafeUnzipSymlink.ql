@@ -15,11 +15,11 @@
  */
 
 import go
-import semmle.go.security.UnsafeUnzipSymlink
-import UnsafeUnzipSymlink::Flow::PathGraph
+import DataFlow::PathGraph
+import semmle.go.security.UnsafeUnzipSymlink::UnsafeUnzipSymlink
 
-from UnsafeUnzipSymlink::Flow::PathNode source, UnsafeUnzipSymlink::Flow::PathNode sink
-where UnsafeUnzipSymlink::Flow::flowPath(source, sink)
+from SymlinkConfiguration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
 select source.getNode(), source, sink,
   "Unresolved path from an archive header, which may point outside the archive root, is used in $@.",
   sink.getNode(), "symlink creation"

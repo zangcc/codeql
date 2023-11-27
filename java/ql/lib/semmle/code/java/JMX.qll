@@ -39,7 +39,7 @@ class RegisteredManagedBeanImpl extends Class {
 /**
  * A call that registers an object with the `MBeanServer`, directly or indirectly.
  */
-class JmxRegistrationCall extends MethodCall {
+class JmxRegistrationCall extends MethodAccess {
   JmxRegistrationCall() { this.getCallee() instanceof JmxRegistrationMethod }
 
   /**

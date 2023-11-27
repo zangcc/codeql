@@ -13,10 +13,10 @@
 
 import java
 import semmle.code.java.dataflow.FlowSources
-import semmle.code.java.security.LdapInjectionQuery
-import LdapInjectionFlow::PathGraph
+import LdapInjectionLib
+import DataFlow::PathGraph
 
-from LdapInjectionFlow::PathNode source, LdapInjectionFlow::PathNode sink
-where LdapInjectionFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, LdapInjectionFlowConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This LDAP query depends on a $@.", source.getNode(),
   "user-provided value"

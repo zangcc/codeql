@@ -2,10 +2,12 @@ import java
 import semmle.code.java.security.SensitiveKeyboardCacheQuery
 import TestUtilities.InlineExpectationsTest
 
-module SensitiveKeyboardCacheTest implements TestSig {
-  string getARelevantTag() { result = "hasResult" }
+class SensitiveKeyboardCacheTest extends InlineExpectationsTest {
+  SensitiveKeyboardCacheTest() { this = "SensitiveKeyboardCacheTest" }
 
-  predicate hasActualResult(Location loc, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasResult" }
+
+  override predicate hasActualResult(Location loc, string element, string tag, string value) {
     exists(AndroidEditableXmlElement el |
       el = getASensitiveCachedInput() and
       loc = el.getLocation() and
@@ -15,5 +17,3 @@ module SensitiveKeyboardCacheTest implements TestSig {
     )
   }
 }
-
-import MakeTest<SensitiveKeyboardCacheTest>

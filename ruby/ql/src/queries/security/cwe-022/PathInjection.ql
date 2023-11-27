@@ -17,9 +17,9 @@
 
 import ruby
 import codeql.ruby.security.PathInjectionQuery
-import PathInjectionFlow::PathGraph
+import DataFlow::PathGraph
 
-from PathInjectionFlow::PathNode source, PathInjectionFlow::PathNode sink
-where PathInjectionFlow::flowPath(source, sink)
+from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This path depends on a $@.", source.getNode(),
   "user-provided value"

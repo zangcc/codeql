@@ -2,13 +2,15 @@ import python
 import TestUtilities.InlineExpectationsTest
 private import semmle.python.regex
 
-module CharacterSetTest implements TestSig {
-  string getARelevantTag() { result = "charSet" }
+class CharacterSetTest extends InlineExpectationsTest {
+  CharacterSetTest() { this = "CharacterSetTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "charSet" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     location.getFile().getBaseName() = "charSetTest.py" and
-    exists(RegExp re, int start, int end |
+    exists(Regex re, int start, int end |
       re.charSet(start, end) and
       location = re.getLocation() and
       element = re.getText().substring(start, end) and
@@ -18,13 +20,15 @@ module CharacterSetTest implements TestSig {
   }
 }
 
-module CharacterRangeTest implements TestSig {
-  string getARelevantTag() { result = "charRange" }
+class CharacterRangeTest extends InlineExpectationsTest {
+  CharacterRangeTest() { this = "CharacterRangeTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "charRange" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     location.getFile().getBaseName() = "charRangeTest.py" and
-    exists(RegExp re, int start, int lower_end, int upper_start, int end |
+    exists(Regex re, int start, int lower_end, int upper_start, int end |
       re.charRange(_, start, lower_end, upper_start, end) and
       location = re.getLocation() and
       element = re.getText().substring(start, end) and
@@ -34,13 +38,15 @@ module CharacterRangeTest implements TestSig {
   }
 }
 
-module EscapeTest implements TestSig {
-  string getARelevantTag() { result = "escapedCharacter" }
+class EscapeTest extends InlineExpectationsTest {
+  EscapeTest() { this = "EscapeTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "escapedCharacter" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     location.getFile().getBaseName() = "escapedCharacterTest.py" and
-    exists(RegExp re, int start, int end |
+    exists(Regex re, int start, int end |
       re.escapedCharacter(start, end) and
       location = re.getLocation() and
       element = re.getText().substring(start, end) and
@@ -50,13 +56,15 @@ module EscapeTest implements TestSig {
   }
 }
 
-module GroupTest implements TestSig {
-  string getARelevantTag() { result = "group" }
+class GroupTest extends InlineExpectationsTest {
+  GroupTest() { this = "GroupTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "group" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     location.getFile().getBaseName() = "groupTest.py" and
-    exists(RegExp re, int start, int end |
+    exists(Regex re, int start, int end |
       re.group(start, end) and
       location = re.getLocation() and
       element = re.getText().substring(start, end) and
@@ -65,5 +73,3 @@ module GroupTest implements TestSig {
     )
   }
 }
-
-import MakeTest<MergeTests4<CharacterSetTest, CharacterRangeTest, EscapeTest, GroupTest>>

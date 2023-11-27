@@ -32,6 +32,13 @@ module OpenUrlRedirect {
   abstract class Barrier extends DataFlow::Node { }
 
   /**
+   * DEPRECATED: Use `Barrier` instead.
+   *
+   * A barrier guard for unvalidated URL redirect vulnerabilities.
+   */
+  abstract deprecated class BarrierGuard extends DataFlow::BarrierGuard { }
+
+  /**
    * An additional taint propagation step specific to this query.
    */
   bindingset[this]

@@ -2,17 +2,17 @@ import java
 import semmle.code.java.security.UnsafeAndroidAccessQuery
 import TestUtilities.InlineExpectationsTest
 
-module UnsafeAndroidAccessTest implements TestSig {
-  string getARelevantTag() { result = "hasUnsafeAndroidAccess" }
+class UnsafeAndroidAccessTest extends InlineExpectationsTest {
+  UnsafeAndroidAccessTest() { this = "HasUnsafeAndroidAccess" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasUnsafeAndroidAccess" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasUnsafeAndroidAccess" and
-    exists(DataFlow::Node sink | FetchUntrustedResourceFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, FetchUntrustedResourceConfiguration conf | conf.hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<UnsafeAndroidAccessTest>

@@ -470,8 +470,6 @@ module Impl implements RegexTreeViewSig {
     override string getPrimaryQLClass() { result = "RegExpAlt" }
   }
 
-  private import codeql.util.Numbers as Numbers
-
   /**
    * An escaped regular expression term, that is, a regular expression
    * term starting with a backslash, which is not a backreference.
@@ -533,7 +531,11 @@ module Impl implements RegexTreeViewSig {
      * Gets the unicode char for this escape.
      * E.g. for `\u0061` this returns "a".
      */
-    private string getUnicode() { result = Numbers::parseHexInt(this.getHexString()).toUnicode() }
+    private string getUnicode() {
+      exists(int codepoint | codepoint = sum(this.getHexValueFromUnicode(_)) |
+        result = codepoint.toUnicode()
+      )
+    }
 
     /** Gets the part of this escape that is a hexidecimal string */
     private string getHexString() {
@@ -544,6 +546,18 @@ module Impl implements RegexTreeViewSig {
         if this.getText().matches("\\x{%") // \x{h..h}
         then result = this.getText().substring(3, this.getText().length() - 1)
         else result = this.getText().suffix(2) // \xhh
+    }
+
+    /**
+     * Gets int value for the `index`th char in the hex number of the unicode escape.
+     * E.g. for `\u0061` and `index = 2` this returns 96 (the number `6` interpreted as hex).
+     */
+    private int getHexValueFromUnicode(int index) {
+      this.isUnicode() and
+      exists(string hex, string char | hex = this.getHexString() |
+        char = hex.charAt(index) and
+        result = 16.pow(hex.length() - index - 1) * toHex(char)
+      )
     }
   }
 
@@ -570,6 +584,25 @@ module Impl implements RegexTreeViewSig {
    */
   class RegExpNonWordBoundary extends RegExpSpecialChar {
     RegExpNonWordBoundary() { this.getChar() = "\\B" }
+  }
+
+  /**
+   * Gets the hex number for the `hex` char.
+   */
+  private int toHex(string hex) {
+    result = [0 .. 9] and hex = result.toString()
+    or
+    result = 10 and hex = ["a", "A"]
+    or
+    result = 11 and hex = ["b", "B"]
+    or
+    result = 12 and hex = ["c", "C"]
+    or
+    result = 13 and hex = ["d", "D"]
+    or
+    result = 14 and hex = ["e", "E"]
+    or
+    result = 15 and hex = ["f", "F"]
   }
 
   /**

@@ -15,20 +15,12 @@ private module FlowSummaries {
   private import semmle.go.dataflow.FlowSummary as F
 }
 
-/**
- * A class of callables that are candidates for flow summary modeling.
- */
 class SummarizedCallableBase = Callable;
 
-/**
- * A class of callables that are candidates for neutral modeling.
- */
-class NeutralCallableBase = Callable;
-
-DataFlowCallable inject(SummarizedCallable c) { result.asSummarizedCallable() = c or none() }
+DataFlowCallable inject(SummarizedCallable c) { result.asCallable() = c }
 
 /** Gets the parameter position of the instance parameter. */
-ArgumentPosition callbackSelfParameterPosition() { result = -1 }
+ArgumentPosition instanceParameterPosition() { result = -1 }
 
 /** Gets the textual representation of a parameter position in the format used for flow summaries. */
 string getParameterPosition(ParameterPosition pos) { result = pos.toString() }
@@ -36,17 +28,16 @@ string getParameterPosition(ParameterPosition pos) { result = pos.toString() }
 /** Gets the textual representation of an argument position in the format used for flow summaries. */
 string getArgumentPosition(ArgumentPosition pos) { result = pos.toString() }
 
+Node summaryNode(SummarizedCallable c, SummaryNodeState state) { result = getSummaryNode(c, state) }
+
 /** Gets the synthesized data-flow call for `receiver`. */
-DataFlowCall summaryDataFlowCall(SummaryNode receiver) {
+DataFlowCall summaryDataFlowCall(Node receiver) {
   // We do not currently have support for callback-based library models.
   none()
 }
 
 /** Gets the type of content `c`. */
 DataFlowType getContentType(Content c) { result = c.getType() }
-
-/** Gets the type of the parameter at the given position. */
-DataFlowType getParameterType(SummarizedCallable c, ParameterPosition pos) { any() }
 
 /** Gets the return type of kind `rk` for callable `c`. */
 DataFlowType getReturnType(SummarizedCallable c, ReturnKind rk) { any() }
@@ -81,11 +72,11 @@ predicate summaryElement(
 }
 
 /**
- * Holds if a neutral model exists for `c` of kind `kind`
- * and with provenance `provenance`.
+ * Holds if a neutral model exists for `c` with provenance `provenance`,
+ * which means that there is no flow through `c`.
  * Note. Neutral models have not been implemented for Go.
  */
-predicate neutralElement(NeutralCallableBase c, string kind, string provenance) { none() }
+predicate neutralElement(SummarizedCallable c, string provenance) { none() }
 
 /** Gets the summary component for specification component `c`, if any. */
 bindingset[c]
@@ -114,18 +105,16 @@ private string getContentSpecific(Content c) {
   c instanceof MapKeyContent and result = "MapKey"
   or
   c instanceof MapValueContent and result = "MapValue"
-  or
-  c instanceof PointerContent and result = "Dereference"
 }
 
-/** Gets the textual representation of the content in the format used for MaD models. */
-string getMadRepresentationSpecific(SummaryComponent sc) {
+/** Gets the textual representation of the content in the format used for flow summaries. */
+string getComponentSpecific(SummaryComponent sc) {
   exists(Content c | sc = TContentSummaryComponent(c) and result = getContentSpecific(c))
   or
-  exists(ReturnKind rk |
+  exists(ReturnKind rk, int n | n = rk.getIndex() |
     sc = TReturnSummaryComponent(rk) and
-    not rk = getReturnValueKind() and
-    result = "ReturnValue[" + rk.getIndex() + "]"
+    result = "ReturnValue[" + n + "]" and
+    n != 0
   )
 }
 
@@ -200,7 +189,9 @@ class InterpretNode extends TInterpretNode {
 
   /** Gets the callable that this node corresponds to, if any. */
   DataFlowCallable asCallable() {
-    result.asSummarizedCallable().asFunction() = this.asElement().asEntity()
+    result.asFunction() = this.asElement().asEntity()
+    or
+    result.asFuncLit() = this.asElement().asAstNode()
   }
 
   /** Gets the target of this call, if any. */

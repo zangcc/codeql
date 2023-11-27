@@ -151,7 +151,7 @@ class SystemIComparableInterface extends SystemInterface {
 
 /** The `System.IComparable<T>` interface. */
 class SystemIComparableTInterface extends SystemUnboundGenericInterface {
-  SystemIComparableTInterface() { this.hasName("IComparable`1") }
+  SystemIComparableTInterface() { this.hasName("IComparable<>") }
 
   /** Gets the `CompareTo(T)` method. */
   Method getCompareToMethod() {
@@ -165,7 +165,7 @@ class SystemIComparableTInterface extends SystemUnboundGenericInterface {
 
 /** The `System.IEquatable<T>` interface. */
 class SystemIEquatableTInterface extends SystemUnboundGenericInterface {
-  SystemIEquatableTInterface() { this.hasName("IEquatable`1") }
+  SystemIEquatableTInterface() { this.hasName("IEquatable<>") }
 
   /** Gets the `Equals(T)` method. */
   Method getEqualsMethod() {
@@ -210,7 +210,7 @@ class SystemInvalidCastExceptionClass extends SystemClass {
 /** The `System.Lazy<T>` class. */
 class SystemLazyClass extends SystemUnboundGenericClass {
   SystemLazyClass() {
-    this.hasName("Lazy`1") and
+    this.hasName("Lazy<>") and
     this.getNumberOfTypeParameters() = 1
   }
 
@@ -225,7 +225,7 @@ class SystemLazyClass extends SystemUnboundGenericClass {
 /** The `System.Nullable<T>` struct. */
 class SystemNullableStruct extends SystemUnboundGenericStruct {
   SystemNullableStruct() {
-    this.hasName("Nullable`1") and
+    this.hasName("Nullable<>") and
     this.getNumberOfTypeParameters() = 1
   }
 
@@ -327,7 +327,7 @@ class SystemOverflowExceptionClass extends SystemClass {
 /** The `System.Predicate<T>` delegate type. */
 class SystemPredicateDelegateType extends SystemUnboundGenericDelegateType {
   SystemPredicateDelegateType() {
-    this.hasName("Predicate`1") and
+    this.hasName("Predicate<>") and
     this.getNumberOfTypeParameters() = 1
   }
 }
@@ -654,7 +654,7 @@ class DisposeMethod extends Method {
 }
 
 /** A method with the signature `void Dispose(bool)`. */
-class DisposeBoolMethod extends Method {
+library class DisposeBoolMethod extends Method {
   DisposeBoolMethod() {
     this.hasName("Dispose") and
     this.getReturnType() instanceof VoidType and

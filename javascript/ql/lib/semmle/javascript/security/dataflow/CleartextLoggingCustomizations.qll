@@ -175,22 +175,10 @@ module CleartextLogging {
   }
 
   /**
-   * DEPRECATED. Use `Barrier` instead, sanitized have been replaced by sanitized nodes.
-   *
    * Holds if the edge `pred` -> `succ` should be sanitized for clear-text logging of sensitive information.
    */
-  deprecated predicate isSanitizerEdge(DataFlow::Node pred, DataFlow::Node succ) {
+  predicate isSanitizerEdge(DataFlow::Node pred, DataFlow::Node succ) {
     succ.(DataFlow::PropRead).getBase() = pred
-  }
-
-  private class PropReadAsBarrier extends Barrier {
-    PropReadAsBarrier() {
-      this = any(DataFlow::PropRead read).getBase() and
-      // the 'foo' in 'foo.bar()' may have flow, we only want to suppress plain property reads
-      not this = any(DataFlow::MethodCallNode call).getReceiver() and
-      // do not block custom taint steps from this node
-      not isAdditionalTaintStep(this, _)
-    }
   }
 
   /**

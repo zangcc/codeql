@@ -2,10 +2,12 @@ import java
 import semmle.code.java.dataflow.FlowSources
 import TestUtilities.InlineExpectationsTest
 
-module SourceTest implements TestSig {
-  string getARelevantTag() { result = "source" }
+class SourceTest extends InlineExpectationsTest {
+  SourceTest() { this = "SourceTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "source" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "source" and
     exists(RemoteFlowSource source |
       not source.asParameter().getCallable().getDeclaringType().hasName("DefaultConsumer") and
@@ -15,5 +17,3 @@ module SourceTest implements TestSig {
     )
   }
 }
-
-import MakeTest<SourceTest>

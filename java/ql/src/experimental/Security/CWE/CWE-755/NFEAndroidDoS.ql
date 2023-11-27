@@ -17,17 +17,19 @@ import java
 import semmle.code.java.frameworks.android.Intent
 import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.NumberFormatException
-import NfeLocalDoSFlow::PathGraph
+import DataFlow::PathGraph
 
 /**
  * Taint configuration tracking flow from untrusted inputs to number conversion calls in exported Android compononents.
  */
-module NfeLocalDoSConfig implements DataFlow::ConfigSig {
+class NfeLocalDoSConfiguration extends TaintTracking::Configuration {
+  NfeLocalDoSConfiguration() { this = "NFELocalDoSConfiguration" }
+
   /** Holds if source is a remote flow source */
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
 
   /** Holds if NFE is thrown but not caught */
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSink(DataFlow::Node sink) {
     exists(Expr e |
       e.getEnclosingCallable().getDeclaringType().(ExportableAndroidComponent).isExported() and
       throwsNfe(e) and
@@ -40,10 +42,8 @@ module NfeLocalDoSConfig implements DataFlow::ConfigSig {
   }
 }
 
-module NfeLocalDoSFlow = TaintTracking::Global<NfeLocalDoSConfig>;
-
-from NfeLocalDoSFlow::PathNode source, NfeLocalDoSFlow::PathNode sink
-where NfeLocalDoSFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, NfeLocalDoSConfiguration conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink,
   "Uncaught NumberFormatException in an exported Android component due to $@.", source.getNode(),
   "user-provided value"

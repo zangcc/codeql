@@ -10,8 +10,7 @@ private import TranslatedCompilerGeneratedElement
 private import experimental.ir.internal.IRCSharpLanguage as Language
 
 abstract class TranslatedCompilerGeneratedCall extends TranslatedCallBase,
-  TranslatedCompilerGeneratedElement
-{
+  TranslatedCompilerGeneratedElement {
   final override string toString() {
     result = "compiler generated call (" + generatedBy.toString() + ")"
   }

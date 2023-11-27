@@ -31,7 +31,7 @@ private string nonSuspicious() {
  * Gets a regular expression for matching common names of variables that indicate the value being held contains sensitive information.
  */
 string getCommonSensitiveInfoRegex() {
-  result = "(?i).*(challenge|pass(wd|word|code|phrase))(?!.*question).*" or
+  result = "(?i).*challenge|pass(wd|word|code|phrase)(?!.*question).*" or
   result = "(?i).*(token|secret).*"
 }
 
@@ -39,8 +39,8 @@ string getCommonSensitiveInfoRegex() {
 abstract class SensitiveExpr extends Expr { }
 
 /** A method access that might produce sensitive data. */
-class SensitiveMethodCall extends SensitiveExpr, MethodCall {
-  SensitiveMethodCall() {
+class SensitiveMethodAccess extends SensitiveExpr, MethodAccess {
+  SensitiveMethodAccess() {
     this.getMethod() instanceof SensitiveDataMethod
     or
     // This is particularly to pick up methods with an argument like "password", which
@@ -51,9 +51,6 @@ class SensitiveMethodCall extends SensitiveExpr, MethodCall {
     )
   }
 }
-
-/** DEPRECATED: Alias for `SensitiveMethodCall`. */
-deprecated class SensitiveMethodAccess = SensitiveMethodCall;
 
 /** Access to a variable that might contain sensitive data. */
 class SensitiveVarAccess extends SensitiveExpr, VarAccess {

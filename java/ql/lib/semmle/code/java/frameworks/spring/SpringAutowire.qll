@@ -100,6 +100,9 @@ class SpringBeanXmlAutowiredSetterMethod extends Method {
   }
 }
 
+/** DEPRECATED: Alias for SpringBeanXmlAutowiredSetterMethod */
+deprecated class SpringBeanXMLAutowiredSetterMethod = SpringBeanXmlAutowiredSetterMethod;
+
 /**
  * A callable that is annotated with `@Autowired`.
  *

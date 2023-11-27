@@ -9,8 +9,6 @@
 import java
 import semmle.code.java.Diagnostics
 
-extensible predicate extractorInformationSkipKey(string key);
-
 predicate compilationInfo(string key, int value) {
   exists(Compilation c, string infoKey |
     key = infoKey + ": " + c.getInfo(infoKey) and
@@ -87,16 +85,13 @@ predicate extractorTotalDiagnostics(string key, int value) {
 
 from string key, int value
 where
-  not exists(string pattern | extractorInformationSkipKey(pattern) and key.matches(pattern)) and
-  (
-    compilationInfo(key, value) or
-    fileCount(key, value) or
-    fileCountByExtension(key, value) or
-    totalNumberOfLines(key, value) or
-    numberOfLinesOfCode(key, value) or
-    totalNumberOfLinesByExtension(key, value) or
-    numberOfLinesOfCodeByExtension(key, value) or
-    extractorDiagnostics(key, value) or
-    extractorTotalDiagnostics(key, value)
-  )
+  compilationInfo(key, value) or
+  fileCount(key, value) or
+  fileCountByExtension(key, value) or
+  totalNumberOfLines(key, value) or
+  numberOfLinesOfCode(key, value) or
+  totalNumberOfLinesByExtension(key, value) or
+  numberOfLinesOfCodeByExtension(key, value) or
+  extractorDiagnostics(key, value) or
+  extractorTotalDiagnostics(key, value)
 select key, value

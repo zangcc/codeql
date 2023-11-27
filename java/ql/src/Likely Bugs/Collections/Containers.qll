@@ -18,7 +18,7 @@ class ContainerMutator extends Method {
   }
 }
 
-class ContainerMutation extends MethodCall {
+class ContainerMutation extends MethodAccess {
   ContainerMutation() {
     this instanceof CollectionMutation or
     this instanceof MapMutation

@@ -6,4 +6,3 @@ dependencies:
   codeql/ruby-all: ${workspace}
 extractor: ruby
 tests: .
-warnOnImplicitThis: true

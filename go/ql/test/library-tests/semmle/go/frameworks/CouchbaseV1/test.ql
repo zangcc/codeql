@@ -2,12 +2,14 @@ import go
 import TestUtilities.InlineExpectationsTest
 import semmle.go.security.SqlInjection
 
-module SqlInjectionTest implements TestSig {
-  string getARelevantTag() { result = "sqlinjection" }
+class SqlInjectionTest extends InlineExpectationsTest {
+  SqlInjectionTest() { this = "SqlInjectionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "sqlinjection" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "sqlinjection" and
-    exists(DataFlow::Node sink | SqlInjection::Flow::flowTo(sink) |
+    exists(DataFlow::Node sink | any(SqlInjection::Configuration c).hasFlow(_, sink) |
       element = sink.toString() and
       value = sink.toString() and
       sink.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
@@ -15,5 +17,3 @@ module SqlInjectionTest implements TestSig {
     )
   }
 }
-
-import MakeTest<SqlInjectionTest>

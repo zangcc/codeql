@@ -17,16 +17,13 @@ class MockitoVerifyMethod extends Method {
 }
 
 /**
- * A MethodCall which is called as part of a Mockito verification setup.
+ * A MethodAccess which is called as part of a Mockito verification setup.
  */
-class MockitoVerifiedMethodCall extends MethodCall {
-  MockitoVerifiedMethodCall() {
-    this.getQualifier().(MethodCall).getMethod() instanceof MockitoVerifyMethod
+class MockitoVerifiedMethodAccess extends MethodAccess {
+  MockitoVerifiedMethodAccess() {
+    this.getQualifier().(MethodAccess).getMethod() instanceof MockitoVerifyMethod
   }
 }
-
-/** DEPRECATED: Alias for `MockitoVerifiedMethodCall`. */
-deprecated class MockitoVerifiedMethodAccess = MockitoVerifiedMethodCall;
 
 /**
  * A type that can be mocked by Mockito.
@@ -78,7 +75,9 @@ class MockitoInitedTest extends Class {
         m.calls*(initMocks)
       )
       or
-      exists(MethodCall call | call.getCallee() = initMocks | call.getArgument(0).getType() = this)
+      exists(MethodAccess call | call.getCallee() = initMocks |
+        call.getArgument(0).getType() = this
+      )
     )
   }
 }
@@ -302,7 +301,7 @@ private int mockableParameterCount(Constructor constructor) {
 /**
  * A class which is referenced by an `@InjectMocks` field.
  */
-class MockitoMockInjectedClass extends Class {
+library class MockitoMockInjectedClass extends Class {
   MockitoMockInjectedClass() {
     // There must be an `@InjectMock` field that has `this` as the type.
     exists(MockitoInjectedField injectedField | this = injectedField.getType())
@@ -384,12 +383,12 @@ class MockitoMockMethod extends Method {
 
 class MockitoMockedObject extends Expr {
   MockitoMockedObject() {
-    this.(MethodCall).getMethod() instanceof MockitoMockMethod
+    this.(MethodAccess).getMethod() instanceof MockitoMockMethod
     or
     this.(VarAccess).getVariable().getAnAssignedValue() instanceof MockitoMockedObject
     or
     exists(ReturnStmt ret |
-      this.(MethodCall).getMethod() = ret.getEnclosingCallable() and
+      this.(MethodAccess).getMethod() = ret.getEnclosingCallable() and
       ret.getResult() instanceof MockitoMockedObject
     )
   }

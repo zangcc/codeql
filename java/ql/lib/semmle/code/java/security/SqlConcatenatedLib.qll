@@ -29,13 +29,13 @@ predicate builtFromUncontrolledConcat(Expr expr, Expr uncontrolled) {
  */
 predicate uncontrolledStringBuilderQuery(StringBuilderVar sbv, Expr uncontrolled) {
   // A single append that has a problematic concatenation.
-  exists(MethodCall append |
+  exists(MethodAccess append |
     append = sbv.getAnAppend() and
     builtFromUncontrolledConcat(append.getArgument(0), uncontrolled)
   )
   or
   // Two calls to append, one ending in a quote, the next being uncontrolled.
-  exists(MethodCall quoteAppend, MethodCall uncontrolledAppend |
+  exists(MethodAccess quoteAppend, MethodAccess uncontrolledAppend |
     sbv.getAnAppend() = quoteAppend and
     endsInQuote(quoteAppend.getArgument(0)) and
     sbv.getNextAppend(quoteAppend) = uncontrolledAppend and

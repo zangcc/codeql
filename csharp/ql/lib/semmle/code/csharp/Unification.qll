@@ -15,11 +15,9 @@ module Gvn {
    * but only if the enclosing type is not a `GenericType`.
    */
   string getNameNested(Type t) {
-    exists(string name | name = t.getUndecoratedName() |
-      if not t instanceof NestedType or t.(NestedType).getDeclaringType() instanceof GenericType
-      then result = name
-      else result = getNameNested(t.(NestedType).getDeclaringType()) + "+" + name
-    )
+    if not t instanceof NestedType or t.(NestedType).getDeclaringType() instanceof GenericType
+    then result = t.getName()
+    else result = getNameNested(t.(NestedType).getDeclaringType()) + "+" + t.getName()
   }
 
   /**
@@ -49,22 +47,8 @@ module Gvn {
       not exists(this.getGenericDeclaringType()) and result = 0
     }
 
-    /**
-     * Same as `getChild`, but safe-guards against potential extractor issues where
-     * multiple children exist at the same index, which may result in a combinatorial
-     * explosion.
-     */
-    private Type getChildUnique(int i) {
-      result = unique(Type t | t = this.getChild(i) | t)
-      or
-      strictcount(this.getChild(i)) > 1 and
-      result.(UnknownType).isCanonical()
-    }
-
     /** Gets the number of arguments of this type, not taking nested types into account. */
-    int getNumberOfArgumentsSelf() {
-      result = count(int i | exists(this.getChildUnique(i)) and i >= 0)
-    }
+    int getNumberOfArgumentsSelf() { result = count(int i | exists(this.getChild(i)) and i >= 0) }
 
     /** Gets the number of arguments of this type, taking nested types into account. */
     int getNumberOfArguments() {
@@ -77,7 +61,7 @@ module Gvn {
       or
       exists(int offset |
         offset = this.getNumberOfDeclaringArguments() and
-        result = this.getChildUnique(i - offset) and
+        result = this.getChild(i - offset) and
         i >= offset
       )
     }
@@ -107,9 +91,13 @@ module Gvn {
     int getNumberOfTypeParameters() {
       this = TPointerTypeKind() and result = 1
       or
+      this = TNullableTypeKind() and result = 1
+      or
       this = TArrayTypeKind(_, _) and result = 1
       or
-      exists(GenericType t | this = TConstructedType(t) | result = t.getNumberOfArguments())
+      exists(GenericType t | this = TConstructedType(t.getUnboundDeclaration()) |
+        result = t.getNumberOfArguments()
+      )
     }
 
     /** Gets the unbound declaration type that this kind corresponds to, if any. */
@@ -118,11 +106,14 @@ module Gvn {
     /**
      * Gets a textual representation of this kind when applied to arguments `args`.
      *
-     * This predicate is restricted to built-in generics (pointers and arrays).
+     * This predicate is restricted to built-in generics (pointers, nullables, and
+     * arrays).
      */
     bindingset[args]
     string toStringBuiltin(string args) {
       this = TPointerTypeKind() and result = args + "*"
+      or
+      this = TNullableTypeKind() and result = args + "?"
       or
       exists(int rnk | this = TArrayTypeKind(_, rnk) |
         result = args + "[" + concat(int i | i in [0 .. rnk - 2] | ",") + "]"
@@ -143,6 +134,8 @@ module Gvn {
   /** Gets the type kind for type `t`, if any. */
   CompoundTypeKind getTypeKind(Type t) {
     result = TPointerTypeKind() and t instanceof PointerType
+    or
+    result = TNullableTypeKind() and t instanceof NullableType
     or
     t = any(ArrayType at | result = TArrayTypeKind(at.getDimension(), at.getRank()))
     or
@@ -267,7 +260,7 @@ module Gvn {
             or
             this.isDeclaringTypeAt(i) and j = 1 and result = "."
           else (
-            j = 0 and result = name + "<"
+            j = 0 and result = name.prefix(name.length() - children - 1) + "<"
             or
             j in [1 .. 2 * children - 1] and
             if j % 2 = 0
@@ -287,7 +280,6 @@ module Gvn {
 
     pragma[noinline]
     private predicate toStringPart(int i, int j) {
-      this.isFullyConstructed() and
       exists(int offset |
         exists(GenericType t, int children |
           t = this.getConstructedGenericDeclaringTypeAt(i) and
@@ -457,12 +449,14 @@ module Gvn {
     cached
     newtype TCompoundTypeKind =
       TPointerTypeKind() { Stages::UnificationStage::forceCachingInSameStage() } or
+      TNullableTypeKind() or
       TArrayTypeKind(int dim, int rnk) {
         exists(ArrayType at | dim = at.getDimension() and rnk = at.getRank())
       } or
       TConstructedType(GenericType unboundDecl) {
         unboundDecl = any(GenericType t).getUnboundDeclaration() and
         not unboundDecl instanceof PointerType and
+        not unboundDecl instanceof NullableType and
         not unboundDecl instanceof ArrayType and
         not unboundDecl instanceof TupleType
       }
@@ -538,8 +532,7 @@ module Unification {
      *
      * Note: This predicate is inlined.
      */
-    bindingset[this]
-    pragma[inline_late]
+    bindingset[t]
     predicate unifiable(Type t) { none() }
 
     /**
@@ -547,8 +540,7 @@ module Unification {
      *
      * Note: This predicate is inlined.
      */
-    bindingset[this]
-    pragma[inline_late]
+    bindingset[t]
     predicate subsumes(Type t) { none() }
   }
 
@@ -556,8 +548,7 @@ module Unification {
   private class SingleConstraintTypeParameter extends ConstrainedTypeParameter {
     SingleConstraintTypeParameter() { constraintCount = 1 }
 
-    bindingset[this]
-    pragma[inline_late]
+    bindingset[t]
     override predicate unifiable(Type t) {
       exists(TTypeParameterConstraint ttc | ttc = getATypeConstraint(this) |
         ttc = TRefTypeConstraint() and
@@ -570,8 +561,7 @@ module Unification {
       )
     }
 
-    bindingset[this]
-    pragma[inline_late]
+    bindingset[t]
     override predicate subsumes(Type t) {
       exists(TTypeParameterConstraint ttc | ttc = getATypeConstraint(this) |
         ttc = TRefTypeConstraint() and
@@ -589,13 +579,9 @@ module Unification {
   private class MultiConstraintTypeParameter extends ConstrainedTypeParameter {
     MultiConstraintTypeParameter() { constraintCount > 1 }
 
-    pragma[nomagic]
-    TTypeParameterConstraint getATypeConstraint() { result = getATypeConstraint(this) }
-
-    bindingset[this]
-    pragma[inline_late]
+    bindingset[t]
     override predicate unifiable(Type t) {
-      forex(TTypeParameterConstraint ttc | ttc = this.getATypeConstraint() |
+      forex(TTypeParameterConstraint ttc | ttc = getATypeConstraint(this) |
         ttc = TRefTypeConstraint() and
         t.isRefType()
         or
@@ -606,10 +592,9 @@ module Unification {
       )
     }
 
-    bindingset[this]
-    pragma[inline_late]
+    bindingset[t]
     override predicate subsumes(Type t) {
-      forex(TTypeParameterConstraint ttc | ttc = this.getATypeConstraint() |
+      forex(TTypeParameterConstraint ttc | ttc = getATypeConstraint(this) |
         ttc = TRefTypeConstraint() and
         t.isRefType()
         or

@@ -4,17 +4,17 @@ import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.security.GroovyInjectionQuery
 import TestUtilities.InlineExpectationsTest
 
-module HasGroovyInjectionTest implements TestSig {
-  string getARelevantTag() { result = "hasGroovyInjection" }
+class HasGroovyInjectionTest extends InlineExpectationsTest {
+  HasGroovyInjectionTest() { this = "HasGroovyInjectionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasGroovyInjection" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasGroovyInjection" and
-    exists(DataFlow::Node sink | GroovyInjectionFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, GroovyInjectionConfig conf | conf.hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<HasGroovyInjectionTest>

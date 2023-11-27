@@ -21,7 +21,7 @@ class GroovyInjectionAdditionalTaintStep extends Unit {
 }
 
 private class DefaultGroovyInjectionSink extends GroovyInjectionSink {
-  DefaultGroovyInjectionSink() { sinkNode(this, "groovy-injection") }
+  DefaultGroovyInjectionSink() { sinkNode(this, "groovy") }
 }
 
 /** A set of additional taint steps to consider when taint tracking Groovy related data flows. */
@@ -51,7 +51,7 @@ private predicate groovyCodeSourceTaintStep(DataFlow::Node fromNode, DataFlow::N
  * a `CompilationUnit` instance by calling `compilationUnit.addSource(..., tainted)`.
  */
 private predicate groovyCompilationUnitTaintStep(DataFlow::Node fromNode, DataFlow::Node toNode) {
-  exists(MethodCall ma, Method m |
+  exists(MethodAccess ma, Method m |
     ma.getMethod() = m and
     m.hasName("addSource") and
     m.getDeclaringType() instanceof TypeGroovyCompilationUnit
@@ -84,7 +84,7 @@ private predicate groovySourceUnitTaintStep(DataFlow::Node fromNode, DataFlow::N
     toNode.asExpr() = cie
   )
   or
-  exists(MethodCall ma, Method m |
+  exists(MethodAccess ma, Method m |
     ma.getMethod() = m and
     m.hasName("create") and
     m.getDeclaringType() instanceof TypeGroovySourceUnit

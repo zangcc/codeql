@@ -15,10 +15,12 @@
  *       external/cwe/cwe-400
  */
 
+import codeql.ruby.AST
+import DataFlow::PathGraph
+import codeql.ruby.DataFlow
 import codeql.ruby.security.regexp.RegExpInjectionQuery
-import RegExpInjectionFlow::PathGraph
 
-from RegExpInjectionFlow::PathNode source, RegExpInjectionFlow::PathNode sink
-where RegExpInjectionFlow::flowPath(source, sink)
+from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This regular expression depends on a $@.", source.getNode(),
   "user-provided value"

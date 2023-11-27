@@ -1,5 +1,6 @@
 // This file contains auto-generated code.
 // Generated from `Microsoft.AspNetCore.Cryptography.KeyDerivation, Version=7.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60`.
+
 namespace Microsoft
 {
     namespace AspNetCore
@@ -10,14 +11,16 @@ namespace Microsoft
             {
                 public static class KeyDerivation
                 {
-                    public static byte[] Pbkdf2(string password, byte[] salt, Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf prf, int iterationCount, int numBytesRequested) => throw null;
+                    public static System.Byte[] Pbkdf2(string password, System.Byte[] salt, Microsoft.AspNetCore.Cryptography.KeyDerivation.KeyDerivationPrf prf, int iterationCount, int numBytesRequested) => throw null;
                 }
-                public enum KeyDerivationPrf
+
+                public enum KeyDerivationPrf : int
                 {
                     HMACSHA1 = 0,
                     HMACSHA256 = 1,
                     HMACSHA512 = 2,
                 }
+
             }
         }
     }

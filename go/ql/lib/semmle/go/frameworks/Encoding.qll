@@ -8,7 +8,8 @@ import go
 private string packagePath() { result = package("github.com/json-iterator/go", "") }
 
 /** A model of json-iterator's `Unmarshal` function, propagating taint from the JSON input to the decoded object. */
-private class JsonIteratorUnmarshalFunction extends UnmarshalingFunction::Range {
+private class JsonIteratorUnmarshalFunction extends TaintTracking::FunctionModel,
+  UnmarshalingFunction::Range {
   JsonIteratorUnmarshalFunction() {
     this.hasQualifiedName(packagePath(), ["Unmarshal", "UnmarshalFromString"])
     or
@@ -20,4 +21,8 @@ private class JsonIteratorUnmarshalFunction extends UnmarshalingFunction::Range 
   override DataFlow::FunctionOutput getOutput() { result.isParameter(1) }
 
   override string getFormat() { result = "JSON" }
+
+  override predicate hasTaintFlow(DataFlow::FunctionInput inp, DataFlow::FunctionOutput outp) {
+    inp = this.getAnInput() and outp = this.getOutput()
+  }
 }

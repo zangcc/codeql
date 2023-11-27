@@ -2,13 +2,9 @@
 import codeql.swift.elements
 import TestUtils
 
-from File x, string getName, string isSuccessfullyExtracted
+from File x, string getName
 where
   toBeTested(x) and
   not x.isUnknown() and
-  getName = x.getName() and
-  if x.isSuccessfullyExtracted()
-  then isSuccessfullyExtracted = "yes"
-  else isSuccessfullyExtracted = "no"
-select x, x.getPrimaryQlClasses(), "getName:", getName, "isSuccessfullyExtracted:",
-  isSuccessfullyExtracted
+  getName = x.getName()
+select x, x.getPrimaryQlClasses(), "getName:", getName

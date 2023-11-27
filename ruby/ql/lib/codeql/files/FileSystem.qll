@@ -27,7 +27,8 @@ private module Impl = Make<Input>;
 
 class Container = Impl::Container;
 
-class Folder = Impl::Folder;
+/** A folder. */
+class Folder extends Container, Impl::Folder { }
 
 /** A file. */
 class File extends Container, Impl::File {

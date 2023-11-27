@@ -7,7 +7,7 @@
  */
 
 import internal.CaptureModels
-import internal.CaptureSummaryFlowQuery
+import internal.CaptureSummaryFlow
 
 from DataFlowTargetApi api, string flow
 where flow = captureFlow(api)

@@ -400,13 +400,13 @@ class ExitBasicBlock extends BasicBlock {
 
 private module JoinBlockPredecessors {
   private import ControlFlow::Nodes
-  private import semmle.code.csharp.controlflow.internal.ControlFlowGraphImpl as Impl
+  private import semmle.code.csharp.controlflow.internal.ControlFlowGraphImpl
 
   int getId(JoinBlockPredecessor jbp) {
-    exists(Impl::AstNode n | result = n.getId() |
-      n = jbp.getFirstNode().getAstNode()
+    exists(ControlFlowTree::Range_ t | ControlFlowTree::idOf(t, result) |
+      t = jbp.getFirstNode().getElement()
       or
-      n = jbp.(EntryBasicBlock).getCallable()
+      t = jbp.(EntryBasicBlock).getCallable()
     )
   }
 

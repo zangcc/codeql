@@ -11,9 +11,9 @@
 
 import go
 import HardcodedKeysLib
-import HardcodedKeys::Flow::PathGraph
+import DataFlow::PathGraph
 
-from HardcodedKeys::Flow::PathNode source, HardcodedKeys::Flow::PathNode sink
-where HardcodedKeys::Flow::flowPath(source, sink)
+from HardcodedKeys::Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "$@ is used to sign a JWT token.", source.getNode(),
   "Hardcoded String"

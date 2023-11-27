@@ -72,11 +72,6 @@ module RequestForgery {
       succ = url and
       pred = url.getArgument(0)
     )
-    or
-    exists(HtmlSanitizerCall call |
-      pred = call.getInput() and
-      succ = call
-    )
   }
 
   private class SinkFromModel extends Sink {

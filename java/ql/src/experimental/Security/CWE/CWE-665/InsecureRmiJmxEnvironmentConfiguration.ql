@@ -32,10 +32,12 @@ predicate isRmiOrJmxServerCreateMethod(Method method) {
  * `map.put("jmx.remote.rmi.server.credential.types", value)` call
  * to an RMI or JMX initialisation call.
  */
-module SafeFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { putsCredentialtypesKey(source.asExpr()) }
+class SafeFlow extends DataFlow::Configuration {
+  SafeFlow() { this = "MapToPutCredentialstypeConfiguration" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node source) { putsCredentialtypesKey(source.asExpr()) }
+
+  override predicate isSink(DataFlow::Node sink) {
     exists(Call c |
       isRmiOrJmxServerCreateConstructor(c.getCallee()) or
       isRmiOrJmxServerCreateMethod(c.getCallee())
@@ -69,8 +71,6 @@ module SafeFlowConfig implements DataFlow::ConfigSig {
   }
 }
 
-module SafeFlow = DataFlow::Global<SafeFlowConfig>;
-
 /** Gets a string describing why the application is vulnerable, depending on if the vulnerability is present due to a) a null environment b) an insecurely set environment map */
 string getRmiResult(Expr e) {
   // We got a Map so we have a source and a sink node
@@ -87,5 +87,5 @@ from Call c, Expr envArg
 where
   (isRmiOrJmxServerCreateConstructor(c.getCallee()) or isRmiOrJmxServerCreateMethod(c.getCallee())) and
   envArg = c.getArgument(1) and
-  not SafeFlow::flowToExpr(envArg)
+  not any(SafeFlow conf).hasFlowToExpr(envArg)
 select c, getRmiResult(envArg), envArg, envArg.toString()

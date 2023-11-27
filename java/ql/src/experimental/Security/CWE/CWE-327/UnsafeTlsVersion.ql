@@ -13,9 +13,9 @@
 
 import java
 import SslLib
-import UnsafeTlsVersionFlow::PathGraph
+import DataFlow::PathGraph
 
-from UnsafeTlsVersionFlow::PathNode source, UnsafeTlsVersionFlow::PathNode sink
-where UnsafeTlsVersionFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, UnsafeTlsVersionConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "$@ is unsafe.", source.getNode(),
   source.getNode().asExpr().(StringLiteral).getValue()

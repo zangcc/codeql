@@ -123,8 +123,7 @@ class StartServiceMethod extends Method {
 
 /** Specifies that if an `Intent` is tainted, then so are its synthetic fields. */
 private class IntentFieldsInheritTaint extends DataFlow::SyntheticFieldContent,
-  TaintInheritingContent
-{
+  TaintInheritingContent {
   IntentFieldsInheritTaint() { this.getField().matches("android.content.Intent.%") }
 }
 
@@ -154,7 +153,7 @@ class AndroidBundle extends Class {
  */
 class ExplicitIntent extends Expr {
   ExplicitIntent() {
-    exists(MethodCall ma, Method m |
+    exists(MethodAccess ma, Method m |
       ma.getMethod() = m and
       m.getDeclaringType() instanceof TypeIntent and
       m.hasName(["setPackage", "setClass", "setClassName", "setComponent"]) and
@@ -237,8 +236,8 @@ private class NewIntent extends ClassInstanceExpr {
 }
 
 /** A call to a method that starts an Android component. */
-private class StartComponentMethodCall extends MethodCall {
-  StartComponentMethodCall() {
+private class StartComponentMethodAccess extends MethodAccess {
+  StartComponentMethodAccess() {
     this.getMethod().overrides*(any(StartActivityMethod m)) or
     this.getMethod().overrides*(any(StartServiceMethod m)) or
     this.getMethod().overrides*(any(SendBroadcastMethod m))
@@ -263,11 +262,11 @@ private class StartComponentMethodCall extends MethodCall {
 }
 
 /**
- * Holds if `src` reaches the intent argument `arg` of `StartComponentMethodCall`
+ * Holds if `src` reaches the intent argument `arg` of `StartComponentMethodAccess`
  * through intra-procedural steps.
  */
 private predicate reaches(Expr src, Argument arg) {
-  any(StartComponentMethodCall ma).getIntentArg() = arg and
+  any(StartComponentMethodAccess ma).getIntentArg() = arg and
   src = arg
   or
   exists(Expr mid, BaseSsa::BaseSsaVariable ssa, BaseSsa::BaseSsaUpdate upd |
@@ -298,7 +297,7 @@ private predicate reaches(Expr src, Argument arg) {
  */
 private class StartActivityIntentStep extends AdditionalValueStep {
   override predicate step(DataFlow::Node n1, DataFlow::Node n2) {
-    exists(StartComponentMethodCall startActivity, MethodCall getIntent |
+    exists(StartComponentMethodAccess startActivity, MethodAccess getIntent |
       startActivity.getMethod().overrides*(any(StartActivityMethod m)) and
       getIntent.getMethod().overrides*(any(AndroidGetIntentMethod m)) and
       startActivity.targetsComponentType(getIntent.getReceiverType()) and
@@ -309,11 +308,11 @@ private class StartActivityIntentStep extends AdditionalValueStep {
 }
 
 /**
- * Holds if `targetType` is targeted by an existing `StartComponentMethodCall` call
+ * Holds if `targetType` is targeted by an existing `StartComponentMethodAccess` call
  * and it's identified by `id`.
  */
 private predicate isTargetableType(AndroidComponent targetType, string id) {
-  exists(StartComponentMethodCall ma | ma.targetsComponentType(targetType)) and
+  exists(StartComponentMethodAccess ma | ma.targetsComponentType(targetType)) and
   targetType.getQualifiedName() = id
 }
 
@@ -327,7 +326,7 @@ private class StartActivitiesSyntheticCallable extends SyntheticCallable {
     )
   }
 
-  override StartComponentMethodCall getACall() {
+  override StartComponentMethodAccess getACall() {
     result.getMethod().hasName("startActivities") and
     result.targetsComponentType(targetType)
   }
@@ -396,7 +395,7 @@ private class RequiredComponentStackForStartActivities extends RequiredSummaryCo
  */
 private class SendBroadcastReceiverIntentStep extends AdditionalValueStep {
   override predicate step(DataFlow::Node n1, DataFlow::Node n2) {
-    exists(StartComponentMethodCall sendBroadcast, Method onReceive |
+    exists(StartComponentMethodAccess sendBroadcast, Method onReceive |
       sendBroadcast.getMethod().overrides*(any(SendBroadcastMethod m)) and
       onReceive.overrides*(any(AndroidReceiveIntentMethod m)) and
       sendBroadcast.targetsComponentType(onReceive.getDeclaringType()) and
@@ -413,7 +412,7 @@ private class SendBroadcastReceiverIntentStep extends AdditionalValueStep {
  */
 private class StartServiceIntentStep extends AdditionalValueStep {
   override predicate step(DataFlow::Node n1, DataFlow::Node n2) {
-    exists(StartComponentMethodCall startService, Method serviceIntent |
+    exists(StartComponentMethodAccess startService, Method serviceIntent |
       startService.getMethod().overrides*(any(StartServiceMethod m)) and
       serviceIntent.overrides*(any(AndroidServiceIntentMethod m)) and
       startService.targetsComponentType(serviceIntent.getDeclaringType()) and

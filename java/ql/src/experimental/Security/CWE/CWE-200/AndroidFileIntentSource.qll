@@ -2,7 +2,7 @@
 
 import java
 import semmle.code.java.dataflow.FlowSources
-import semmle.code.java.dataflow.TaintTracking
+import semmle.code.java.dataflow.TaintTracking2
 import semmle.code.java.frameworks.android.Android
 
 /** The `startActivityForResult` method of Android's `Activity` class. */
@@ -29,34 +29,36 @@ class GetContentIntent extends ClassInstanceExpr {
 }
 
 /** Taint configuration that identifies `GET_CONTENT` `Intent` instances passed to `startActivityForResult`. */
-module GetContentIntentConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src.asExpr() instanceof GetContentIntent }
+class GetContentIntentConfig extends TaintTracking2::Configuration {
+  GetContentIntentConfig() { this = "GetContentIntentConfig" }
 
-  predicate isSink(DataFlow::Node sink) {
-    exists(MethodCall ma |
+  override predicate isSource(DataFlow2::Node src) { src.asExpr() instanceof GetContentIntent }
+
+  override predicate isSink(DataFlow2::Node sink) {
+    exists(MethodAccess ma |
       ma.getMethod() instanceof StartActivityForResultMethod and sink.asExpr() = ma.getArgument(0)
     )
   }
 
-  predicate allowImplicitRead(DataFlow::Node node, DataFlow::ContentSet content) {
+  override predicate allowImplicitRead(DataFlow::Node node, DataFlow::ContentSet content) {
+    super.allowImplicitRead(node, content)
+    or
     // Allow the wrapped intent created by Intent.getChooser to be consumed
     // by at the sink:
-    isSink(node) and
+    this.isSink(node) and
     allowIntentExtrasImplicitRead(node, content)
   }
 }
 
-module GetContentsIntentFlow = TaintTracking::Global<GetContentIntentConfig>;
-
 /** A `GET_CONTENT` `Intent` instances that is passed to `startActivityForResult`. */
 class AndroidFileIntentInput extends DataFlow::Node {
-  MethodCall ma;
+  MethodAccess ma;
 
   AndroidFileIntentInput() {
     this.asExpr() = ma.getArgument(0) and
     ma.getMethod() instanceof StartActivityForResultMethod and
-    exists(GetContentIntent gi |
-      GetContentsIntentFlow::flow(DataFlow::exprNode(gi), DataFlow::exprNode(ma.getArgument(0)))
+    exists(GetContentIntentConfig cc, GetContentIntent gi |
+      cc.hasFlow(DataFlow::exprNode(gi), DataFlow::exprNode(ma.getArgument(0)))
     )
   }
 

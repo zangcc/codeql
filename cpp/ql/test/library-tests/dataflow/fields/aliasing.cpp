@@ -99,7 +99,7 @@ void addressOfField() {
 
   S s_copy = s;
   int* px = &s_copy.m1;
-  sink(*px); // $ ir MISSING: ast
+  sink(*px); // $ MISSING: ast,ir
 }
 
 void taint_a_ptr(int* pa) {
@@ -119,22 +119,22 @@ struct S_with_pointer {
 
 void pointer_deref(int* xs) {
   taint_a_ptr(xs);
-  sink(xs[0]); // $ ir MISSING: ast
+  sink(xs[0]); // $ MISSING: ast,ir
 }
 
 void pointer_deref_sub(int* xs) {
   taint_a_ptr(xs - 2);
-  sink(*(xs - 2)); // $ ir MISSING: ast
+  sink(*(xs - 2)); // $ MISSING: ast,ir
 }
 
 void pointer_many_addrof_and_deref(int* xs) {
   taint_a_ptr(xs);
-  sink(*&*&*xs); // $ ir MISSING: ast
+  sink(*&*&*xs); // $ MISSING: ast,ir
 }
 
 void pointer_unary_plus(int* xs) {
   taint_a_ptr(+xs);
-  sink(*+xs); // $ ir MISSING: ast
+  sink(*+xs); // $ MISSING: ast,ir
 }
 
 void pointer_member_index(S_with_pointer s) {

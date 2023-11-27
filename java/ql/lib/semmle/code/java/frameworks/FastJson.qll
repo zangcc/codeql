@@ -24,7 +24,7 @@ class FastJsonParseMethod extends Method {
 /**
  * A call to `ParserConfig.setSafeMode`.
  */
-class FastJsonSetSafeMode extends MethodCall {
+class FastJsonSetSafeMode extends MethodAccess {
   FastJsonSetSafeMode() {
     exists(Method m |
       this.getMethod() = m and

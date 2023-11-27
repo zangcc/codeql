@@ -49,7 +49,7 @@ class MapSizeMethod extends MapMethod {
 }
 
 /** A method call that mutates a map. */
-class MapMutation extends MethodCall {
+class MapMutation extends MethodAccess {
   MapMutation() { this.getMethod() instanceof MapMutator }
 
   /** Holds if the result of this call is not immediately discarded. */
@@ -76,7 +76,7 @@ class FreshMap extends ClassInstanceExpr {
 /**
  * A call to `Map.put(key, value)`.
  */
-class MapPutCall extends MethodCall {
+class MapPutCall extends MethodAccess {
   MapPutCall() { this.getCallee().(MapMethod).hasName("put") }
 
   /** Gets the key argument of this call. */

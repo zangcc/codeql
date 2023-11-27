@@ -26,7 +26,7 @@ where
       or
       exists(string qualifier, string type |
         splitQualifiedName(exceptionName, qualifier, type) and
-        throwBaseType.hasFullyQualifiedName(qualifier, type)
+        throwBaseType.hasQualifiedName(qualifier, type)
       )
       // and comment.hasBody(offset) // Too slow
     )

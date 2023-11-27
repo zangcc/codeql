@@ -12,5 +12,3 @@ query predicate explicitWrite(VariableWriteAccess write, AstNode assignment) {
 query predicate implicitWrite(VariableWriteAccess write) { write.isImplicitWrite() }
 
 query predicate readAccess(VariableReadAccess read) { any() }
-
-query predicate captureAccess(LocalVariableAccess access) { access.isCapturedAccess() }

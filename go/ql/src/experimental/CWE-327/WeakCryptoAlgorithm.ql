@@ -11,10 +11,10 @@
  */
 
 import go
-import WeakCryptoAlgorithmCustomizations
-import WeakCryptoAlgorithm::Flow::PathGraph
+import WeakCryptoAlgorithmCustomizations::WeakCryptoAlgorithm
+import DataFlow::PathGraph
 
-from WeakCryptoAlgorithm::Flow::PathNode source, WeakCryptoAlgorithm::Flow::PathNode sink
-where WeakCryptoAlgorithm::Flow::flowPath(source, sink)
+from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "$@ is used in a weak cryptographic algorithm.",
   source.getNode(), "Sensitive data"

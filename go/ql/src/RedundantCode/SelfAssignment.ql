@@ -16,7 +16,7 @@ import Clones
  * An assignment that may be a self assignment.
  */
 class PotentialSelfAssignment extends HashRoot, AssignStmt {
-  PotentialSelfAssignment() { this.getLhs().getKind() = this.getRhs().getKind() }
+  PotentialSelfAssignment() { getLhs().getKind() = getRhs().getKind() }
 }
 
 from PotentialSelfAssignment assgn, HashableNode rhs

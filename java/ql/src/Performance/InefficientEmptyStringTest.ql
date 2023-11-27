@@ -11,7 +11,7 @@
 
 import java
 
-from MethodCall mc
+from MethodAccess mc
 where
   mc.getQualifier().getType() instanceof TypeString and
   mc.getMethod().hasName("equals") and

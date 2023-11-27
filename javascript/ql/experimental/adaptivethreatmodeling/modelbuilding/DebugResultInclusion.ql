@@ -76,6 +76,6 @@ string getDescriptionForAlert(DataFlow::Node sourceCandidate, DataFlow::Node sin
 
 from DataFlow::Configuration cfg, DataFlow::Node source, DataFlow::Node sink
 where cfg.hasFlow(source, sink)
-select sink,
+select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(),
   "This is an ATM result that may depend on $@ [" + getDescriptionForAlert(source, sink) + "]",
   source, "a user-provided value"

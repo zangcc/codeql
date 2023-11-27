@@ -6,7 +6,7 @@ import semmle.code.java.dataflow.SSA
 /**
  * The kind of bound that is known to hold for some variable.
  */
-class BoundKind extends string {
+library class BoundKind extends string {
   BoundKind() { this = ["=", "!=", ">=", "<="] }
 
   predicate isEqual() { this = "=" }
@@ -17,9 +17,9 @@ class BoundKind extends string {
 
   predicate isUpper() { this = "<=" }
 
-  predicate providesLowerBound() { this.isEqual() or this.isLower() }
+  predicate providesLowerBound() { isEqual() or isLower() }
 
-  predicate providesUpperBound() { this.isEqual() or this.isUpper() }
+  predicate providesUpperBound() { isEqual() or isUpper() }
 }
 
 /**

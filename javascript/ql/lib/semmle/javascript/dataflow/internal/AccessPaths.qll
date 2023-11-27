@@ -120,7 +120,7 @@ class AccessPath extends TAccessPath {
   /**
    * Gets an expression represented by this access path.
    */
-  Expr getAnInstance() { result = this.getAnInstanceIn(_) }
+  Expr getAnInstance() { result = getAnInstanceIn(_) }
 
   /**
    * Gets a textual representation of this access path.

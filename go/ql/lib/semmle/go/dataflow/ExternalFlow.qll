@@ -54,18 +54,6 @@
  *      return value. The return values are zero-indexed
  *    - "ReturnValue[n1..n2]": Similar to "ReturnValue[n]" but selects any
  *      return value in the given range. The range is inclusive at both ends.
- *
- *    For summaries, `input` and `output` may be suffixed by any number of the
- *    following, separated by ".":
- *    - "Field[pkg.className.fieldname]": Selects the contents of the field `f`
- *      which satisfies `f.hasQualifiedName(pkg, className, fieldname)`.
- *    - "SyntheticField[f]": Selects the contents of the synthetic field `f`.
- *    - "ArrayElement": Selects an element in an array or slice.
- *    - "Element": Selects an element in a collection.
- *    - "MapKey": Selects a key in a map.
- *    - "MapValue": Selects a value in a map.
- *    - "Dereference": Selects the value referenced by a pointer.
- *
  * 8. The `kind` column is a tag that can be referenced from QL to determine to
  *    which classes the interpreted elements should be added. For example, for
  *    sources "remote" indicates a default remote flow source, and for summaries
@@ -74,13 +62,29 @@
  */
 
 private import go
-import internal.ExternalFlowExtensions
+private import ExternalFlowExtensions as Extensions
 private import internal.DataFlowPrivate
 private import internal.FlowSummaryImpl::Private::External
 private import internal.FlowSummaryImplSpecific
 private import internal.AccessPathSyntax
 private import FlowSummary
-private import codeql.mad.ModelValidation as SharedModelVal
+
+/**
+ * A module importing the frameworks that provide external flow data,
+ * ensuring that they are visible to the taint tracking / data flow library.
+ */
+private module Frameworks {
+  private import semmle.go.frameworks.Stdlib
+}
+
+/** Holds if a source model exists for the given parameters. */
+predicate sourceModel = Extensions::sourceModel/9;
+
+/** Holds if a sink model exists for the given parameters. */
+predicate sinkModel = Extensions::sinkModel/9;
+
+/** Holds if a summary model exists for the given parameters. */
+predicate summaryModel = Extensions::summaryModel/10;
 
 /** Holds if `package` have MaD framework coverage. */
 private predicate packageHasMaDCoverage(string package) {
@@ -184,15 +188,12 @@ module ModelValidation {
     )
   }
 
-  private module KindValConfig implements SharedModelVal::KindValidationConfigSig {
-    predicate summaryKind(string kind) { summaryModel(_, _, _, _, _, _, _, _, kind, _) }
-
-    predicate sinkKind(string kind) { sinkModel(_, _, _, _, _, _, _, kind, _) }
-
-    predicate sourceKind(string kind) { sourceModel(_, _, _, _, _, _, _, kind, _) }
+  private string getInvalidModelKind() {
+    exists(string kind | summaryModel(_, _, _, _, _, _, _, _, kind, _) |
+      not kind = ["taint", "value"] and
+      result = "Invalid kind \"" + kind + "\" in summary model."
+    )
   }
-
-  private module KindVal = SharedModelVal::KindValidation<KindValConfig>;
 
   private string getInvalidModelSignature() {
     exists(
@@ -205,7 +206,7 @@ module ModelValidation {
       or
       summaryModel(package, type, _, name, signature, ext, _, _, _, provenance) and pred = "summary"
     |
-      not package.replaceAll("$ANYVERSION", "").regexpMatch("[a-zA-Z0-9_\\./-]*") and
+      not package.regexpMatch("[a-zA-Z0-9_\\./]*") and
       result = "Dubious package \"" + package + "\" in " + pred + " model."
       or
       not type.regexpMatch("[a-zA-Z0-9_\\$<>]*") and
@@ -220,7 +221,7 @@ module ModelValidation {
       not ext.regexpMatch("|Annotated") and
       result = "Unrecognized extra API graph element \"" + ext + "\" in " + pred + " model."
       or
-      invalidProvenance(provenance) and
+      not provenance = ["manual", "generated"] and
       result = "Unrecognized provenance description \"" + provenance + "\" in " + pred + " model."
     )
   }
@@ -230,7 +231,7 @@ module ModelValidation {
     msg =
       [
         getInvalidModelSignature(), getInvalidModelInput(), getInvalidModelOutput(),
-        KindVal::getInvalidModelKind()
+        getInvalidModelKind()
       ]
   }
 }
@@ -264,15 +265,6 @@ private string paramsStringPart(Function f, int i) {
  */
 string paramsString(Function f) { result = concat(int i | | paramsStringPart(f, i) order by i) }
 
-bindingset[p]
-private string interpretPackage(string p) {
-  exists(string r | r = "([^$]+)([./]\\$ANYVERSION(/|$)(.*))?" |
-    if exists(p.regexpCapture(r, 4))
-    then result = package(p.regexpCapture(r, 1), p.regexpCapture(r, 4))
-    else result = package(p, "")
-  )
-}
-
 /** Gets the source/sink/summary element corresponding to the supplied parameters. */
 SourceOrSinkElement interpretElement(
   string pkg, string type, boolean subtypes, string name, string signature, string ext
@@ -281,16 +273,16 @@ SourceOrSinkElement interpretElement(
   // Go does not need to distinguish functions with signature
   signature = "" and
   (
-    exists(Field f | f.hasQualifiedName(interpretPackage(pkg), type, name) | result.asEntity() = f)
+    exists(Field f | f.hasQualifiedName(pkg, type, name) | result.asEntity() = f)
     or
-    exists(Method m | m.hasQualifiedName(interpretPackage(pkg), type, name) |
+    exists(Method m | m.hasQualifiedName(pkg, type, name) |
       result.asEntity() = m
       or
-      subtypes = true and result.asEntity().(Method).implementsIncludingInterfaceMethods(m)
+      subtypes = true and result.asEntity().(Method).implements(m)
     )
     or
     type = "" and
-    exists(Entity e | e.hasQualifiedName(interpretPackage(pkg), name) | result.asEntity() = e)
+    exists(Entity e | e.hasQualifiedName(pkg, name) | result.asEntity() = e)
   )
 }
 
@@ -341,8 +333,6 @@ predicate parseContent(string component, DataFlow::Content content) {
   component = "MapKey" and content instanceof DataFlow::MapKeyContent
   or
   component = "MapValue" and content instanceof DataFlow::MapValueContent
-  or
-  component = "Dereference" and content instanceof DataFlow::PointerContent
 }
 
 cached

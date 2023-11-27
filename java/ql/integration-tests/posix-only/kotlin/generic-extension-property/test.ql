@@ -1,4 +1,4 @@
 import java
 
-from MethodCall ma
+from MethodAccess ma
 select ma, ma.getCallee().toString(), ma.getCallee().getAParamType().toString()

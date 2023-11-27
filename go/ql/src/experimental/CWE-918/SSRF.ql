@@ -12,12 +12,12 @@
 
 import go
 import SSRF
-import ServerSideRequestForgery::Flow::PathGraph
+import DataFlow::PathGraph
 
 from
-  ServerSideRequestForgery::Flow::PathNode source, ServerSideRequestForgery::Flow::PathNode sink,
+  ServerSideRequestForgery::Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink,
   DataFlow::Node request
 where
-  ServerSideRequestForgery::Flow::flowPath(source, sink) and
+  cfg.hasFlowPath(source, sink) and
   request = sink.getNode().(ServerSideRequestForgery::Sink).getARequest()
 select request, source, sink, "The URL of this request depends on a user-provided value."

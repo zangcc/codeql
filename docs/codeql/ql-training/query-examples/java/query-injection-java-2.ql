@@ -1,6 +1,6 @@
 import java
 
-from Method m, MethodCall ma
+from Method m, MethodAccess ma
 where
   m.getName().matches("sparql%Query") and
   ma.getMethod() = m and

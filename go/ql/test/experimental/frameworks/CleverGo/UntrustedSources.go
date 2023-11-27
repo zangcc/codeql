@@ -14,8 +14,10 @@ func UntrustedSources_ClevergoTechClevergoV052() {
 			{
 				var receiverContext656 clevergo.Context
 				resultUsername414, resultPassword518, _ := receiverContext656.BasicAuth()
-				sink(resultUsername414) // $ untrustedFlowSource
-				sink(resultPassword518) // $ untrustedFlowSource
+				sink(
+					resultUsername414, // $ untrustedFlowSource
+					resultPassword518, // $ untrustedFlowSource
+				)
 			}
 			// func (*Context).Decode(v interface{}) (err error)
 			{
@@ -100,8 +102,10 @@ func UntrustedSources_ClevergoTechClevergoV052() {
 		// Untrusted flow sources from clevergo.tech/clevergo.Param struct fields.
 		{
 			structParam246 := new(clevergo.Param)
-			sink(structParam246.Key)   // $ untrustedFlowSource
-			sink(structParam246.Value) // $ untrustedFlowSource
+			sink(
+				structParam246.Key,   // $ untrustedFlowSource
+				structParam246.Value, // $ untrustedFlowSource
+			)
 		}
 	}
 	// Untrusted flow sources from types.

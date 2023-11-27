@@ -36,6 +36,8 @@ private predicate shouldPrintAstEdge(AstNode parent, string edgeName, AstNode ch
   any(PrintAstConfiguration config).shouldPrintAstEdge(parent, edgeName, child)
 }
 
+private int nonSynthIndex() { result = min([-1, any(int i | exists(getSynthChild(_, i)))]) - 1 }
+
 newtype TPrintNode =
   TPrintRegularAstNode(AstNode n) { shouldPrintNode(n) } or
   TPrintRegExpNode(RE::RegExpTerm term) {
@@ -113,23 +115,10 @@ class PrintRegularAstNode extends PrintAstNode, TPrintRegularAstNode {
     )
   }
 
-  private predicate parentIsSynthesized() {
-    exists(AstNode parent |
-      shouldPrintAstEdge(parent, _, astNode) and
-      parent.isSynthesized()
-    )
-  }
-
   private int getSynthAstNodeIndex() {
-    this.parentIsSynthesized() and
-    exists(AstNode parent |
-      shouldPrintAstEdge(parent, _, astNode) and
-      parent.isSynthesized() and
-      synthChild(parent, result, astNode)
-    )
+    not astNode.isSynthesized() and result = nonSynthIndex()
     or
-    not this.parentIsSynthesized() and
-    result = 0
+    astNode = getSynthChild(astNode.getParent(), result)
   }
 
   override int getOrder() {
@@ -140,8 +129,8 @@ class PrintRegularAstNode extends PrintAstNode, TPrintRegularAstNode {
       |
         p
         order by
-          f.getBaseName(), f.getAbsolutePath(), l.getStartLine(), p.getSynthAstNodeIndex(),
-          l.getStartColumn(), l.getEndLine(), l.getEndColumn()
+          f.getBaseName(), f.getAbsolutePath(), l.getStartLine(), l.getStartColumn(),
+          l.getEndLine(), l.getEndColumn(), p.getSynthAstNodeIndex()
       )
   }
 

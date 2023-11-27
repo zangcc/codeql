@@ -6,5 +6,5 @@
 import csharp
 
 from UnboundGenericStruct c
-where c.hasFullyQualifiedName("Types", "GenericStruct`1")
+where c.hasQualifiedName("Types", "GenericStruct<>")
 select c

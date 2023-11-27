@@ -11,7 +11,7 @@ import semmle.code.java.controlflow.Guards
 /**
  * Holds if `ma` is controlled by the condition expression `e`.
  */
-predicate conditionControlsMethod(MethodCall ma, Expr e) {
+predicate conditionControlsMethod(MethodAccess ma, Expr e) {
   exists(ConditionBlock cb, SensitiveExecutionMethod m, boolean cond |
     ma.getMethod() = m and
     cb.controls(ma.getBasicBlock(), cond) and
@@ -28,7 +28,7 @@ predicate conditionControlsMethod(MethodCall ma, Expr e) {
  * `endsWith` method of the `java.lang.String` class.
  */
 private predicate endsWithStep(DataFlow::Node node1, DataFlow::Node node2) {
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     ma.getMethod().getDeclaringType() instanceof TypeString and
     ma.getMethod().getName() = "endsWith" and
     ma.getQualifier() = node1.asExpr() and
@@ -37,11 +37,9 @@ private predicate endsWithStep(DataFlow::Node node1, DataFlow::Node node2) {
 }
 
 /**
- * DEPRECATED: Use `ConditionalBypassFlow` instead.
- *
  * A taint tracking configuration for untrusted data flowing to sensitive conditions.
  */
-deprecated class ConditionalBypassFlowConfig extends TaintTracking::Configuration {
+class ConditionalBypassFlowConfig extends TaintTracking::Configuration {
   ConditionalBypassFlowConfig() { this = "ConditionalBypassFlowConfig" }
 
   override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
@@ -52,21 +50,3 @@ deprecated class ConditionalBypassFlowConfig extends TaintTracking::Configuratio
     endsWithStep(node1, node2)
   }
 }
-
-/**
- * A taint tracking configuration for untrusted data flowing to sensitive conditions.
- */
-module ConditionalBypassFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
-
-  predicate isSink(DataFlow::Node sink) { conditionControlsMethod(_, sink.asExpr()) }
-
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
-    endsWithStep(node1, node2)
-  }
-}
-
-/**
- * Taint tracking flow for untrusted data flowing to sensitive conditions.
- */
-module ConditionalBypassFlow = TaintTracking::Global<ConditionalBypassFlowConfig>;

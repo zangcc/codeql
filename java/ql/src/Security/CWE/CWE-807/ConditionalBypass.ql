@@ -15,14 +15,15 @@
 import java
 import semmle.code.java.dataflow.DataFlow
 import semmle.code.java.security.ConditionalBypassQuery
-import ConditionalBypassFlow::PathGraph
+import DataFlow::PathGraph
 
 from
-  ConditionalBypassFlow::PathNode source, ConditionalBypassFlow::PathNode sink, MethodCall m, Expr e
+  DataFlow::PathNode source, DataFlow::PathNode sink, MethodAccess m, Expr e,
+  ConditionalBypassFlowConfig conf
 where
   conditionControlsMethod(m, e) and
   sink.getNode().asExpr() = e and
-  ConditionalBypassFlow::flowPath(source, sink)
+  conf.hasFlowPath(source, sink)
 select m, source, sink,
   "Sensitive method may not be executed depending on a $@, which flows from $@.", e,
   "this condition", source.getNode(), "user-controlled value"

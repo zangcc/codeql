@@ -14,15 +14,15 @@
 
 import csharp
 import semmle.code.csharp.security.dataflow.HardcodedCredentialsQuery
-import HardcodedCredentials::PathGraph
+import semmle.code.csharp.dataflow.DataFlow::DataFlow::PathGraph
 
 from
-  Source source, Sink sink, HardcodedCredentials::PathNode sourcePath,
-  HardcodedCredentials::PathNode sinkPath, string value
+  TaintTrackingConfiguration c, Source source, Sink sink, DataFlow::PathNode sourcePath,
+  DataFlow::PathNode sinkPath, string value
 where
   source = sourcePath.getNode() and
   sink = sinkPath.getNode() and
-  HardcodedCredentials::flowPath(sourcePath, sinkPath) and
+  c.hasFlowPath(sourcePath, sinkPath) and
   // Print the source value if it's available
   if exists(source.asExpr().getValue())
   then value = "The hard-coded value \"" + source.asExpr().getValue() + "\""

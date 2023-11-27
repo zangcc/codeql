@@ -23,14 +23,16 @@ predicate withinInitializer(Expr e) {
   e.getEnclosingCallable() instanceof Constructor
 }
 
-predicate locallySynchronized(MethodCall ma) {
+predicate locallySynchronized(MethodAccess ma) {
   ma.getEnclosingStmt().getEnclosingStmt+() instanceof SynchronizedStmt
 }
 
 predicate hasUnsynchronizedCall(Method m) {
   m.isPublic() and not m.isSynchronized()
   or
-  exists(MethodCall ma, Method caller | ma.getMethod() = m and caller = ma.getEnclosingCallable() |
+  exists(MethodAccess ma, Method caller |
+    ma.getMethod() = m and caller = ma.getEnclosingCallable()
+  |
     hasUnsynchronizedCall(caller) and
     not caller.isSynchronized() and
     not locallySynchronized(ma)

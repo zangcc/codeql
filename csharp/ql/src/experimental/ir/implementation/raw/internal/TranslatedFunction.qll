@@ -30,6 +30,9 @@ class TranslatedFunction extends TranslatedElement, TTranslatedFunction {
 
   final override Language::AST getAst() { result = callable }
 
+  /** DEPRECATED: Alias for getAst */
+  deprecated override Language::AST getAST() { result = this.getAst() }
+
   /**
    * Gets the function being translated.
    */
@@ -283,6 +286,9 @@ class TranslatedParameter extends TranslatedElement, TTranslatedParameter {
   final override string toString() { result = param.toString() }
 
   final override Language::AST getAst() { result = param }
+
+  /** DEPRECATED: Alias for getAst */
+  deprecated override Language::AST getAST() { result = this.getAst() }
 
   final override Callable getFunction() { result = param.getCallable() }
 

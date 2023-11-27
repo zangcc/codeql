@@ -32,6 +32,8 @@ module Zap {
     ZapFormatter() { this.getName().matches("%f") }
 
     override int getFormatStringIndex() { result = 0 }
+
+    override int getFirstFormattedParameterIndex() { result = 1 }
   }
 
   /**
@@ -43,10 +45,27 @@ module Zap {
   private class ZapCall extends LoggerCall::Range, DataFlow::MethodCallNode {
     ZapCall() { this = any(ZapFunction f).getACall() }
 
-    override DataFlow::Node getAMessageComponent() { result = this.getASyntacticArgument() }
+    override DataFlow::Node getAMessageComponent() { result = this.getAnArgument() }
   }
 
-  // These are expressed using TaintTracking::FunctionModel because varargs functions don't work with Models-as-Data sumamries yet.
+  /** A function that creates a `Field` that can be logged. */
+  class FieldFunction extends TaintTracking::FunctionModel {
+    FieldFunction() {
+      exists(string fn |
+        fn in [
+            "Any", "Binary", "ByteString", "ByteStrings", "Error", "Errors", "NamedError",
+            "Reflect", "String", "Stringp", "Strings"
+          ]
+      |
+        this.hasQualifiedName(packagePath(), fn)
+      )
+    }
+
+    override predicate hasTaintFlow(FunctionInput inp, FunctionOutput outp) {
+      inp.isParameter(_) and outp.isResult()
+    }
+  }
+
   /** The function `Fields` that creates an `Option` that can be added to the logger out of `Field`s. */
   class FieldsFunction extends TaintTracking::FunctionModel {
     FieldsFunction() { this.hasQualifiedName(packagePath(), "Fields") }

@@ -3,18 +3,20 @@
  */
 
 import csharp
-import GlobalFlow::PathGraph
+import DataFlow::PathGraph
 
-module GlobalFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source.asExpr().(Expr).getValue() = "tainted" }
+class DataflowConfiguration extends DataFlow::Configuration {
+  DataflowConfiguration() { this = "data flow configuration" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node source) {
+    source.asExpr().(Expr).getValue() = "tainted"
+  }
+
+  override predicate isSink(DataFlow::Node sink) {
     exists(LocalVariable v | sink.asExpr() = v.getInitializer())
   }
 }
 
-module GlobalFlow = DataFlow::Global<GlobalFlowConfig>;
-
-from GlobalFlow::PathNode source, GlobalFlow::PathNode sink
-where GlobalFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, DataflowConfiguration conf
+where conf.hasFlowPath(source, sink)
 select source, source, sink, "$@", sink, sink.toString()

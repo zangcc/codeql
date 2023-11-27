@@ -68,7 +68,7 @@ class TranslatedFunction extends TranslatedRootElement, TTranslatedFunction {
   final override Locatable getAst() { result = func }
 
   /** DEPRECATED: Alias for getAst */
-  deprecated override Locatable getAST() { result = this.getAst() }
+  deprecated override Locatable getAST() { result = getAst() }
 
   /**
    * Gets the function being translated.
@@ -76,15 +76,15 @@ class TranslatedFunction extends TranslatedRootElement, TTranslatedFunction {
   final override Function getFunction() { result = func }
 
   final override TranslatedElement getChild(int id) {
-    id = -5 and result = this.getReadEffects()
+    id = -5 and result = getReadEffects()
     or
-    id = -4 and result = this.getConstructorInitList()
+    id = -4 and result = getConstructorInitList()
     or
-    id = -3 and result = this.getBody()
+    id = -3 and result = getBody()
     or
-    id = -2 and result = this.getDestructorDestructionList()
+    id = -2 and result = getDestructorDestructionList()
     or
-    id >= -1 and result = this.getParameter(id)
+    id >= -1 and result = getParameter(id)
   }
 
   final private TranslatedConstructorInitList getConstructorInitList() {
@@ -109,66 +109,64 @@ class TranslatedFunction extends TranslatedRootElement, TTranslatedFunction {
     result = getTranslatedEllipsisParameter(func)
   }
 
-  final override Instruction getFirstInstruction() {
-    result = this.getInstruction(EnterFunctionTag())
-  }
+  final override Instruction getFirstInstruction() { result = getInstruction(EnterFunctionTag()) }
 
   final override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) {
     kind instanceof GotoEdge and
     (
       tag = EnterFunctionTag() and
-      result = this.getInstruction(AliasedDefinitionTag())
+      result = getInstruction(AliasedDefinitionTag())
       or
       tag = AliasedDefinitionTag() and
-      result = this.getInstruction(InitializeNonLocalTag())
+      result = getInstruction(InitializeNonLocalTag())
       or
       (
         tag = InitializeNonLocalTag() and
-        if exists(this.getThisType())
-        then result = this.getParameter(-1).getFirstInstruction()
+        if exists(getThisType())
+        then result = getParameter(-1).getFirstInstruction()
         else
-          if exists(this.getParameter(0))
-          then result = this.getParameter(0).getFirstInstruction()
-          else result = this.getBody().getFirstInstruction()
+          if exists(getParameter(0))
+          then result = getParameter(0).getFirstInstruction()
+          else result = getBody().getFirstInstruction()
       )
       or
       tag = ReturnValueAddressTag() and
-      result = this.getInstruction(ReturnTag())
+      result = getInstruction(ReturnTag())
       or
       tag = ReturnTag() and
-      result = this.getInstruction(AliasedUseTag())
+      result = getInstruction(AliasedUseTag())
       or
       tag = UnwindTag() and
-      result = this.getInstruction(AliasedUseTag())
+      result = getInstruction(AliasedUseTag())
       or
       tag = AliasedUseTag() and
-      result = this.getInstruction(ExitFunctionTag())
+      result = getInstruction(ExitFunctionTag())
     )
   }
 
   final override Instruction getChildSuccessor(TranslatedElement child) {
     exists(int paramIndex |
-      child = this.getParameter(paramIndex) and
+      child = getParameter(paramIndex) and
       if
         exists(func.getParameter(paramIndex + 1)) or
         getEllipsisParameterIndexForFunction(func) = paramIndex + 1
-      then result = this.getParameter(paramIndex + 1).getFirstInstruction()
-      else result = this.getConstructorInitList().getFirstInstruction()
+      then result = getParameter(paramIndex + 1).getFirstInstruction()
+      else result = getConstructorInitList().getFirstInstruction()
     )
     or
-    child = this.getConstructorInitList() and
-    result = this.getBody().getFirstInstruction()
+    child = getConstructorInitList() and
+    result = getBody().getFirstInstruction()
     or
-    child = this.getBody() and
-    result = this.getReturnSuccessorInstruction()
+    child = getBody() and
+    result = getReturnSuccessorInstruction()
     or
-    child = this.getDestructorDestructionList() and
-    result = this.getReadEffects().getFirstInstruction()
+    child = getDestructorDestructionList() and
+    result = getReadEffects().getFirstInstruction()
     or
-    child = this.getReadEffects() and
-    if this.hasReturnValue()
-    then result = this.getInstruction(ReturnValueAddressTag())
-    else result = this.getInstruction(ReturnTag())
+    child = getReadEffects() and
+    if hasReturnValue()
+    then result = getInstruction(ReturnValueAddressTag())
+    else result = getInstruction(ReturnTag())
   }
 
   final override predicate hasInstruction(Opcode opcode, InstructionTag tag, CppType resultType) {
@@ -187,13 +185,13 @@ class TranslatedFunction extends TranslatedRootElement, TTranslatedFunction {
       or
       tag = ReturnValueAddressTag() and
       opcode instanceof Opcode::VariableAddress and
-      resultType = getTypeForGLValue(this.getReturnType()) and
-      this.hasReturnValue()
+      resultType = getTypeForGLValue(getReturnType()) and
+      hasReturnValue()
       or
       (
         tag = ReturnTag() and
         resultType = getVoidType() and
-        if this.hasReturnValue()
+        if hasReturnValue()
         then opcode instanceof Opcode::ReturnValue
         else opcode instanceof Opcode::ReturnVoid
       )
@@ -219,23 +217,23 @@ class TranslatedFunction extends TranslatedRootElement, TTranslatedFunction {
   }
 
   final override Instruction getExceptionSuccessorInstruction() {
-    result = this.getInstruction(UnwindTag())
+    result = getInstruction(UnwindTag())
   }
 
   final override Instruction getInstructionRegisterOperand(InstructionTag tag, OperandTag operandTag) {
     tag = ReturnTag() and
-    this.hasReturnValue() and
+    hasReturnValue() and
     operandTag instanceof AddressOperandTag and
-    result = this.getInstruction(ReturnValueAddressTag())
+    result = getInstruction(ReturnValueAddressTag())
   }
 
   final override CppType getInstructionMemoryOperandType(
     InstructionTag tag, TypedOperandTag operandTag
   ) {
     tag = ReturnTag() and
-    this.hasReturnValue() and
+    hasReturnValue() and
     operandTag instanceof LoadOperandTag and
-    result = getTypeForPRValue(this.getReturnType())
+    result = getTypeForPRValue(getReturnType())
     or
     tag = AliasedUseTag() and
     operandTag instanceof SideEffectOperandTag and
@@ -244,7 +242,7 @@ class TranslatedFunction extends TranslatedRootElement, TTranslatedFunction {
 
   final override IRVariable getInstructionVariable(InstructionTag tag) {
     tag = ReturnValueAddressTag() and
-    result = this.getReturnVariable()
+    result = getReturnVariable()
   }
 
   final override predicate needsUnknownOpaqueType(int byteSize) {
@@ -253,15 +251,15 @@ class TranslatedFunction extends TranslatedRootElement, TTranslatedFunction {
 
   final override predicate hasTempVariable(TempVariableTag tag, CppType type) {
     tag = ReturnValueTempVar() and
-    this.hasReturnValue() and
-    type = getTypeForPRValue(this.getReturnType())
+    hasReturnValue() and
+    type = getTypeForPRValue(getReturnType())
     or
     tag = EllipsisTempVar() and
     func.isVarargs() and
     type = getEllipsisVariablePRValueType()
     or
     tag = ThisTempVar() and
-    type = getTypeForGLValue(this.getThisType())
+    type = getTypeForGLValue(getThisType())
   }
 
   /**
@@ -269,7 +267,7 @@ class TranslatedFunction extends TranslatedRootElement, TTranslatedFunction {
    * statement.
    */
   final Instruction getReturnSuccessorInstruction() {
-    result = this.getDestructorDestructionList().getFirstInstruction()
+    result = getDestructorDestructionList().getFirstInstruction()
   }
 
   /**
@@ -324,13 +322,11 @@ class TranslatedFunction extends TranslatedRootElement, TTranslatedFunction {
       (
         var instanceof GlobalOrNamespaceVariable
         or
-        var instanceof StaticLocalVariable
-        or
         var instanceof MemberVariable and not var instanceof Field
       ) and
       exists(VariableAccess access |
         access.getTarget() = var and
-        getEnclosingFunction(access) = func
+        access.getEnclosingFunction() = func
       )
       or
       var.(LocalScopeVariable).getFunction() = func
@@ -370,25 +366,25 @@ abstract class TranslatedParameter extends TranslatedElement {
   final override TranslatedElement getChild(int id) { none() }
 
   final override Instruction getFirstInstruction() {
-    result = this.getInstruction(InitializerVariableAddressTag())
+    result = getInstruction(InitializerVariableAddressTag())
   }
 
   final override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) {
     kind instanceof GotoEdge and
     (
       tag = InitializerVariableAddressTag() and
-      result = this.getInstruction(InitializerStoreTag())
+      result = getInstruction(InitializerStoreTag())
       or
       tag = InitializerStoreTag() and
-      if this.hasIndirection()
-      then result = this.getInstruction(InitializerIndirectAddressTag())
-      else result = this.getParent().getChildSuccessor(this)
+      if hasIndirection()
+      then result = getInstruction(InitializerIndirectAddressTag())
+      else result = getParent().getChildSuccessor(this)
       or
       tag = InitializerIndirectAddressTag() and
-      result = this.getInstruction(InitializerIndirectStoreTag())
+      result = getInstruction(InitializerIndirectStoreTag())
       or
       tag = InitializerIndirectStoreTag() and
-      result = this.getParent().getChildSuccessor(this)
+      result = getParent().getChildSuccessor(this)
     )
   }
 
@@ -397,21 +393,21 @@ abstract class TranslatedParameter extends TranslatedElement {
   final override predicate hasInstruction(Opcode opcode, InstructionTag tag, CppType resultType) {
     tag = InitializerVariableAddressTag() and
     opcode instanceof Opcode::VariableAddress and
-    resultType = this.getGLValueType()
+    resultType = getGLValueType()
     or
     tag = InitializerStoreTag() and
     opcode instanceof Opcode::InitializeParameter and
-    resultType = this.getPRValueType()
+    resultType = getPRValueType()
     or
-    this.hasIndirection() and
+    hasIndirection() and
     tag = InitializerIndirectAddressTag() and
     opcode instanceof Opcode::Load and
-    resultType = this.getPRValueType()
+    resultType = getPRValueType()
     or
-    this.hasIndirection() and
+    hasIndirection() and
     tag = InitializerIndirectStoreTag() and
     opcode instanceof Opcode::InitializeIndirection and
-    resultType = this.getInitializationResultType()
+    resultType = getInitializationResultType()
   }
 
   final override IRVariable getInstructionVariable(InstructionTag tag) {
@@ -420,26 +416,26 @@ abstract class TranslatedParameter extends TranslatedElement {
       tag = InitializerVariableAddressTag() or
       tag = InitializerIndirectStoreTag()
     ) and
-    result = this.getIRVariable()
+    result = getIRVariable()
   }
 
   final override Instruction getInstructionRegisterOperand(InstructionTag tag, OperandTag operandTag) {
     tag = InitializerStoreTag() and
     (
       operandTag instanceof AddressOperandTag and
-      result = this.getInstruction(InitializerVariableAddressTag())
+      result = getInstruction(InitializerVariableAddressTag())
     )
     or
     // this feels a little strange, but I think it's the best we can do
     tag = InitializerIndirectAddressTag() and
     (
       operandTag instanceof AddressOperandTag and
-      result = this.getInstruction(InitializerVariableAddressTag())
+      result = getInstruction(InitializerVariableAddressTag())
     )
     or
     tag = InitializerIndirectStoreTag() and
     operandTag instanceof AddressOperandTag and
-    result = this.getInstruction(InitializerIndirectAddressTag())
+    result = getInstruction(InitializerIndirectAddressTag())
   }
 
   abstract predicate hasIndirection();
@@ -467,7 +463,7 @@ class TranslatedThisParameter extends TranslatedParameter, TTranslatedThisParame
   final override Locatable getAst() { result = func }
 
   /** DEPRECATED: Alias for getAst */
-  deprecated override Locatable getAST() { result = this.getAst() }
+  deprecated override Locatable getAST() { result = getAst() }
 
   final override Function getFunction() { result = func }
 
@@ -502,7 +498,7 @@ class TranslatedPositionalParameter extends TranslatedParameter, TTranslatedPara
   final override Locatable getAst() { result = param }
 
   /** DEPRECATED: Alias for getAst */
-  deprecated override Locatable getAST() { result = this.getAst() }
+  deprecated override Locatable getAST() { result = getAst() }
 
   final override Function getFunction() {
     result = param.getFunction() or
@@ -524,7 +520,7 @@ class TranslatedPositionalParameter extends TranslatedParameter, TTranslatedPara
   final override CppType getInitializationResultType() { result = getUnknownType() }
 
   final override IRAutomaticUserVariable getIRVariable() {
-    result = getIRUserVariable(this.getFunction(), param)
+    result = getIRUserVariable(getFunction(), param)
   }
 }
 
@@ -542,7 +538,7 @@ class TranslatedEllipsisParameter extends TranslatedParameter, TTranslatedEllips
   final override Locatable getAst() { result = func }
 
   /** DEPRECATED: Alias for getAst */
-  deprecated override Locatable getAST() { result = this.getAst() }
+  deprecated override Locatable getAST() { result = getAst() }
 
   final override Function getFunction() { result = func }
 
@@ -570,8 +566,7 @@ private TranslatedConstructorInitList getTranslatedConstructorInitList(Function 
  * instances for constructors can actually contain initializers.
  */
 class TranslatedConstructorInitList extends TranslatedElement, InitializationContext,
-  TTranslatedConstructorInitList
-{
+  TTranslatedConstructorInitList {
   Function func;
 
   TranslatedConstructorInitList() { this = TTranslatedConstructorInitList(func) }
@@ -581,7 +576,7 @@ class TranslatedConstructorInitList extends TranslatedElement, InitializationCon
   override Locatable getAst() { result = func }
 
   /** DEPRECATED: Alias for getAst */
-  deprecated override Locatable getAST() { result = this.getAst() }
+  deprecated override Locatable getAST() { result = getAst() }
 
   override TranslatedElement getChild(int id) {
     exists(ConstructorFieldInit fieldInit |
@@ -601,9 +596,9 @@ class TranslatedConstructorInitList extends TranslatedElement, InitializationCon
   }
 
   override Instruction getFirstInstruction() {
-    if exists(this.getChild(0))
-    then result = this.getChild(0).getFirstInstruction()
-    else result = this.getParent().getChildSuccessor(this)
+    if exists(getChild(0))
+    then result = getChild(0).getFirstInstruction()
+    else result = getParent().getChildSuccessor(this)
   }
 
   override predicate hasInstruction(Opcode opcode, InstructionTag tag, CppType resultType) {
@@ -616,10 +611,10 @@ class TranslatedConstructorInitList extends TranslatedElement, InitializationCon
 
   override Instruction getChildSuccessor(TranslatedElement child) {
     exists(int id |
-      child = this.getChild(id) and
-      if exists(this.getChild(id + 1))
-      then result = this.getChild(id + 1).getFirstInstruction()
-      else result = this.getParent().getChildSuccessor(this)
+      child = getChild(id) and
+      if exists(getChild(id + 1))
+      then result = getChild(id + 1).getFirstInstruction()
+      else result = getParent().getChildSuccessor(this)
     )
   }
 
@@ -642,8 +637,7 @@ private TranslatedDestructorDestructionList getTranslatedDestructorDestructionLi
  * destructions.
  */
 class TranslatedDestructorDestructionList extends TranslatedElement,
-  TTranslatedDestructorDestructionList
-{
+  TTranslatedDestructorDestructionList {
   Function func;
 
   TranslatedDestructorDestructionList() { this = TTranslatedDestructorDestructionList(func) }
@@ -653,7 +647,7 @@ class TranslatedDestructorDestructionList extends TranslatedElement,
   override Locatable getAst() { result = func }
 
   /** DEPRECATED: Alias for getAst */
-  deprecated override Locatable getAST() { result = this.getAst() }
+  deprecated override Locatable getAST() { result = getAst() }
 
   override TranslatedElement getChild(int id) {
     exists(DestructorFieldDestruction fieldDestruction |
@@ -668,9 +662,9 @@ class TranslatedDestructorDestructionList extends TranslatedElement,
   }
 
   override Instruction getFirstInstruction() {
-    if exists(this.getChild(0))
-    then result = this.getChild(0).getFirstInstruction()
-    else result = this.getParent().getChildSuccessor(this)
+    if exists(getChild(0))
+    then result = getChild(0).getFirstInstruction()
+    else result = getParent().getChildSuccessor(this)
   }
 
   override predicate hasInstruction(Opcode opcode, InstructionTag tag, CppType resultType) {
@@ -683,10 +677,10 @@ class TranslatedDestructorDestructionList extends TranslatedElement,
 
   override Instruction getChildSuccessor(TranslatedElement child) {
     exists(int id |
-      child = this.getChild(id) and
-      if exists(this.getChild(id + 1))
-      then result = this.getChild(id + 1).getFirstInstruction()
-      else result = this.getParent().getChildSuccessor(this)
+      child = getChild(id) and
+      if exists(getChild(id + 1))
+      then result = getChild(id + 1).getFirstInstruction()
+      else result = getParent().getChildSuccessor(this)
     )
   }
 }
@@ -701,7 +695,7 @@ class TranslatedReadEffects extends TranslatedElement, TTranslatedReadEffects {
   override Locatable getAst() { result = func }
 
   /** DEPRECATED: Alias for getAst */
-  deprecated override Locatable getAST() { result = this.getAst() }
+  deprecated override Locatable getAST() { result = getAst() }
 
   override Function getFunction() { result = func }
 
@@ -715,25 +709,25 @@ class TranslatedReadEffects extends TranslatedElement, TTranslatedReadEffects {
   }
 
   override Instruction getFirstInstruction() {
-    if exists(this.getAChild())
+    if exists(getAChild())
     then
       result =
-        min(TranslatedElement child, int id | child = this.getChild(id) | child order by id)
+        min(TranslatedElement child, int id | child = getChild(id) | child order by id)
             .getFirstInstruction()
-    else result = this.getParent().getChildSuccessor(this)
+    else result = getParent().getChildSuccessor(this)
   }
 
   override Instruction getChildSuccessor(TranslatedElement child) {
-    exists(int id | child = this.getChild(id) |
-      if exists(TranslatedReadEffect child2, int id2 | id2 > id and child2 = this.getChild(id2))
+    exists(int id | child = getChild(id) |
+      if exists(TranslatedReadEffect child2, int id2 | id2 > id and child2 = getChild(id2))
       then
         result =
           min(TranslatedReadEffect child2, int id2 |
-            child2 = this.getChild(id2) and id2 > id
+            child2 = getChild(id2) and id2 > id
           |
             child2 order by id2
           ).getFirstInstruction()
-      else result = this.getParent().getChildSuccessor(this)
+      else result = getParent().getChildSuccessor(this)
     )
   }
 
@@ -760,10 +754,10 @@ abstract class TranslatedReadEffect extends TranslatedElement {
   override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) {
     tag = OnlyInstructionTag() and
     kind = EdgeKind::gotoEdge() and
-    result = this.getParent().getChildSuccessor(this)
+    result = getParent().getChildSuccessor(this)
   }
 
-  override Instruction getFirstInstruction() { result = this.getInstruction(OnlyInstructionTag()) }
+  override Instruction getFirstInstruction() { result = getInstruction(OnlyInstructionTag()) }
 
   override predicate hasInstruction(Opcode opcode, InstructionTag tag, CppType resultType) {
     opcode instanceof Opcode::ReturnIndirection and
@@ -788,7 +782,7 @@ class TranslatedThisReadEffect extends TranslatedReadEffect, TTranslatedThisRead
   override Locatable getAst() { result = func }
 
   /** DEPRECATED: Alias for getAst */
-  deprecated override Locatable getAST() { result = this.getAst() }
+  deprecated override Locatable getAST() { result = getAst() }
 
   override Function getFunction() { result = func }
 
@@ -814,7 +808,7 @@ class TranslatedParameterReadEffect extends TranslatedReadEffect, TTranslatedPar
   override Locatable getAst() { result = param }
 
   /** DEPRECATED: Alias for getAst */
-  deprecated override Locatable getAST() { result = this.getAst() }
+  deprecated override Locatable getAST() { result = getAst() }
 
   override string toString() { result = "read effect: " + param.toString() }
 
@@ -828,6 +822,6 @@ class TranslatedParameterReadEffect extends TranslatedReadEffect, TTranslatedPar
 
   final override IRVariable getInstructionVariable(InstructionTag tag) {
     tag = OnlyInstructionTag() and
-    result = getIRUserVariable(this.getFunction(), param)
+    result = getIRUserVariable(getFunction(), param)
   }
 }

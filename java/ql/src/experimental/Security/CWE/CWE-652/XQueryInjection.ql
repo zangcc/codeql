@@ -14,15 +14,17 @@
 import java
 import semmle.code.java.dataflow.FlowSources
 import XQueryInjectionLib
-import XQueryInjectionFlow::PathGraph
+import DataFlow::PathGraph
 
 /**
  * A taint-tracking configuration tracing flow from remote sources, through an XQuery parser, to its eventual execution.
  */
-module XQueryInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+class XQueryInjectionConfig extends TaintTracking::Configuration {
+  XQueryInjectionConfig() { this = "XQueryInjectionConfig" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) {
     sink.asExpr() = any(XQueryPreparedExecuteCall xpec).getPreparedExpression() or
     sink.asExpr() = any(XQueryExecuteCall xec).getExecuteQueryArgument() or
     sink.asExpr() = any(XQueryExecuteCommandCall xecc).getExecuteCommandArgument()
@@ -31,17 +33,12 @@ module XQueryInjectionConfig implements DataFlow::ConfigSig {
   /**
    * Holds if taint from the input `pred` to a `prepareExpression` call flows to the returned prepared expression `succ`.
    */
-  predicate isAdditionalFlowStep(DataFlow::Node pred, DataFlow::Node succ) {
+  override predicate isAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {
     exists(XQueryParserCall parser | pred.asExpr() = parser.getInput() and succ.asExpr() = parser)
   }
 }
 
-/**
- * Taint-tracking flow from remote sources, through an XQuery parser, to its eventual execution.
- */
-module XQueryInjectionFlow = TaintTracking::Global<XQueryInjectionConfig>;
-
-from XQueryInjectionFlow::PathNode source, XQueryInjectionFlow::PathNode sink
-where XQueryInjectionFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, XQueryInjectionConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "XQuery query might include code from $@.", source.getNode(),
   "this user input"

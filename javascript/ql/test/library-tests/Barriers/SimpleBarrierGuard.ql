@@ -20,14 +20,14 @@ class Configuration extends DataFlow::Configuration {
 }
 
 class SimpleBarrierGuardNode extends DataFlow::BarrierGuardNode, DataFlow::InvokeNode {
-  SimpleBarrierGuardNode() { this.getCalleeName() = "BARRIER" }
+  SimpleBarrierGuardNode() { getCalleeName() = "BARRIER" }
 
   override predicate blocks(boolean outcome, Expr e) {
     outcome = true and
-    e = this.getArgument(0).asExpr()
+    e = getArgument(0).asExpr()
   }
 }
 
 from Configuration cfg, DataFlow::Node source, DataFlow::Node sink
 where cfg.hasFlow(source, sink)
-select sink, source
+select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), source

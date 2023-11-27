@@ -21,10 +21,12 @@ module Raw {
     result = getOperandMemoryLocation(instr.getAnOperand())
   }
 
-  module RawPointsToTest implements TestSig {
-    string getARelevantTag() { result = "raw" }
+  class RawPointsToTest extends InlineExpectationsTest {
+    RawPointsToTest() { this = "RawPointsToTest" }
 
-    predicate hasActualResult(Location location, string element, string tag, string value) {
+    override string getARelevantTag() { result = "raw" }
+
+    override predicate hasActualResult(Location location, string element, string tag, string value) {
       exists(Instruction instr, MemoryLocation memLocation |
         memLocation = getAMemoryAccess(instr) and
         tag = "raw" and
@@ -47,10 +49,12 @@ module UnaliasedSsa {
     result = getOperandMemoryLocation(instr.getAnOperand())
   }
 
-  module UnaliasedSsaPointsToTest implements TestSig {
-    string getARelevantTag() { result = "ussa" }
+  class UnaliasedSsaPointsToTest extends InlineExpectationsTest {
+    UnaliasedSsaPointsToTest() { this = "UnaliasedSSAPointsToTest" }
 
-    predicate hasActualResult(Location location, string element, string tag, string value) {
+    override string getARelevantTag() { result = "ussa" }
+
+    override predicate hasActualResult(Location location, string element, string tag, string value) {
       exists(Instruction instr, MemoryLocation memLocation |
         memLocation = getAMemoryAccess(instr) and
         not memLocation.getVirtualVariable() instanceof AliasedVirtualVariable and
@@ -65,5 +69,3 @@ module UnaliasedSsa {
     }
   }
 }
-
-import MakeTest<MergeTests<Raw::RawPointsToTest, UnaliasedSsa::UnaliasedSsaPointsToTest>>

@@ -4,13 +4,13 @@ string httpVerb() { result = ["get", "put", "post", "delete"] }
 
 /** A RAML specification. */
 class RamlSpec extends YamlDocument, YamlMapping {
-  RamlSpec() { this.getLocation().getFile().getExtension() = "raml" }
+  RamlSpec() { getLocation().getFile().getExtension() = "raml" }
 }
 
 /** A RAML resource specification. */
 class RamlResource extends YamlMapping {
   RamlResource() {
-    this.getDocument() instanceof RamlSpec and
+    getDocument() instanceof RamlSpec and
     exists(YamlMapping m, string name |
       this = m.lookup(name) and
       name.matches("/%")
@@ -30,13 +30,13 @@ class RamlResource extends YamlMapping {
   /** Get the method for this resource with the given verb. */
   RamlMethod getMethod(string verb) {
     verb = httpVerb() and
-    result = this.lookup(verb)
+    result = lookup(verb)
   }
 }
 
 class RamlMethod extends YamlValue {
   RamlMethod() {
-    this.getDocument() instanceof RamlSpec and
+    getDocument() instanceof RamlSpec and
     exists(YamlMapping obj | this = obj.lookup(httpVerb()))
   }
 }

@@ -14,7 +14,8 @@
  */
 
 import cpp
-import semmle.code.cpp.ir.dataflow.DataFlow
+import semmle.code.cpp.dataflow.DataFlow
+import semmle.code.cpp.dataflow.DataFlow2
 
 /**
  * A function call to SetSecurityDescriptorDacl to set the ACL, specified by (2nd argument) bDaclPresent = TRUE
@@ -29,24 +30,26 @@ class SetSecurityDescriptorDaclFunctionCall extends FunctionCall {
 /**
  * Dataflow that detects a call to SetSecurityDescriptorDacl with a NULL DACL as the pDacl argument
  */
-module NullDaclConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source.asExpr() instanceof NullValue }
+class NullDaclConfig extends DataFlow::Configuration {
+  NullDaclConfig() { this = "NullDaclConfig" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node source) { source.asExpr() instanceof NullValue }
+
+  override predicate isSink(DataFlow::Node sink) {
     exists(SetSecurityDescriptorDaclFunctionCall call, VariableAccess val | val = sink.asExpr() |
       val = call.getArgument(2)
     )
   }
 }
 
-module NullDaclFlow = DataFlow::Global<NullDaclConfig>;
-
 /**
  * Dataflow that detects a call to SetSecurityDescriptorDacl with a pDacl
  * argument that's _not_ likely to be NULL.
  */
-module NonNullDaclConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
+class NonNullDaclConfig extends DataFlow2::Configuration {
+  NonNullDaclConfig() { this = "NonNullDaclConfig" }
+
+  override predicate isSource(DataFlow::Node source) {
     source.getType().getUnspecifiedType().(PointerType).getBaseType() =
       any(Type t | t.getName() = "ACL").getUnspecifiedType() and
     (
@@ -65,12 +68,10 @@ module NonNullDaclConfig implements DataFlow::ConfigSig {
     )
   }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSink(DataFlow::Node sink) {
     exists(SetSecurityDescriptorDaclFunctionCall call | sink.asExpr() = call.getArgument(2))
   }
 }
-
-module NonNullDaclFlow = DataFlow::Global<NonNullDaclConfig>;
 
 from SetSecurityDescriptorDaclFunctionCall call, string message
 where
@@ -82,13 +83,13 @@ where
     call.getArgument(2) = nullExpr
   )
   or
-  exists(VariableAccess var |
+  exists(VariableAccess var, NullDaclConfig nullDaclConfig, NonNullDaclConfig nonNullDaclConfig |
     message =
       "Setting a DACL to NULL in a SECURITY_DESCRIPTOR using variable " + var +
         " that is set to NULL will result in an unprotected object."
   |
     var = call.getArgument(2) and
-    NullDaclFlow::flowToExpr(var) and
-    not NonNullDaclFlow::flowToExpr(var)
+    nullDaclConfig.hasFlowToExpr(var) and
+    not nonNullDaclConfig.hasFlowToExpr(var)
   )
 select call, message

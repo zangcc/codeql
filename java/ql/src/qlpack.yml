@@ -1,6 +1,6 @@
 name: codeql/java-queries
-version: 0.8.4-dev
-groups:
+version: 0.5.4-dev
+groups: 
   - java
   - queries
 suites: codeql-suites
@@ -10,6 +10,3 @@ dependencies:
   codeql/java-all: ${workspace}
   codeql/suite-helpers: ${workspace}
   codeql/util: ${workspace}
-dataExtensions:
-  - Telemetry/ExtractorInformation.yml
-warnOnImplicitThis: true

@@ -71,9 +71,7 @@ class Refinement extends Expr instanceof RefinementCandidate {
 abstract private class LiteralRefinement extends RefinementCandidate, Literal {
   override SsaSourceVariable getARefinedVar() { none() }
 
-  override RefinementValue eval(RefinementContext ctxt) {
-    ctxt.appliesTo(this) and result = this.eval()
-  }
+  override RefinementValue eval(RefinementContext ctxt) { ctxt.appliesTo(this) and result = eval() }
 
   /**
    * Gets the refinement value that represents this literal.
@@ -89,13 +87,13 @@ private class NullLiteralRefinement extends LiteralRefinement, NullLiteral {
 /** A Boolean literal, viewed as a refinement expression. */
 private class BoolRefinement extends LiteralRefinement, BooleanLiteral {
   override RefinementValue eval() {
-    exists(boolean b | b.toString() = this.getValue() | result = TBoolConstant(b))
+    exists(boolean b | b.toString() = getValue() | result = TBoolConstant(b))
   }
 }
 
 /** A constant string, viewed as a refinement expression. */
 private class StringRefinement extends LiteralRefinement, ConstantString {
-  override RefinementValue eval() { result = TStringConstant(this.getStringValue()) }
+  override RefinementValue eval() { result = TStringConstant(getStringValue()) }
 }
 
 /** A numeric literal, viewed as a refinement expression. */
@@ -110,17 +108,16 @@ abstract private class NumberRefinement extends LiteralRefinement, NumberLiteral
  * other integer values.
  */
 private class IntRefinement extends NumberRefinement, NumberLiteral {
-  IntRefinement() { this.getValue().toInt() = 0 }
+  IntRefinement() { getValue().toInt() = 0 }
 
-  override RefinementValue eval() { result = TIntConstant(this.getValue().toInt()) }
+  override RefinementValue eval() { result = TIntConstant(getValue().toInt()) }
 }
 
 /**
  * A use of the global variable `undefined`, viewed as a refinement expression.
  */
 private class UndefinedInRefinement extends RefinementCandidate,
-  SyntacticConstants::UndefinedConstant
-{
+  SyntacticConstants::UndefinedConstant {
   override SsaSourceVariable getARefinedVar() { none() }
 
   override RefinementValue eval(RefinementContext ctxt) {
@@ -131,9 +128,9 @@ private class UndefinedInRefinement extends RefinementCandidate,
 
 /** A variable use, viewed as a refinement expression. */
 private class VariableRefinement extends RefinementCandidate, VarUse {
-  VariableRefinement() { this.getVariable() instanceof SsaSourceVariable }
+  VariableRefinement() { getVariable() instanceof SsaSourceVariable }
 
-  override SsaSourceVariable getARefinedVar() { result = this.getVariable() }
+  override SsaSourceVariable getARefinedVar() { result = getVariable() }
 
   override RefinementValue eval(RefinementContext ctxt) {
     ctxt.appliesTo(this) and
@@ -143,28 +140,28 @@ private class VariableRefinement extends RefinementCandidate, VarUse {
 
 /** A parenthesized refinement expression. */
 private class ParRefinement extends RefinementCandidate, ParExpr {
-  ParRefinement() { this.getExpression() instanceof RefinementCandidate }
+  ParRefinement() { getExpression() instanceof RefinementCandidate }
 
   override SsaSourceVariable getARefinedVar() {
-    result = this.getExpression().(RefinementCandidate).getARefinedVar()
+    result = getExpression().(RefinementCandidate).getARefinedVar()
   }
 
   override RefinementValue eval(RefinementContext ctxt) {
-    result = this.getExpression().(RefinementCandidate).eval(ctxt)
+    result = getExpression().(RefinementCandidate).eval(ctxt)
   }
 }
 
 /** A `typeof` refinement expression. */
 private class TypeofRefinement extends RefinementCandidate, TypeofExpr {
-  TypeofRefinement() { this.getOperand() instanceof RefinementCandidate }
+  TypeofRefinement() { getOperand() instanceof RefinementCandidate }
 
   override SsaSourceVariable getARefinedVar() {
-    result = this.getOperand().(RefinementCandidate).getARefinedVar()
+    result = getOperand().(RefinementCandidate).getARefinedVar()
   }
 
   override RefinementValue eval(RefinementContext ctxt) {
     exists(RefinementValue opVal |
-      opVal = this.getOperand().(RefinementCandidate).eval(ctxt) and
+      opVal = getOperand().(RefinementCandidate).eval(ctxt) and
       result = TStringConstant(opVal.typeof())
     )
   }
@@ -173,26 +170,26 @@ private class TypeofRefinement extends RefinementCandidate, TypeofExpr {
 /** An equality test that can be used as a refinement expression. */
 private class EqRefinement extends RefinementCandidate, EqualityTest {
   EqRefinement() {
-    this.getLeftOperand() instanceof RefinementCandidate and
-    this.getRightOperand() instanceof RefinementCandidate
+    getLeftOperand() instanceof RefinementCandidate and
+    getRightOperand() instanceof RefinementCandidate
   }
 
   override SsaSourceVariable getARefinedVar() {
-    result = this.getLeftOperand().(RefinementCandidate).getARefinedVar() or
-    result = this.getRightOperand().(RefinementCandidate).getARefinedVar()
+    result = getLeftOperand().(RefinementCandidate).getARefinedVar() or
+    result = getRightOperand().(RefinementCandidate).getARefinedVar()
   }
 
   override RefinementValue eval(RefinementContext ctxt) {
     exists(RefinementCandidate l, RefinementValue lv, RefinementCandidate r, RefinementValue rv |
-      l = this.getLeftOperand() and
-      r = this.getRightOperand() and
+      l = getLeftOperand() and
+      r = getRightOperand() and
       lv = l.eval(ctxt) and
       rv = r.eval(ctxt)
     |
       // if both sides evaluate to a constant, compare them
       if lv instanceof SingletonRefinementValue and rv instanceof SingletonRefinementValue
       then
-        exists(boolean s, boolean p | s = this.getStrictness() and p = this.getPolarity() |
+        exists(boolean s, boolean p | s = getStrictness() and p = getPolarity() |
           if lv.(SingletonRefinementValue).equals(rv, s)
           then result = TBoolConstant(p)
           else result = TBoolConstant(p.booleanNot())
@@ -211,13 +208,13 @@ private class EqRefinement extends RefinementCandidate, EqualityTest {
 /** An index expression that can be used as a refinement expression. */
 private class IndexRefinement extends RefinementCandidate, IndexExpr {
   IndexRefinement() {
-    this.getBase() instanceof RefinementCandidate and
-    this.getIndex() instanceof RefinementCandidate
+    getBase() instanceof RefinementCandidate and
+    getIndex() instanceof RefinementCandidate
   }
 
   override SsaSourceVariable getARefinedVar() {
-    result = this.getBase().(RefinementCandidate).getARefinedVar() or
-    result = this.getIndex().(RefinementCandidate).getARefinedVar()
+    result = getBase().(RefinementCandidate).getARefinedVar() or
+    result = getIndex().(RefinementCandidate).getARefinedVar()
   }
 
   override RefinementValue eval(RefinementContext ctxt) {
@@ -225,8 +222,8 @@ private class IndexRefinement extends RefinementCandidate, IndexExpr {
       RefinementCandidate base, RefinementValue baseVal, RefinementCandidate index,
       RefinementValue indexVal
     |
-      base = this.getBase() and
-      index = this.getIndex() and
+      base = getBase() and
+      index = getIndex() and
       baseVal = base.eval(ctxt) and
       indexVal = index.eval(ctxt)
     |
@@ -426,21 +423,21 @@ private class AnyValue extends RefinementValue, TAny {
 private class ValueWithType extends RefinementValue, TValueWithType {
   InferredType getType() { this = TValueWithType(result) }
 
-  override string toString() { result = "any " + this.getType() }
+  override string toString() { result = "any " + getType() }
 
-  override string typeof() { result = this.getType().getTypeofTag() }
+  override string typeof() { result = getType().getTypeofTag() }
 
   override boolean getABooleanValue() {
     result = true
     or
     // only primitive types can be falsy
-    this.getType() instanceof PrimitiveType and result = false
+    getType() instanceof PrimitiveType and result = false
   }
 }
 
 /** An abstract value representing `null` or `undefined`. */
 private class NullOrUndefined extends ValueWithType, SingletonRefinementValue {
-  NullOrUndefined() { this.getType() instanceof TTNull or this.getType() instanceof TTUndefined }
+  NullOrUndefined() { getType() instanceof TTNull or getType() instanceof TTUndefined }
 
   override boolean getABooleanValue() { result = false }
 
@@ -503,7 +500,7 @@ private class StringConstant extends SingletonRefinementValue, TStringConstant {
     or
     isStrict = false and
     (
-      this.isEmptyOrZero() and that = TBoolConstant(false)
+      isEmptyOrZero() and that = TBoolConstant(false)
       or
       value = "1" and that = TBoolConstant(true)
       or

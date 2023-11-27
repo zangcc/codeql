@@ -1,16 +1,16 @@
 import semmle.code.java.dataflow.FlowSources
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof UserInput }
+class Conf extends TaintTracking::Configuration {
+  Conf() { this = "qltest:cwe-089:taintedString" }
 
-  predicate isSink(DataFlow::Node sink) { any() }
+  override predicate isSource(DataFlow::Node source) { source instanceof UserInput }
+
+  override predicate isSink(DataFlow::Node sink) { any() }
 }
 
-module Flow = TaintTracking::Global<Config>;
-
-from Expr tainted, Method method
+from Conf conf, Expr tainted, Method method
 where
-  Flow::flowToExpr(tainted) and
+  conf.hasFlowToExpr(tainted) and
   tainted.getEnclosingCallable() = method and
   tainted.getFile().getStem() = ["Test", "Validation"]
 select method, tainted.getLocation().getStartLine() - method.getLocation().getStartLine(), tainted

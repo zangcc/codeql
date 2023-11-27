@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using Microsoft.CodeAnalysis;
 
@@ -31,7 +30,6 @@ namespace Semmle.Extraction
     /// <typeparam name="TSymbol">The type of the symbol.</typeparam>
     public abstract class CachedEntity<TSymbol> : CachedEntity where TSymbol : notnull
     {
-        [NotNull]
         public TSymbol Symbol { get; }
 
         protected CachedEntity(Context context, TSymbol symbol) : base(context)

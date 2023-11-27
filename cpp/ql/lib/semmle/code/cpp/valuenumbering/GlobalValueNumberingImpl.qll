@@ -284,10 +284,10 @@ deprecated class GVN extends GvnBase {
   }
 
   /** Gets a textual representation of this element. */
-  string toString() { result = this.exampleExpr().toString() }
+  string toString() { result = exampleExpr().toString() }
 
   /** Gets the primary location of this element. */
-  Location getLocation() { result = this.exampleExpr().getLocation() }
+  Location getLocation() { result = exampleExpr().getLocation() }
 }
 
 private predicate analyzableIntConst(Expr e) {

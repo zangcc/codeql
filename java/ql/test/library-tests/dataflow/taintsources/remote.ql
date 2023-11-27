@@ -3,31 +3,33 @@ import semmle.code.java.dataflow.FlowSources
 import TestUtilities.InlineExpectationsTest
 
 predicate isTestSink(DataFlow::Node n) {
-  exists(MethodCall ma | ma.getMethod().hasName("sink") | n.asExpr() = ma.getAnArgument())
+  exists(MethodAccess ma | ma.getMethod().hasName("sink") | n.asExpr() = ma.getAnArgument())
 }
 
-module RemoteValueConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node n) { n instanceof RemoteFlowSource }
+class RemoteValueConf extends DataFlow::Configuration {
+  RemoteValueConf() { this = "RemoteValueConf" }
 
-  predicate isSink(DataFlow::Node n) { isTestSink(n) }
+  override predicate isSource(DataFlow::Node n) { n instanceof RemoteFlowSource }
+
+  override predicate isSink(DataFlow::Node n) { isTestSink(n) }
 }
 
-module RemoteValueFlow = DataFlow::Global<RemoteValueConfig>;
+class RemoteTaintConf extends TaintTracking::Configuration {
+  RemoteTaintConf() { this = "RemoteTaintConf" }
 
-module RemoteTaintConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node n) { n instanceof RemoteFlowSource }
+  override predicate isSource(DataFlow::Node n) { n instanceof RemoteFlowSource }
 
-  predicate isSink(DataFlow::Node n) { isTestSink(n) }
+  override predicate isSink(DataFlow::Node n) { isTestSink(n) }
 }
 
-module RemoteTaintFlow = TaintTracking::Global<RemoteTaintConfig>;
+class RemoteFlowTest extends InlineExpectationsTest {
+  RemoteFlowTest() { this = "RemoteFlowTest" }
 
-module RemoteFlowTest implements TestSig {
-  string getARelevantTag() { result = ["hasRemoteValueFlow", "hasRemoteTaintFlow"] }
+  override string getARelevantTag() { result = ["hasRemoteValueFlow", "hasRemoteTaintFlow"] }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasRemoteValueFlow" and
-    exists(DataFlow::Node sink | RemoteValueFlow::flowTo(sink) |
+    exists(DataFlow::Node sink | any(RemoteValueConf c).hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
@@ -35,7 +37,7 @@ module RemoteFlowTest implements TestSig {
     or
     tag = "hasRemoteTaintFlow" and
     exists(DataFlow::Node src, DataFlow::Node sink |
-      RemoteTaintFlow::flow(src, sink) and not RemoteValueFlow::flow(src, sink)
+      any(RemoteTaintConf c).hasFlow(src, sink) and not any(RemoteValueConf c).hasFlow(src, sink)
     |
       sink.getLocation() = location and
       element = sink.toString() and
@@ -43,5 +45,3 @@ module RemoteFlowTest implements TestSig {
     )
   }
 }
-
-import MakeTest<RemoteFlowTest>

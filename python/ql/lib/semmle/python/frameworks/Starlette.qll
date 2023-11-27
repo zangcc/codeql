@@ -152,8 +152,7 @@ module Starlette {
     }
 
     /** An attribute read on a `starlette.requests.URL` instance that is a `urllib.parse.SplitResult` instance. */
-    private class UrlSplitInstances extends Stdlib::SplitResult::InstanceSource instanceof DataFlow::AttrRead
-    {
+    private class UrlSplitInstances extends Stdlib::SplitResult::InstanceSource instanceof DataFlow::AttrRead {
       UrlSplitInstances() {
         super.getObject() = instance() and
         super.getAttributeName() = "components"
@@ -163,16 +162,4 @@ module Starlette {
 
   /** DEPRECATED: Alias for Url */
   deprecated module URL = Url;
-
-  /**
-   * A call to the `starlette.responses.FileResponse` constructor as a sink for Filesystem access.
-   */
-  class FileResponseCall extends FileSystemAccess::Range, API::CallNode {
-    FileResponseCall() {
-      this =
-        API::moduleImport("starlette").getMember("responses").getMember("FileResponse").getACall()
-    }
-
-    override DataFlow::Node getAPathArgument() { result = this.getParameter(0, "path").asSink() }
-  }
 }

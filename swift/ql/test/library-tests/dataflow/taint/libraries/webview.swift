@@ -76,7 +76,7 @@ struct URLRequest {}
 
 // --- tests ---
 
-func source(_ label: String? = "") -> Any { return "" }
+func source() -> Any { return "" }
 func sink(_: Any) {}
 
 func testInheritBodyTaint() {
@@ -146,9 +146,6 @@ func testWKUserScript() {
 }
 
 func testWKNavigationAction() {
-    let src = source("WKNavigationAction") as! WKNavigationAction
-    sink(src.request) // $ tainted=WKNavigationAction
-
-    let keypath = \WKNavigationAction.request
-    sink(src[keyPath: keypath]) // $ tainted=WKNavigationAction
+    let src = source() as! WKNavigationAction
+    sink(src.request) // $ tainted=149
 }

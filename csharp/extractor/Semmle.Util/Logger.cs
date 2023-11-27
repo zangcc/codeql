@@ -59,12 +59,10 @@ namespace Semmle.Util.Logging
     {
         private readonly StreamWriter writer;
         private readonly Verbosity verbosity;
-        private readonly bool logThreadId;
 
-        public FileLogger(Verbosity verbosity, string outputFile, bool logThreadId)
+        public FileLogger(Verbosity verbosity, string outputFile)
         {
             this.verbosity = verbosity;
-            this.logThreadId = logThreadId;
 
             try
             {
@@ -95,10 +93,7 @@ namespace Semmle.Util.Logging
         public void Log(Severity s, string text)
         {
             if (verbosity.Includes(s))
-            {
-                var threadId = this.logThreadId ? $"[{Environment.CurrentManagedThreadId:D3}] " : "";
-                writer.WriteLine(threadId + GetSeverityPrefix(s) + text);
-            }
+                writer.WriteLine(GetSeverityPrefix(s) + text);
         }
     }
 
@@ -108,12 +103,10 @@ namespace Semmle.Util.Logging
     public sealed class ConsoleLogger : ILogger
     {
         private readonly Verbosity verbosity;
-        private readonly bool logThreadId;
 
-        public ConsoleLogger(Verbosity verbosity, bool logThreadId)
+        public ConsoleLogger(Verbosity verbosity)
         {
             this.verbosity = verbosity;
-            this.logThreadId = logThreadId;
         }
 
         public void Dispose() { }
@@ -143,10 +136,7 @@ namespace Semmle.Util.Logging
         public void Log(Severity s, string text)
         {
             if (verbosity.Includes(s))
-            {
-                var threadId = this.logThreadId ? $"[{Environment.CurrentManagedThreadId:D3}] " : "";
-                GetConsole(s).WriteLine(threadId + GetSeverityPrefix(s) + text);
-            }
+                GetConsole(s).WriteLine(GetSeverityPrefix(s) + text);
         }
     }
 

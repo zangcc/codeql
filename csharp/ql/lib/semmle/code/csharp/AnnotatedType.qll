@@ -251,21 +251,15 @@ private int getElementTypeFlags(@has_type_annotation element) {
   result = strictsum(int b | type_annotation(element, b) | b)
 }
 
-private predicate specificTypeParameterNullability(
-  TypeParameterConstraints constraints, Type type, @nullability n
-) {
-  specific_type_parameter_nullability(constraints, type, n)
-  or
-  specific_type_parameter_nullability(constraints, getTypeRef(type), n)
-}
-
 private Annotations::Nullability getTypeParameterNullability(
   TypeParameterConstraints constraints, Type type
 ) {
-  if specificTypeParameterNullability(constraints, type, _)
-  then specificTypeParameterNullability(constraints, type, Annotations::getNullability(result))
+  if specific_type_parameter_nullability(constraints, getTypeRef(type), _)
+  then
+    specific_type_parameter_nullability(constraints, getTypeRef(type),
+      Annotations::getNullability(result))
   else (
-    type = constraints.getATypeConstraint() and
+    specific_type_parameter_constraints(constraints, getTypeRef(type)) and
     result instanceof Annotations::NoNullability
   )
 }
@@ -406,8 +400,6 @@ class AnnotatedArrayType extends AnnotatedType {
 /** A constructed type with additional type information. */
 class AnnotatedConstructedType extends AnnotatedType {
   override ConstructedType type;
-
-  AnnotatedConstructedType() { not type instanceof NullableType }
 
   /** Gets the `i`th type argument of this constructed type. */
   AnnotatedType getTypeArgument(int i) {

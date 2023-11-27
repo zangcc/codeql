@@ -26,17 +26,16 @@ predicate callDereferences(FunctionCall fc, int i) {
 }
 
 /**
- * Holds if evaluation of `op` dereferences `e` directly.
- *
- * This predicate does not recurse through function calls or arithmetic operations. To find
- * such cases, use `dereferencedByOperation`.
+ * Holds if evaluation of `op` dereferences `e`.
  */
-predicate directDereferencedByOperation(Expr op, Expr e) {
+predicate dereferencedByOperation(Expr op, Expr e) {
   exists(PointerDereferenceExpr deref |
     deref.getAChild() = e and
     deref = op and
     not deref.getParent*() instanceof SizeofOperator
   )
+  or
+  exists(CrementOperation crement | dereferencedByOperation(e, op) and crement.getOperand() = e)
   or
   exists(ArrayExpr ae |
     (
@@ -50,24 +49,6 @@ predicate directDereferencedByOperation(Expr op, Expr e) {
       e = ae.getArrayOffset() and e.getType() instanceof PointerType
     )
   )
-  or
-  // ptr->Field
-  e = op.(FieldAccess).getQualifier() and isClassPointerType(e.getType())
-  or
-  // ptr->method()
-  e = op.(Call).getQualifier() and isClassPointerType(e.getType())
-}
-
-/**
- * Holds if evaluation of `op` dereferences `e`.
- *
- * This includes the set of operations identified via `directDereferencedByOperation`, as well
- * as calls to function that are known to dereference an argument.
- */
-predicate dereferencedByOperation(Expr op, Expr e) {
-  directDereferencedByOperation(op, e)
-  or
-  exists(CrementOperation crement | dereferencedByOperation(e, op) and crement.getOperand() = e)
   or
   exists(AddressOfExpr addof, ArrayExpr ae |
     dereferencedByOperation(addof, op) and
@@ -93,6 +74,12 @@ predicate dereferencedByOperation(Expr op, Expr e) {
     e = fc.getArgument(i) and
     op = fc
   )
+  or
+  // ptr->Field
+  e = op.(FieldAccess).getQualifier() and isClassPointerType(e.getType())
+  or
+  // ptr->method()
+  e = op.(Call).getQualifier() and isClassPointerType(e.getType())
 }
 
 private predicate isClassPointerType(Type t) {

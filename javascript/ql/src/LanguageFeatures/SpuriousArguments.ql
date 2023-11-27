@@ -60,7 +60,7 @@ class SpuriousArguments extends Expr {
    * expected by any potential callee.
    */
   int getCount() {
-    result = count(int i | exists(invk.getArgument(i)) and i >= maxArity(this.getCall()))
+    result = count(int i | exists(invk.getArgument(i)) and i >= maxArity(getCall()))
   }
 
   /**
@@ -73,7 +73,7 @@ class SpuriousArguments extends Expr {
   predicate hasLocationInfo(
     string filepath, int startline, int startcolumn, int endline, int endcolumn
   ) {
-    this.getLocation().hasLocationInfo(filepath, startline, startcolumn, _, _) and
+    getLocation().hasLocationInfo(filepath, startline, startcolumn, _, _) and
     exists(DataFlow::Node lastArg |
       lastArg = max(DataFlow::Node arg, int i | arg = invk.getArgument(i) | arg order by i)
     |

@@ -19,18 +19,18 @@ query predicate superAccesses(
   enclosingType = enclosingCallable.getDeclaringType()
 }
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node x) {
+class Config extends DataFlow::Configuration {
+  Config() { this = "testconfig" }
+
+  override predicate isSource(DataFlow::Node x) {
     x.asExpr() instanceof IntegerLiteral and x.getEnclosingCallable().fromSource()
   }
 
-  predicate isSink(DataFlow::Node x) {
+  override predicate isSink(DataFlow::Node x) {
     x.asExpr().(Argument).getCall().getCallee().getName() = "sink"
   }
 }
 
-module Flow = DataFlow::Global<Config>;
-
-from DataFlow::Node source, DataFlow::Node sink
-where Flow::flow(source, sink)
+from Config c, DataFlow::Node source, DataFlow::Node sink
+where c.hasFlow(source, sink)
 select source, sink

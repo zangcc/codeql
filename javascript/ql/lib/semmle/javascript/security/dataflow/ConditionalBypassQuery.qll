@@ -61,7 +61,7 @@ class SensitiveActionGuardComparison extends Comparison {
 class SensitiveActionGuardComparisonOperand extends Sink {
   SensitiveActionGuardComparison comparison;
 
-  SensitiveActionGuardComparisonOperand() { this.asExpr() = comparison.getAnOperand() }
+  SensitiveActionGuardComparisonOperand() { asExpr() = comparison.getAnOperand() }
 
   override SensitiveAction getAction() { result = comparison.getGuard().getAction() }
 }

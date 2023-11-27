@@ -16,47 +16,22 @@
 import cpp
 import semmle.code.cpp.security.Security
 import semmle.code.cpp.security.FunctionWithWrappers
-import semmle.code.cpp.security.FlowSources
-import semmle.code.cpp.ir.dataflow.TaintTracking
-import semmle.code.cpp.ir.IR
-import Flow::PathGraph
+import semmle.code.cpp.ir.dataflow.internal.DefaultTaintTrackingImpl
+import TaintedWithPath
 
-predicate isSource(FlowSource source, string sourceType) { sourceType = source.getSourceType() }
-
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) { isSource(node, _) }
-
-  predicate isSink(DataFlow::Node node) {
-    exists(PrintfLikeFunction printf |
-      printf.outermostWrapperFunctionCall([node.asExpr(), node.asIndirectExpr()], _)
-    )
-  }
-
-  private predicate isArithmeticNonCharType(ArithmeticType type) {
-    not type instanceof CharType and
-    not type instanceof Char8Type and
-    not type instanceof Char16Type and
-    not type instanceof Char32Type
-  }
-
-  predicate isBarrier(DataFlow::Node node) {
-    isSink(node) and isArithmeticNonCharType(node.asExpr().getUnspecifiedType())
-    or
-    isArithmeticNonCharType(node.asInstruction().(StoreInstruction).getResultType())
+class Configuration extends TaintTrackingConfiguration {
+  override predicate isSink(Element tainted) {
+    exists(PrintfLikeFunction printf | printf.outermostWrapperFunctionCall(tainted, _))
   }
 }
 
-module Flow = TaintTracking::Global<Config>;
-
 from
-  PrintfLikeFunction printf, string printfFunction, string sourceType, DataFlow::Node source,
-  DataFlow::Node sink, Flow::PathNode sourceNode, Flow::PathNode sinkNode
+  PrintfLikeFunction printf, Expr arg, PathNode sourceNode, PathNode sinkNode,
+  string printfFunction, Expr userValue, string cause
 where
-  source = sourceNode.getNode() and
-  sink = sinkNode.getNode() and
-  isSource(source, sourceType) and
-  printf.outermostWrapperFunctionCall([sink.asExpr(), sink.asIndirectExpr()], printfFunction) and
-  Flow::flowPath(sourceNode, sinkNode)
-select sink, sourceNode, sinkNode,
+  printf.outermostWrapperFunctionCall(arg, printfFunction) and
+  taintedWithPath(userValue, arg, sourceNode, sinkNode) and
+  isUserInput(userValue, cause)
+select arg, sourceNode, sinkNode,
   "The value of this argument may come from $@ and is being used as a formatting argument to " +
-    printfFunction + ".", source, sourceType
+    printfFunction + ".", userValue, cause

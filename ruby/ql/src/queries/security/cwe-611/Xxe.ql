@@ -13,10 +13,12 @@
  *       external/cwe/cwe-827
  */
 
+import codeql.ruby.AST
 import codeql.ruby.dataflow.RemoteFlowSources
 import codeql.ruby.TaintTracking
 import codeql.ruby.Concepts
 import codeql.ruby.DataFlow
+import DataFlow::PathGraph
 
 class UnsafeXxeSink extends DataFlow::ExprNode {
   UnsafeXxeSink() {
@@ -27,18 +29,16 @@ class UnsafeXxeSink extends DataFlow::ExprNode {
   }
 }
 
-private module XxeConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src instanceof RemoteFlowSource }
+class XxeConfig extends TaintTracking::Configuration {
+  XxeConfig() { this = "XXE.ql::XxeConfig" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof UnsafeXxeSink }
+  override predicate isSource(DataFlow::Node src) { src instanceof RemoteFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) { sink instanceof UnsafeXxeSink }
 }
 
-private module XxeFlow = TaintTracking::Global<XxeConfig>;
-
-import XxeFlow::PathGraph
-
-from XxeFlow::PathNode source, XxeFlow::PathNode sink
-where XxeFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, XxeConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink,
   "XML parsing depends on a $@ without guarding against external entity expansion.",
   source.getNode(), "user-provided value"

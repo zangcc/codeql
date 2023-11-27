@@ -1,4 +1,4 @@
-static void f() {
+void f() {
 	int a, b;
 	if (a && b) {
 	}

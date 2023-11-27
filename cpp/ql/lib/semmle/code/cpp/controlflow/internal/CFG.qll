@@ -332,12 +332,21 @@ private Node getControlOrderChildSparse(Node n, int i) {
   n = any(ConditionDeclExpr cd | i = 0 and result = cd.getInitializingExpr())
   or
   n =
-    any(DeleteOrDeleteArrayExpr del |
+    any(DeleteExpr del |
       i = 0 and result = del.getExpr()
       or
       i = 1 and result = del.getDestructorCall()
       or
-      i = 2 and result = del.getDeallocatorCall()
+      i = 2 and result = del.getAllocatorCall()
+    )
+  or
+  n =
+    any(DeleteArrayExpr del |
+      i = 0 and result = del.getExpr()
+      or
+      i = 1 and result = del.getDestructorCall()
+      or
+      i = 2 and result = del.getAllocatorCall()
     )
   or
   n =
@@ -1376,6 +1385,9 @@ private module Cached {
     conditionalSuccessor(n1, _, n2)
   }
 
+  /** DEPRECATED: Alias for qlCfgSuccessor */
+  deprecated predicate qlCFGSuccessor = qlCfgSuccessor/2;
+
   /**
    * Holds if `n2` is a control-flow node such that the control-flow
    * edge `(n1, n2)` may be taken when `n1` is an expression that is true.
@@ -1386,6 +1398,9 @@ private module Cached {
     not conditionalSuccessor(n1, false, n2)
   }
 
+  /** DEPRECATED: Alias for qlCfgTrueSuccessor */
+  deprecated predicate qlCFGTrueSuccessor = qlCfgTrueSuccessor/2;
+
   /**
    * Holds if `n2` is a control-flow node such that the control-flow
    * edge `(n1, n2)` may be taken when `n1` is an expression that is false.
@@ -1395,4 +1410,7 @@ private module Cached {
     conditionalSuccessor(n1, false, n2) and
     not conditionalSuccessor(n1, true, n2)
   }
+
+  /** DEPRECATED: Alias for qlCfgFalseSuccessor */
+  deprecated predicate qlCFGFalseSuccessor = qlCfgFalseSuccessor/2;
 }

@@ -11,13 +11,15 @@
  */
 
 import csharp
-import InsecureSqlConnection::PathGraph
+import DataFlow::PathGraph
 
 /**
  * A data flow configuration for tracking strings passed to `SqlConnection[StringBuilder]` instances.
  */
-module InsecureSqlConnectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
+class TaintTrackingConfiguration extends DataFlow::Configuration {
+  TaintTrackingConfiguration() { this = "TaintTrackingConfiguration" }
+
+  override predicate isSource(DataFlow::Node source) {
     exists(string s | s = source.asExpr().(StringLiteral).getValue().toLowerCase() |
       s.matches("%encrypt=false%")
       or
@@ -25,7 +27,7 @@ module InsecureSqlConnectionConfig implements DataFlow::ConfigSig {
     )
   }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSink(DataFlow::Node sink) {
     exists(ObjectCreation oc |
       oc.getRuntimeArgument(0) = sink.asExpr() and
       (
@@ -37,13 +39,8 @@ module InsecureSqlConnectionConfig implements DataFlow::ConfigSig {
   }
 }
 
-/**
- * A data flow configuration for tracking strings passed to `SqlConnection[StringBuilder]` instances.
- */
-module InsecureSqlConnection = DataFlow::Global<InsecureSqlConnectionConfig>;
-
-from InsecureSqlConnection::PathNode source, InsecureSqlConnection::PathNode sink
-where InsecureSqlConnection::flowPath(source, sink)
+from TaintTrackingConfiguration c, DataFlow::PathNode source, DataFlow::PathNode sink
+where c.hasFlowPath(source, sink)
 select sink.getNode(), source, sink,
   "$@ flows to this SQL connection and does not specify `Encrypt=True`.", source.getNode(),
   "Connection string"

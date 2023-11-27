@@ -14,6 +14,7 @@
  */
 
 import go
+import DataFlow::PathGraph
 
 /**
  * Holds if a `flag` for use with `os.OpenFile` implies that the resulting
@@ -123,27 +124,25 @@ predicate isHandledSync(DataFlow::Node sink, DataFlow::CallNode syncCall) {
   not unhandledCall(syncCall)
 }
 
-module UnhandledFileCloseConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { isWritableFileHandle(source, _) }
+/**
+ * A data flow configuration which traces writable file handles resulting from calls to
+ * `os.OpenFile` to `os.File.Close` calls on them.
+ */
+class UnhandledFileCloseDataFlowConfiguration extends DataFlow::Configuration {
+  UnhandledFileCloseDataFlowConfiguration() { this = "UnhandledCloseWritableHandle" }
 
-  predicate isSink(DataFlow::Node sink) { isCloseSink(sink, _) }
+  override predicate isSource(DataFlow::Node source) { isWritableFileHandle(source, _) }
+
+  override predicate isSink(DataFlow::Node sink) { isCloseSink(sink, _) }
 }
 
-/**
- * Tracks data flow for reasoning about which writable file handles resulting from calls to
- * `os.OpenFile` have `os.File.Close` called on them.
- */
-module UnhandledFileCloseFlow = DataFlow::Global<UnhandledFileCloseConfig>;
-
-import UnhandledFileCloseFlow::PathGraph
-
 from
-  UnhandledFileCloseFlow::PathNode source, DataFlow::CallNode openCall,
-  UnhandledFileCloseFlow::PathNode sink, DataFlow::CallNode closeCall
+  UnhandledFileCloseDataFlowConfiguration cfg, DataFlow::PathNode source,
+  DataFlow::CallNode openCall, DataFlow::PathNode sink, DataFlow::CallNode closeCall
 where
   // find data flow from an `os.OpenFile` call to an `os.File.Close` call
   // where the handle is writable
-  UnhandledFileCloseFlow::flowPath(source, sink) and
+  cfg.hasFlowPath(source, sink) and
   isWritableFileHandle(source.getNode(), openCall) and
   // get the `CallNode` corresponding to the sink
   isCloseSink(sink.getNode(), closeCall)

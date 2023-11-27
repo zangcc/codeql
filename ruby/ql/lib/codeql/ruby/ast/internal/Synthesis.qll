@@ -3,7 +3,6 @@
 private import AST
 private import TreeSitter
 private import codeql.ruby.ast.internal.Call
-private import codeql.ruby.ast.internal.Constant
 private import codeql.ruby.ast.internal.Expr
 private import codeql.ruby.ast.internal.Variable
 private import codeql.ruby.ast.internal.Pattern
@@ -21,7 +20,6 @@ newtype SynthKind =
   BraceBlockKind() or
   CaseMatchKind() or
   ClassVariableAccessKind(ClassVariable v) or
-  DefinedExprKind() or
   DivExprKind() or
   ElseKind() or
   ExponentExprKind() or
@@ -41,7 +39,6 @@ newtype SynthKind =
   ModuloExprKind() or
   MulExprKind() or
   NilLiteralKind() or
-  NotExprKind() or
   RangeLiteralKind(boolean inclusive) { inclusive in [false, true] } or
   RShiftExprKind() or
   SimpleParameterKind() or
@@ -820,7 +817,7 @@ private module AssignOperationDesugar {
             i in [0 .. sao.getNumberOfArguments()]
             or
             parent = setter and
-            i = opAssignIndex and
+            i = opAssignIndex + 1 and
             child =
               SynthChild(LocalVariableAccessSynthKind(TLocalVariableSynth(sao, opAssignIndex)))
           )
@@ -953,68 +950,22 @@ private module DestructuredAssignDesugar {
     }
   }
 
-  abstract private class LhsWithReceiver extends Expr {
-    LhsWithReceiver() { this = any(DestructuredAssignExpr dae).getElement(_) }
-
-    abstract Expr getReceiver();
-
-    abstract SynthKind getSynthKind();
-  }
-
-  private class LhsCall extends LhsWithReceiver instanceof MethodCall {
-    final override Expr getReceiver() { result = MethodCall.super.getReceiver() }
-
-    pragma[nomagic]
-    private string getMethodName(int args) {
-      result = super.getMethodName() and
-      args = super.getNumberOfArguments()
-    }
-
-    final override SynthKind getSynthKind() {
-      exists(int args | result = MethodCallKind(this.getMethodName(args), false, args))
-    }
-  }
-
-  private class LhsScopedConstant extends LhsWithReceiver, ScopeResolutionConstantAccess {
-    LhsScopedConstant() { exists(this.getScopeExpr()) }
-
-    final override Expr getReceiver() { result = this.getScopeExpr() }
-
-    final override SynthKind getSynthKind() { result = ConstantWriteAccessKind(this.getName()) }
-  }
-
   pragma[nomagic]
   private predicate destructuredAssignSynthesis(AstNode parent, int i, Child child) {
-    exists(DestructuredAssignExpr tae, int total | total = tae.getNumberOfElements() |
+    exists(DestructuredAssignExpr tae |
       parent = tae and
       i = -1 and
       child = SynthChild(StmtSequenceKind())
       or
       exists(AstNode seq | seq = TStmtSequenceSynth(tae, -1) |
-        exists(LhsWithReceiver mc, int j | mc = tae.getElement(j) |
-          parent = seq and
-          i = j and
-          child = SynthChild(AssignExprKind())
-          or
-          exists(AstNode assign | assign = TAssignExprSynth(seq, j) |
-            parent = assign and
-            i = 0 and
-            child = SynthChild(LocalVariableAccessSynthKind(TLocalVariableSynth(tae, j)))
-            or
-            parent = assign and
-            i = 1 and
-            child = childRef(mc.getReceiver())
-          )
-        )
-        or
         parent = seq and
-        i = total and
+        i = 0 and
         child = SynthChild(AssignExprKind())
         or
-        exists(AstNode assign | assign = TAssignExprSynth(seq, total) |
+        exists(AstNode assign | assign = TAssignExprSynth(seq, 0) |
           parent = assign and
           i = 0 and
-          child = SynthChild(LocalVariableAccessSynthKind(TLocalVariableSynth(tae, total)))
+          child = SynthChild(LocalVariableAccessSynthKind(TLocalVariableSynth(tae, 0)))
           or
           parent = assign and
           i = 1 and
@@ -1030,35 +981,10 @@ private module DestructuredAssignDesugar {
           restIndex = tae.getRestIndexOrNumberOfElements()
         |
           parent = seq and
-          i = j + 1 + total and
+          i = j + 1 and
           child = SynthChild(AssignExprKind())
           or
-          exists(AstNode assign | assign = TAssignExprSynth(seq, j + 1 + total) |
-            exists(LhsWithReceiver mc | mc = elem |
-              parent = assign and
-              i = 0 and
-              child = SynthChild(mc.getSynthKind())
-              or
-              exists(AstNode call | synthChild(assign, 0, call) |
-                parent = call and
-                i = 0 and
-                child = SynthChild(LocalVariableAccessSynthKind(TLocalVariableSynth(tae, j)))
-                or
-                parent = call and
-                child = childRef(mc.(MethodCall).getArgument(i - 1))
-              )
-            )
-            or
-            (
-              elem instanceof VariableAccess
-              or
-              elem instanceof ConstantAccess and
-              not exists(Ruby::ScopeResolution g |
-                elem = TScopeResolutionConstantAccess(g, _) and exists(g.getScope())
-              )
-              or
-              elem instanceof DestructuredLhsExpr
-            ) and
+          exists(AstNode assign | assign = TAssignExprSynth(seq, j + 1) |
             parent = assign and
             i = 0 and
             child = childRef(elem)
@@ -1069,7 +995,7 @@ private module DestructuredAssignDesugar {
             or
             parent = TMethodCallSynth(assign, 1, _, _, _) and
             i = 0 and
-            child = SynthChild(LocalVariableAccessSynthKind(TLocalVariableSynth(tae, total)))
+            child = SynthChild(LocalVariableAccessSynthKind(TLocalVariableSynth(tae, 0)))
             or
             j < restIndex and
             parent = TMethodCallSynth(assign, 1, _, _, _) and
@@ -1090,14 +1016,14 @@ private module DestructuredAssignDesugar {
                 child = SynthChild(IntegerLiteralKind(j))
                 or
                 i = 1 and
-                child = SynthChild(IntegerLiteralKind(restIndex - total))
+                child = SynthChild(IntegerLiteralKind(restIndex - tae.getNumberOfElements()))
               )
             )
             or
             j > restIndex and
             parent = TMethodCallSynth(assign, 1, _, _, _) and
             i = 1 and
-            child = SynthChild(IntegerLiteralKind(j - total))
+            child = SynthChild(IntegerLiteralKind(j - tae.getNumberOfElements()))
           )
         )
       )
@@ -1124,47 +1050,27 @@ private module DestructuredAssignDesugar {
 
     final override predicate location(AstNode n, Location l) {
       exists(DestructuredAssignExpr tae, StmtSequence seq | seq = tae.getDesugared() |
-        synthChild(seq, tae.getNumberOfElements(), n) and
+        n = seq.getStmt(0) and
         hasLocation(tae.getRightOperand(), l)
         or
-        exists(LhsWithReceiver elem, int j |
+        exists(AstNode elem, int j |
           elem = tae.getElement(j) and
-          synthChild(seq, j, n) and
-          hasLocation(elem.getReceiver(), l)
-        )
-        or
-        exists(AstNode elem, int j | elem = tae.getElement(j) |
-          synthChild(seq, j + 1 + tae.getNumberOfElements(), n) and
+          n = seq.getStmt(j + 1) and
           hasLocation(elem, l)
         )
       )
     }
 
     final override predicate localVariable(AstNode n, int i) {
-      i = [0 .. n.(DestructuredAssignExpr).getNumberOfElements()]
-    }
-
-    final override predicate constantWriteAccess(string name) {
-      exists(DestructuredAssignExpr tae, LhsScopedConstant ca |
-        ca = tae.getElement(_) and
-        name = ca.getName()
-      )
+      n instanceof DestructuredAssignExpr and
+      i = 0
     }
 
     final override predicate methodCall(string name, boolean setter, int arity) {
       name = "[]" and
       setter = false and
       arity = 1
-      or
-      exists(DestructuredAssignExpr tae, MethodCall mc |
-        mc = tae.getElement(_) and
-        name = mc.getMethodName() and
-        setter = false and
-        arity = mc.getNumberOfArguments()
-      )
     }
-
-    final override predicate excludeFromControlFlowTree(AstNode n) { n instanceof LhsWithReceiver }
   }
 }
 
@@ -1177,11 +1083,12 @@ private module ArrayLiteralDesugar {
       child = SynthChild(MethodCallKind("[]", false, al.getNumberOfElements()))
       or
       parent = TMethodCallSynth(al, -1, _, _, _) and
-      i = 0 and
-      child = SynthChild(ConstantReadAccessKind("::Array"))
-      or
-      parent = TMethodCallSynth(al, -1, _, _, _) and
-      child = childRef(al.getElement(i - 1))
+      (
+        i = 0 and
+        child = SynthChild(ConstantReadAccessKind("::Array"))
+        or
+        child = childRef(al.getElement(i - 1))
+      )
     )
   }
 
@@ -1219,11 +1126,12 @@ private module HashLiteralDesugar {
       child = SynthChild(MethodCallKind("[]", false, hl.getNumberOfElements()))
       or
       parent = TMethodCallSynth(hl, -1, _, _, _) and
-      i = 0 and
-      child = SynthChild(ConstantReadAccessKind("::Hash"))
-      or
-      parent = TMethodCallSynth(hl, -1, _, _, _) and
-      child = childRef(hl.getElement(i - 1))
+      (
+        i = 0 and
+        child = SynthChild(ConstantReadAccessKind("::Hash"))
+        or
+        child = childRef(hl.getElement(i - 1))
+      )
     )
   }
 
@@ -1260,7 +1168,6 @@ private module HashLiteralDesugar {
  * ```
  * desugars to, roughly,
  * ```rb
- * if not defined? x then x = nil end
  * xs.each { |__synth__0| x = __synth__0; <loop_body> }
  * ```
  *
@@ -1270,158 +1177,56 @@ private module HashLiteralDesugar {
  * scoped to the synthesized block.
  */
 private module ForLoopDesugar {
-  private Ruby::AstNode getForLoopPatternChild(Ruby::For for) {
-    result = for.getPattern()
-    or
-    result.getParent() = getForLoopPatternChild(for)
-  }
-
-  /** Holds if `n` is an access to variable `v` in the pattern of `for`. */
-  pragma[nomagic]
-  private predicate forLoopVariableAccess(Ruby::For for, Ruby::AstNode n, VariableReal v) {
-    n = getForLoopPatternChild(for) and
-    access(n, v)
-  }
-
-  /** Holds if `v` is the `i`th iteration variable of `for`. */
-  private predicate forLoopVariable(Ruby::For for, VariableReal v, int i) {
-    v =
-      rank[i + 1](VariableReal v0, Ruby::AstNode n, Location l |
-        forLoopVariableAccess(for, n, v0) and
-        l = n.getLocation()
-      |
-        v0 order by l.getStartLine(), l.getStartColumn()
-      )
-  }
-
-  /** Gets the number of iteration variables of `for`. */
-  private int forLoopVariableCount(Ruby::For for) {
-    result = count(int j | forLoopVariable(for, _, j))
-  }
-
-  private Ruby::For toTsFor(ForExpr for) { for = TForExpr(result) }
-
-  /**
-   * Synthesizes an assignment
-   * ```rb
-   * if not defined? v then v = nil end
-   * ```
-   * anchored at index `rootIndex` of `root`.
-   */
-  bindingset[root, rootIndex, v]
-  private predicate nilAssignUndefined(
-    AstNode root, int rootIndex, AstNode parent, int i, Child child, VariableReal v
-  ) {
-    parent = root and
-    i = rootIndex and
-    child = SynthChild(IfKind())
-    or
-    exists(AstNode if_ | if_ = TIfSynth(root, rootIndex) |
-      parent = if_ and
-      i = 0 and
-      child = SynthChild(NotExprKind())
-      or
-      exists(AstNode not_ | not_ = TNotExprSynth(if_, 0) |
-        parent = not_ and
-        i = 0 and
-        child = SynthChild(DefinedExprKind())
-        or
-        parent = TDefinedExprSynth(not_, 0) and
-        i = 0 and
-        child = SynthChild(LocalVariableAccessRealKind(v))
-      )
-      or
-      parent = if_ and
-      i = 1 and
-      child = SynthChild(AssignExprKind())
-      or
-      parent = TAssignExprSynth(if_, 1) and
-      (
-        i = 0 and
-        child = SynthChild(LocalVariableAccessRealKind(v))
-        or
-        i = 1 and
-        child = SynthChild(NilLiteralKind())
-      )
-    )
-  }
-
   pragma[nomagic]
   private predicate forLoopSynthesis(AstNode parent, int i, Child child) {
     exists(ForExpr for |
+      // each call
       parent = for and
       i = -1 and
-      child = SynthChild(StmtSequenceKind())
+      child = SynthChild(MethodCallKind("each", false, 0))
       or
-      exists(AstNode seq | seq = TStmtSequenceSynth(for, -1) |
-        exists(VariableReal v, int j | forLoopVariable(toTsFor(for), v, j) |
-          nilAssignUndefined(seq, j, parent, i, child, v)
-        )
+      exists(MethodCall eachCall | eachCall = TMethodCallSynth(for, -1, "each", false, 0) |
+        // receiver
+        parent = eachCall and
+        i = 0 and
+        child = childRef(for.getValue()) // value is the Enumerable
         or
-        exists(int numberOfVars | numberOfVars = forLoopVariableCount(toTsFor(for)) |
-          // each call
-          parent = seq and
-          i = numberOfVars and
-          child = SynthChild(MethodCallKind("each", false, 0))
+        parent = eachCall and
+        i = -2 and
+        child = SynthChild(BraceBlockKind())
+        or
+        exists(Block block | block = TBraceBlockSynth(eachCall, -2) |
+          // block params
+          parent = block and
+          i = 0 and
+          child = SynthChild(SimpleParameterKind())
           or
-          exists(MethodCall eachCall |
-            eachCall = TMethodCallSynth(seq, numberOfVars, "each", false, 0)
-          |
-            // receiver
-            parent = eachCall and
+          exists(SimpleParameter param | param = TSimpleParameterSynth(block, 0) |
+            parent = param and
             i = 0 and
-            child = childRef(for.getValue()) // value is the Enumerable
+            child = SynthChild(LocalVariableAccessSynthKind(TLocalVariableSynth(param, 0)))
             or
-            parent = eachCall and
+            // assignment to pattern from for loop to synth parameter
+            parent = block and
             i = 1 and
-            child = SynthChild(BraceBlockKind())
+            child = SynthChild(AssignExprKind())
             or
-            exists(Block block | block = TBraceBlockSynth(eachCall, 1) |
-              // block params
-              parent = block and
+            parent = TAssignExprSynth(block, 1) and
+            (
               i = 0 and
-              child = SynthChild(SimpleParameterKind())
+              child = childRef(for.getPattern())
               or
-              exists(SimpleParameter param | param = TSimpleParameterSynth(block, 0) |
-                parent = param and
-                i = 0 and
-                child = SynthChild(LocalVariableAccessSynthKind(TLocalVariableSynth(param, 0)))
-                or
-                // assignment to pattern from for loop to synth parameter
-                parent = block and
-                i = 1 and
-                child = SynthChild(AssignExprKind())
-                or
-                parent = TAssignExprSynth(block, 1) and
-                (
-                  i = 0 and
-                  child = childRef(for.getPattern())
-                  or
-                  i = 1 and
-                  child = SynthChild(LocalVariableAccessSynthKind(TLocalVariableSynth(param, 0)))
-                )
-              )
-              or
-              // rest of block body
-              parent = block and
-              child = childRef(for.getBody().(Do).getStmt(i - 2))
+              i = 1 and
+              child = SynthChild(LocalVariableAccessSynthKind(TLocalVariableSynth(param, 0)))
             )
           )
+          or
+          // rest of block body
+          parent = block and
+          child = childRef(for.getBody().(Do).getStmt(i - 2))
         )
       )
     )
-  }
-
-  pragma[nomagic]
-  private predicate isDesugaredInitNode(ForExpr for, Variable v, AstNode n) {
-    exists(StmtSequence seq, AssignExpr ae |
-      seq = for.getDesugared() and
-      n = seq.getStmt(_) and
-      ae = n.(IfExpr).getThen() and
-      v = ae.getLeftOperand().getAVariable()
-    )
-    or
-    isDesugaredInitNode(for, v, n.getParent())
   }
 
   private class ForLoopSynthesis extends Synthesis {
@@ -1442,14 +1247,6 @@ private module ForLoopDesugar {
 
     final override predicate excludeFromControlFlowTree(AstNode n) {
       n = any(ForExpr for).getBody()
-    }
-
-    final override predicate location(AstNode n, Location l) {
-      exists(ForExpr for, Ruby::AstNode access, Variable v |
-        forLoopVariableAccess(toTsFor(for), access, v) and
-        isDesugaredInitNode(for, v, n) and
-        l = access.getLocation()
-      )
     }
   }
 }
@@ -1645,13 +1442,14 @@ private module SafeNavigationCallDesugar {
             i = 1
           )
           or
-          exists(int arity | parent = TMethodCallSynth(ifExpr, 2, _, _, arity) |
+          parent = TMethodCallSynth(ifExpr, 2, _, _, _) and
+          (
             i = 0 and
             child = SynthChild(local)
             or
             child = childRef(call.getArgumentImpl(i - 1))
             or
-            child = childRef(call.getBlockImpl()) and i = arity + 1
+            child = childRef(call.getBlockImpl()) and i = -2
           )
         )
       )

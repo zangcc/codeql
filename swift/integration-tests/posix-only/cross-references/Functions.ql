@@ -1,5 +1,5 @@
-import codeql.swift.elements.decl.AccessorOrNamedFunction
+import swift
 
-from AccessorOrNamedFunction f
+from FuncDecl f
 where f.getLocation().getFile().getBaseName() != "Package.swift"
 select f

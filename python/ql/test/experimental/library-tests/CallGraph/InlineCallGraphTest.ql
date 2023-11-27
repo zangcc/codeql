@@ -37,10 +37,12 @@ predicate typeTrackerClassCall(CallNode call, Function callable) {
   )
 }
 
-module CallGraphTest implements TestSig {
-  string getARelevantTag() { result in ["pt", "tt"] }
+class CallGraphTest extends InlineExpectationsTest {
+  CallGraphTest() { this = "CallGraphTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result in ["pt", "tt"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(CallNode call, Function target |
       tag = "tt" and
@@ -55,8 +57,6 @@ module CallGraphTest implements TestSig {
     )
   }
 }
-
-import MakeTest<CallGraphTest>
 
 bindingset[call, target]
 string getCallEdgeValue(CallNode call, Function target) {
@@ -108,7 +108,7 @@ query predicate pointsTo_found_typeTracker_notFound(CallNode call, string qualna
     not typeTrackerCallEdge(call, target) and
     qualname = getCallEdgeValue(call, target) and
     // ignore SPURIOUS call edges
-    not exists(FalsePositiveTestExpectation spuriousResult |
+    not exists(FalsePositiveExpectation spuriousResult |
       spuriousResult.getTag() = "pt" and
       spuriousResult.getValue() = getCallEdgeValue(call, target) and
       spuriousResult.getLocation().getFile() = call.getLocation().getFile() and
@@ -127,7 +127,7 @@ query predicate typeTracker_found_pointsTo_notFound(CallNode call, string qualna
     // between the two).
     not typeTrackerClassCall(call, target) and
     // ignore SPURIOUS call edges
-    not exists(FalsePositiveTestExpectation spuriousResult |
+    not exists(FalsePositiveExpectation spuriousResult |
       spuriousResult.getTag() = "tt" and
       spuriousResult.getValue() = getCallEdgeValue(call, target) and
       spuriousResult.getLocation().getFile() = call.getLocation().getFile() and

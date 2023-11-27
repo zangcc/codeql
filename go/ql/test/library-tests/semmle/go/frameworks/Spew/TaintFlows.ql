@@ -1,18 +1,28 @@
 import go
-import TestUtilities.InlineFlowTest
 
-module TestConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
-    source =
-      any(Function f | f.getName() = ["getUntrustedString", "getUntrustedStruct"])
-          .getACall()
-          .getResult()
-  }
+class UntrustedFunction extends Function {
+  UntrustedFunction() { this.getName() = ["getUntrustedString", "getUntrustedStruct"] }
+}
 
-  predicate isSink(DataFlow::Node sink) {
-    sink = any(Function f | f.getName() = "sinkString").getACall().getAnArgument() or
+class UntrustedSource extends DataFlow::Node, UntrustedFlowSource::Range {
+  UntrustedSource() { this = any(UntrustedFunction f).getACall() }
+}
+
+class SinkFunction extends Function {
+  SinkFunction() { this.getName() = "sinkString" }
+}
+
+class TestConfig extends TaintTracking::Configuration {
+  TestConfig() { this = "testconfig" }
+
+  override predicate isSource(DataFlow::Node source) { source instanceof UntrustedFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) {
+    sink = any(SinkFunction f).getACall().getAnArgument() or
     sink = any(LoggerCall log).getAMessageComponent()
   }
 }
 
-import FlowTest<TestConfig, TestConfig>
+from TaintTracking::Configuration config, DataFlow::PathNode source, DataFlow::PathNode sink
+where config.hasFlowPath(source, sink)
+select source, sink

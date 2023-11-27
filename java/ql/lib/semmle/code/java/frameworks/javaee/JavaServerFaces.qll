@@ -7,8 +7,8 @@ import semmle.code.java.frameworks.javaee.jsf.JSFFacesContextXML
 /**
  * A method that is visible to faces, if the instance type is visible to faces.
  */
-class FacesVisibleMethod extends Method {
-  FacesVisibleMethod() { this.isPublic() and not this.isStatic() }
+library class FacesVisibleMethod extends Method {
+  FacesVisibleMethod() { isPublic() and not isStatic() }
 }
 
 /**
@@ -45,7 +45,7 @@ class FacesAccessibleType extends RefType {
   }
 
   /** Gets a method declared on this type that is visible to JSF. */
-  FacesVisibleMethod getAnAccessibleMethod() { result = this.getAMethod() }
+  FacesVisibleMethod getAnAccessibleMethod() { result = getAMethod() }
 }
 
 /**
@@ -59,7 +59,7 @@ class FacesAccessibleType extends RefType {
 class FacesComponent extends Class {
   FacesComponent() {
     // Must extend UIComponent for it to be a valid component.
-    this.getAnAncestor().hasQualifiedName("javax.faces.component", "UIComponent") and
+    getAnAncestor().hasQualifiedName("javax.faces.component", "UIComponent") and
     (
       // Must be registered using either an annotation
       exists(FacesComponentAnnotation componentAnnotation |

@@ -9,16 +9,14 @@ namespace Semmle.Extraction
     public abstract class Extractor
     {
         public abstract ExtractorMode Mode { get; }
-        public string OutputPath { get; }
 
         /// <summary>
         /// Creates a new extractor instance for one compilation unit.
         /// </summary>
         /// <param name="logger">The object used for logging.</param>
         /// <param name="pathTransformer">The object used for path transformations.</param>
-        protected Extractor(string outputPath, ILogger logger, PathTransformer pathTransformer)
+        protected Extractor(ILogger logger, PathTransformer pathTransformer)
         {
-            OutputPath = outputPath;
             Logger = logger;
             PathTransformer = pathTransformer;
         }

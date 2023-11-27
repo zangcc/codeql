@@ -226,8 +226,7 @@ module NextJS {
    * and we therefore model the routehandler as an Express.js routehandler.
    */
   class NextApiRouteHandler extends DataFlow::FunctionNode, Express::RouteHandler,
-    Http::Servers::StandardRouteHandler
-  {
+    Http::Servers::StandardRouteHandler {
     NextApiRouteHandler() {
       exists(Module mod | mod.getFile().getParentContainer() = apiFolder() |
         this = mod.getAnExportedValue("default").getAFunctionValue()
@@ -241,11 +240,14 @@ module NextJS {
     }
   }
 
+  /** DEPRECATED: Alias for NextApiRouteHandler */
+  deprecated class NextAPIRouteHandler = NextApiRouteHandler;
+
   /**
    * Gets a reference to a [Next.js router](https://nextjs.org/docs/api-reference/next/router).
    */
   DataFlow::SourceNode nextRouter() {
-    result = API::moduleImport("next/router").getMember("useRouter").getACall()
+    result = DataFlow::moduleMember("next/router", "useRouter").getACall()
     or
     result =
       API::moduleImport("next/router")

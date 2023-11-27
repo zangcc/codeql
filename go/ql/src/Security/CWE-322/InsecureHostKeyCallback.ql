@@ -11,6 +11,7 @@
  */
 
 import go
+import DataFlow::PathGraph
 
 /** The `ssh.InsecureIgnoreHostKey` function, which allows connecting to any host regardless of its host key. */
 class InsecureIgnoreHostKey extends Function {
@@ -54,48 +55,45 @@ class InsecureHostKeyCallbackFunc extends HostKeyCallbackFunc {
   }
 }
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof HostKeyCallbackFunc }
+/**
+ * A data-flow configuration for identifying `HostKeyCallbackFunc` instances that reach `ClientConfig.HostKeyCallback` fields.
+ */
+class HostKeyCallbackAssignmentConfig extends DataFlow::Configuration {
+  HostKeyCallbackAssignmentConfig() { this = "HostKeyCallbackAssignmentConfig" }
+
+  override predicate isSource(DataFlow::Node source) { source instanceof HostKeyCallbackFunc }
 
   /**
    * Holds if `sink` is a value written by `write` to a field `ClientConfig.HostKeyCallback`.
    */
-  additional predicate writeIsSink(DataFlow::Node sink, Write write) {
+  predicate writeIsSink(DataFlow::Node sink, Write write) {
     exists(Field f |
       f.hasQualifiedName(CryptoSsh::packagePath(), "ClientConfig", "HostKeyCallback") and
       write.writesField(_, f, sink)
     )
   }
 
-  predicate isSink(DataFlow::Node sink) { writeIsSink(sink, _) }
+  override predicate isSink(DataFlow::Node sink) { this.writeIsSink(sink, _) }
 }
-
-/**
- * Tracks data flow to identify `HostKeyCallbackFunc` instances that reach
- * `ClientConfig.HostKeyCallback` fields.
- */
-module Flow = DataFlow::Global<Config>;
-
-import Flow::PathGraph
 
 /**
  * Holds if a secure host-check function reaches `sink` or another similar sink.
  *
  * A sink is considered similar if it writes to the same variable and field.
  */
-predicate hostCheckReachesSink(Flow::PathNode sink) {
-  exists(Flow::PathNode source |
+predicate hostCheckReachesSink(DataFlow::PathNode sink) {
+  exists(HostKeyCallbackAssignmentConfig config, DataFlow::PathNode source |
     not source.getNode() instanceof InsecureHostKeyCallbackFunc and
     (
-      Flow::flowPath(source, sink)
+      config.hasFlowPath(source, sink)
       or
       exists(
-        Flow::PathNode otherSink, Write sinkWrite, Write otherSinkWrite,
+        DataFlow::PathNode otherSink, Write sinkWrite, Write otherSinkWrite,
         SsaWithFields sinkAccessPath, SsaWithFields otherSinkAccessPath
       |
-        Flow::flowPath(source, otherSink) and
-        Config::writeIsSink(sink.getNode(), sinkWrite) and
-        Config::writeIsSink(otherSink.getNode(), otherSinkWrite) and
+        config.hasFlowPath(source, otherSink) and
+        config.writeIsSink(sink.getNode(), sinkWrite) and
+        config.writeIsSink(otherSink.getNode(), otherSinkWrite) and
         sinkWrite.writesField(sinkAccessPath.getAUse(), _, sink.getNode()) and
         otherSinkWrite.writesField(otherSinkAccessPath.getAUse(), _, otherSink.getNode()) and
         otherSinkAccessPath = sinkAccessPath.similar()
@@ -104,9 +102,9 @@ predicate hostCheckReachesSink(Flow::PathNode sink) {
   )
 }
 
-from Flow::PathNode source, Flow::PathNode sink
+from HostKeyCallbackAssignmentConfig config, DataFlow::PathNode source, DataFlow::PathNode sink
 where
-  Flow::flowPath(source, sink) and
+  config.hasFlowPath(source, sink) and
   source.getNode() instanceof InsecureHostKeyCallbackFunc and
   // Exclude cases where a good access-path function reaches the same or a similar sink
   // (these probably indicate optional host-checking)

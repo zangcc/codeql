@@ -38,21 +38,21 @@ abstract class TranslatedCompilerGeneratedTry extends TranslatedCompilerGenerate
   override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) { none() }
 
   override TranslatedElement getChild(int id) {
-    id = 0 and result = this.getBody()
+    id = 0 and result = getBody()
     or
-    id = 1 and result = this.getFinally()
+    id = 1 and result = getFinally()
   }
 
-  override Instruction getFirstInstruction() { result = this.getBody().getFirstInstruction() }
+  override Instruction getFirstInstruction() { result = getBody().getFirstInstruction() }
 
   override Instruction getChildSuccessor(TranslatedElement child) {
-    child = this.getBody() and result = this.getFinally().getFirstInstruction()
+    child = getBody() and result = getFinally().getFirstInstruction()
     or
-    child = this.getFinally() and result = this.getParent().getChildSuccessor(this)
+    child = getFinally() and result = getParent().getChildSuccessor(this)
   }
 
   override Instruction getExceptionSuccessorInstruction() {
-    result = this.getParent().getExceptionSuccessorInstruction()
+    result = getParent().getExceptionSuccessorInstruction()
   }
 
   /**
@@ -74,16 +74,16 @@ abstract class TranslatedCompilerGeneratedConstant extends TranslatedCompilerGen
   override predicate hasInstruction(Opcode opcode, InstructionTag tag, CSharpType resultType) {
     opcode instanceof Opcode::Constant and
     tag = OnlyInstructionTag() and
-    resultType = getTypeForPRValue(this.getResultType())
+    resultType = getTypeForPRValue(getResultType())
   }
 
   override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) {
     tag = OnlyInstructionTag() and
     kind instanceof GotoEdge and
-    result = this.getParent().getChildSuccessor(this)
+    result = getParent().getChildSuccessor(this)
   }
 
-  override Instruction getFirstInstruction() { result = this.getInstruction(OnlyInstructionTag()) }
+  override Instruction getFirstInstruction() { result = getInstruction(OnlyInstructionTag()) }
 
   override TranslatedElement getChild(int id) { none() }
 
@@ -96,20 +96,20 @@ abstract class TranslatedCompilerGeneratedConstant extends TranslatedCompilerGen
  * compose the block.
  */
 abstract class TranslatedCompilerGeneratedBlock extends TranslatedCompilerGeneratedStmt {
-  override TranslatedElement getChild(int id) { result = this.getStmt(id) }
+  override TranslatedElement getChild(int id) { result = getStmt(id) }
 
-  override Instruction getFirstInstruction() { result = this.getStmt(0).getFirstInstruction() }
+  override Instruction getFirstInstruction() { result = getStmt(0).getFirstInstruction() }
 
   abstract TranslatedElement getStmt(int index);
 
-  private int getStmtCount() { result = count(this.getStmt(_)) }
+  private int getStmtCount() { result = count(getStmt(_)) }
 
   override Instruction getChildSuccessor(TranslatedElement child) {
     exists(int index |
-      child = this.getStmt(index) and
-      if index = (this.getStmtCount() - 1)
-      then result = this.getParent().getChildSuccessor(this)
-      else result = this.getStmt(index + 1).getFirstInstruction()
+      child = getStmt(index) and
+      if index = (getStmtCount() - 1)
+      then result = getParent().getChildSuccessor(this)
+      else result = getStmt(index + 1).getFirstInstruction()
     )
   }
 
@@ -126,16 +126,15 @@ abstract class TranslatedCompilerGeneratedBlock extends TranslatedCompilerGenera
  * the body of the `then` and the body of the `else`.
  */
 abstract class TranslatedCompilerGeneratedIfStmt extends TranslatedCompilerGeneratedStmt,
-  ConditionContext
-{
-  override Instruction getFirstInstruction() { result = this.getCondition().getFirstInstruction() }
+  ConditionContext {
+  override Instruction getFirstInstruction() { result = getCondition().getFirstInstruction() }
 
   override TranslatedElement getChild(int id) {
-    id = 0 and result = this.getCondition()
+    id = 0 and result = getCondition()
     or
-    id = 1 and result = this.getThen()
+    id = 1 and result = getThen()
     or
-    id = 2 and result = this.getElse()
+    id = 2 and result = getElse()
   }
 
   abstract TranslatedCompilerGeneratedValueCondition getCondition();
@@ -144,25 +143,25 @@ abstract class TranslatedCompilerGeneratedIfStmt extends TranslatedCompilerGener
 
   abstract TranslatedCompilerGeneratedElement getElse();
 
-  private predicate hasElse() { exists(this.getElse()) }
+  private predicate hasElse() { exists(getElse()) }
 
   override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) { none() }
 
   override Instruction getChildTrueSuccessor(ConditionBase child) {
-    child = this.getCondition() and
-    result = this.getThen().getFirstInstruction()
+    child = getCondition() and
+    result = getThen().getFirstInstruction()
   }
 
   override Instruction getChildFalseSuccessor(ConditionBase child) {
-    child = this.getCondition() and
-    if this.hasElse()
-    then result = this.getElse().getFirstInstruction()
-    else result = this.getParent().getChildSuccessor(this)
+    child = getCondition() and
+    if hasElse()
+    then result = getElse().getFirstInstruction()
+    else result = getParent().getChildSuccessor(this)
   }
 
   override Instruction getChildSuccessor(TranslatedElement child) {
-    (child = this.getThen() or child = this.getElse()) and
-    result = this.getParent().getChildSuccessor(this)
+    (child = getThen() or child = getElse()) and
+    result = getParent().getChildSuccessor(this)
   }
 
   override predicate hasInstruction(Opcode opcode, InstructionTag tag, CSharpType resultType) {
@@ -177,7 +176,7 @@ abstract class TranslatedCompilerGeneratedIfStmt extends TranslatedCompilerGener
  * access needs a `Load` instruction or not (eg. `ref` params do not)
  */
 abstract class TranslatedCompilerGeneratedVariableAccess extends TranslatedCompilerGeneratedExpr {
-  override Instruction getFirstInstruction() { result = this.getInstruction(AddressTag()) }
+  override Instruction getFirstInstruction() { result = getInstruction(AddressTag()) }
 
   override TranslatedElement getChild(int id) { none() }
 
@@ -187,45 +186,45 @@ abstract class TranslatedCompilerGeneratedVariableAccess extends TranslatedCompi
    * Returns the type of the accessed variable. Can be overridden when the return
    * type is different than the type of the underlying variable.
    */
-  Type getVariableType() { result = this.getResultType() }
+  Type getVariableType() { result = getResultType() }
 
   override predicate hasInstruction(Opcode opcode, InstructionTag tag, CSharpType resultType) {
     tag = AddressTag() and
     opcode instanceof Opcode::VariableAddress and
-    resultType = getTypeForGLValue(this.getVariableType())
+    resultType = getTypeForGLValue(getVariableType())
     or
-    this.needsLoad() and
+    needsLoad() and
     tag = LoadTag() and
     opcode instanceof Opcode::Load and
-    resultType = getTypeForPRValue(this.getVariableType())
+    resultType = getTypeForPRValue(getVariableType())
   }
 
   override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) {
-    this.needsLoad() and
+    needsLoad() and
     tag = LoadTag() and
-    result = this.getParent().getChildSuccessor(this) and
+    result = getParent().getChildSuccessor(this) and
     kind instanceof GotoEdge
     or
     (
       tag = AddressTag() and
       kind instanceof GotoEdge and
-      if this.needsLoad()
-      then result = this.getInstruction(LoadTag())
-      else result = this.getParent().getChildSuccessor(this)
+      if needsLoad()
+      then result = getInstruction(LoadTag())
+      else result = getParent().getChildSuccessor(this)
     )
   }
 
   override Instruction getResult() {
-    if this.needsLoad()
-    then result = this.getInstruction(LoadTag())
-    else result = this.getInstruction(AddressTag())
+    if needsLoad()
+    then result = getInstruction(LoadTag())
+    else result = getInstruction(AddressTag())
   }
 
   override Instruction getInstructionOperand(InstructionTag tag, OperandTag operandTag) {
-    this.needsLoad() and
+    needsLoad() and
     tag = LoadTag() and
     operandTag instanceof AddressOperandTag and
-    result = this.getInstruction(AddressTag())
+    result = getInstruction(AddressTag())
   }
 
   /**

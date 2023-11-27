@@ -1,8 +1,8 @@
 using Xunit;
-using System;
+using Semmle.Util;
 using System.IO;
 using System.Linq;
-using Semmle.Util;
+using System;
 
 namespace SemmleTests.Semmle.Util
 {

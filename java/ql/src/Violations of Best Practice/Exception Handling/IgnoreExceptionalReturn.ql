@@ -43,7 +43,7 @@ predicate unboundedQueue(RefType t) {
   )
 }
 
-from MethodCall ma, SpecialMethod m
+from MethodAccess ma, SpecialMethod m
 where
   ma instanceof ValueDiscardingExpr and
   m = ma.getMethod() and

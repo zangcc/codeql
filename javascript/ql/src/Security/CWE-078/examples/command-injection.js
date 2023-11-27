@@ -3,7 +3,7 @@ var cp = require("child_process"),
     url = require('url');
 
 var server = http.createServer(function(req, res) {
-    let file = url.parse(req.url, true).query.path;
+    let cmd = url.parse(req.url, true).query.path;
 
-    cp.execSync(`wc -l ${file}`); // BAD
+    cp.exec(cmd); // BAD
 });

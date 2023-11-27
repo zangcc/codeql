@@ -1,18 +1,18 @@
-static void always_false_1() {
+void always_false_1() {
   while(0) {
     l1:;
   }
   l2:;
 }
 
-static void always_false_2() {
+void always_false_2() {
   int done = 1;
   while(!done) {
     done = 0;
   }
 }
 
-static void always_true_1() {
+void always_true_1() {
   while(1) {
     l1:;
     break;
@@ -20,7 +20,7 @@ static void always_true_1() {
   l2:;
 }
 
-static void always_true_2() {
+void always_true_2() {
   while(1) {
     l1:;
     break;
@@ -29,14 +29,14 @@ static void always_true_2() {
   l3:;
 }
 
-static void always_true_3() {
+void always_true_3() {
   while(1) {
     l1:;
   }
   l2:;
 }
 
-static void normal() {
+void normal() {
   int i = 0;
   while(i < 10) {
     ++i;

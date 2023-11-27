@@ -8,7 +8,7 @@ import semmle.code.cpp.Parameter
 
 private newtype TFunctionInput =
   TInParameter(ParameterIndex i) or
-  TInParameterDeref(ParameterIndex i, int indirectionIndex) { indirectionIndex = [1, 2] } or
+  TInParameterDeref(ParameterIndex i) or
   TInQualifierObject() or
   TInQualifierAddress() or
   TInReturnValueDeref()
@@ -39,6 +39,12 @@ class FunctionInput extends TFunctionInput {
    *   `float`.
    */
   predicate isParameter(ParameterIndex index) { none() }
+
+  /**
+   * Holds if this is the input value of the parameter with index `index`.
+   * DEPRECATED: Use `isParameter(index)` instead.
+   */
+  deprecated final predicate isInParameter(ParameterIndex index) { this.isParameter(index) }
 
   /**
    * Holds if this is the input value pointed to (through `ind` number of indirections) by a
@@ -79,6 +85,16 @@ class FunctionInput extends TFunctionInput {
   predicate isParameterDeref(ParameterIndex index) { this.isParameterDeref(index, 1) }
 
   /**
+   * Holds if this is the input value pointed to by a pointer parameter to a function, or the input
+   * value referred to by a reference parameter to a function, where the parameter has index
+   * `index`.
+   * DEPRECATED: Use `isParameterDeref(index)` instead.
+   */
+  deprecated final predicate isInParameterPointer(ParameterIndex index) {
+    this.isParameterDeref(index)
+  }
+
+  /**
    * Holds if this is the input value pointed to by the `this` pointer of an instance member
    * function.
    *
@@ -107,6 +123,13 @@ class FunctionInput extends TFunctionInput {
    *   (with type `C const`) on entry to the function.
    */
   predicate isQualifierObject() { this.isQualifierObject(1) }
+
+  /**
+   * Holds if this is the input value pointed to by the `this` pointer of an instance member
+   * function.
+   * DEPRECATED: Use `isQualifierObject()` instead.
+   */
+  deprecated final predicate isInQualifier() { this.isQualifierObject() }
 
   /**
    * Holds if this is the input value of the `this` pointer of an instance member function.
@@ -245,18 +268,15 @@ class InParameter extends FunctionInput, TInParameter {
  */
 class InParameterDeref extends FunctionInput, TInParameterDeref {
   ParameterIndex index;
-  int indirectionIndex;
 
-  InParameterDeref() { this = TInParameterDeref(index, indirectionIndex) }
+  InParameterDeref() { this = TInParameterDeref(index) }
 
   override string toString() { result = "InParameterDeref " + index.toString() }
 
   /** Gets the zero-based index of the parameter. */
   ParameterIndex getIndex() { result = index }
 
-  override predicate isParameterDeref(ParameterIndex i, int indirection) {
-    i = index and indirectionIndex = indirection
-  }
+  override predicate isParameterDeref(ParameterIndex i) { i = index }
 }
 
 /**
@@ -324,10 +344,10 @@ class InReturnValueDeref extends FunctionInput, TInReturnValueDeref {
 }
 
 private newtype TFunctionOutput =
-  TOutParameterDeref(ParameterIndex i, int indirectionIndex) { indirectionIndex = [1, 2] } or
+  TOutParameterDeref(ParameterIndex i) or
   TOutQualifierObject() or
   TOutReturnValue() or
-  TOutReturnValueDeref(int indirections) { indirections = [1, 2] }
+  TOutReturnValueDeref()
 
 /**
  * An output from a function. This can be:
@@ -377,6 +397,16 @@ class FunctionOutput extends TFunctionOutput {
   predicate isParameterDeref(ParameterIndex i, int ind) { ind = 1 and this.isParameterDeref(i) }
 
   /**
+   * Holds if this is the output value pointed to by a pointer parameter to a function, or the
+   * output value referred to by a reference parameter to a function, where the parameter has
+   * index `index`.
+   * DEPRECATED: Use `isParameterDeref(index)` instead.
+   */
+  deprecated final predicate isOutParameterPointer(ParameterIndex index) {
+    this.isParameterDeref(index)
+  }
+
+  /**
    * Holds if this is the output value pointed to by the `this` pointer of an instance member
    *   function.
    *
@@ -407,6 +437,13 @@ class FunctionOutput extends TFunctionOutput {
   predicate isQualifierObject(int ind) { ind = 1 and this.isQualifierObject() }
 
   /**
+   * Holds if this is the output value pointed to by the `this` pointer of an instance member
+   * function.
+   * DEPRECATED: Use `isQualifierObject()` instead.
+   */
+  deprecated final predicate isOutQualifier() { this.isQualifierObject() }
+
+  /**
    * Holds if this is the value returned by a function.
    *
    * Example:
@@ -424,6 +461,12 @@ class FunctionOutput extends TFunctionOutput {
    *   `float`.
    */
   predicate isReturnValue() { none() }
+
+  /**
+   * Holds if this is the value returned by a function.
+   * DEPRECATED: Use `isReturnValue()` instead.
+   */
+  deprecated final predicate isOutReturnValue() { this.isReturnValue() }
 
   /**
    * Holds if this is the output value pointed to by the return value of a function, if the function
@@ -466,6 +509,14 @@ class FunctionOutput extends TFunctionOutput {
   predicate isReturnValueDeref(int ind) { ind = 1 and this.isReturnValueDeref() }
 
   /**
+   * Holds if this is the output value pointed to by the return value of a function, if the function
+   * returns a pointer, or the output value referred to by the return value of a function, if the
+   * function returns a reference.
+   * DEPRECATED: Use `isReturnValueDeref()` instead.
+   */
+  deprecated final predicate isOutReturnPointer() { this.isReturnValueDeref() }
+
+  /**
    * Holds if `i >= 0` and `isParameterDeref(i, ind)` holds for this is the value, or
    * if `i = -1` and `isQualifierObject(ind)` holds for this value.
    */
@@ -501,16 +552,17 @@ class FunctionOutput extends TFunctionOutput {
  */
 class OutParameterDeref extends FunctionOutput, TOutParameterDeref {
   ParameterIndex index;
-  int indirectionIndex;
 
-  OutParameterDeref() { this = TOutParameterDeref(index, indirectionIndex) }
+  OutParameterDeref() { this = TOutParameterDeref(index) }
 
   override string toString() { result = "OutParameterDeref " + index.toString() }
 
   ParameterIndex getIndex() { result = index }
 
+  override predicate isParameterDeref(ParameterIndex i) { i = index }
+
   override predicate isParameterDeref(ParameterIndex i, int ind) {
-    i = index and ind = indirectionIndex
+    this.isParameterDeref(i) and ind = 1
   }
 }
 
@@ -574,8 +626,4 @@ class OutReturnValueDeref extends FunctionOutput, TOutReturnValueDeref {
   override string toString() { result = "OutReturnValueDeref" }
 
   override predicate isReturnValueDeref() { any() }
-
-  override predicate isReturnValueDeref(int indirectionIndex) {
-    this = TOutReturnValueDeref(indirectionIndex)
-  }
 }

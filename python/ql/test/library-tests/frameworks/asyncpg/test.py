@@ -22,9 +22,6 @@ async def test_connection():
     finally:
         await conn.close()
 
-    conn = await asyncpg.connection.connect()
-    conn.execute("sql") # $ mad-sink[sql-injection]="sql"
-
 
 async def test_prepared_statement():
     conn = await asyncpg.connect()

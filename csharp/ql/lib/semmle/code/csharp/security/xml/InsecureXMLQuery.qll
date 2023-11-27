@@ -47,7 +47,7 @@ abstract class InsecureXmlProcessing extends Call {
  */
 private predicate isSafeXmlResolver(Expr e) {
   e instanceof NullLiteral or
-  e.getType().(RefType).hasFullyQualifiedName("System.Xml", "XmlSecureResolver")
+  e.getType().(RefType).hasQualifiedName("System.Xml", "XmlSecureResolver")
 }
 
 /**
@@ -94,7 +94,7 @@ module XmlSettings {
    * Holds if the given object creation constructs `XmlReaderSettings` with an insecure resolver.
    */
   predicate insecureResolverSettings(ObjectCreation creation, Expr evidence, string reason) {
-    creation.getObjectType().hasFullyQualifiedName("System.Xml", "XmlReaderSettings") and
+    creation.getObjectType().hasQualifiedName("System.Xml", "XmlReaderSettings") and
     (
       // one unsafe assignment to XmlResolver
       exists(Expr xmlResolverVal | xmlResolverVal = getAValueForProp(creation, "XmlResolver") |
@@ -114,7 +114,7 @@ module XmlSettings {
    * Holds if the given object creation constructs `XmlReaderSettings` with DTD processing enabled.
    */
   predicate dtdEnabledSettings(ObjectCreation creation, Expr evidence, string reason) {
-    creation.getObjectType().hasFullyQualifiedName("System.Xml", "XmlReaderSettings") and
+    creation.getObjectType().hasQualifiedName("System.Xml", "XmlReaderSettings") and
     (
       exists(Expr dtdVal | dtdVal = getAValueForProp(creation, "DtdProcessing") |
         not isSafeDtdSetting(dtdVal) and evidence = dtdVal
@@ -146,7 +146,7 @@ module XmlReader {
 
   private class InsecureXmlReaderCreate extends InsecureXmlProcessing, MethodCall {
     InsecureXmlReaderCreate() {
-      this.getTarget().hasFullyQualifiedName("System.Xml.XmlReader", "Create")
+      this.getTarget().hasQualifiedName("System.Xml.XmlReader", "Create")
     }
 
     /**
@@ -154,11 +154,7 @@ module XmlReader {
      */
     Expr getSettings() {
       result = this.getAnArgument() and
-      result
-          .getType()
-          .(RefType)
-          .getABaseType*()
-          .hasFullyQualifiedName("System.Xml", "XmlReaderSettings")
+      result.getType().(RefType).getABaseType*().hasQualifiedName("System.Xml", "XmlReaderSettings")
     }
 
     override predicate isUnsafe(string reason) {
@@ -176,24 +172,26 @@ module XmlReader {
       isNetFrameworkBefore(this.(MethodCall).getTarget().getDeclaringType(), "4.0")
       or
       // bad settings flow here
-      exists(ObjectCreation settings |
-        SettingsDataFlow::flow(DataFlow::exprNode(settings), DataFlow::exprNode(this.getSettings())) and
+      exists(SettingsDataFlowConfig flow, ObjectCreation settings |
+        flow.hasFlow(DataFlow::exprNode(settings), DataFlow::exprNode(this.getSettings())) and
         XmlSettings::dtdEnabledSettings(settings, evidence, reason)
       )
     }
 
     private predicate insecureResolver(string reason, Expr evidence) {
       // bad settings flow here
-      exists(ObjectCreation settings |
-        SettingsDataFlow::flow(DataFlow::exprNode(settings), DataFlow::exprNode(this.getSettings())) and
+      exists(SettingsDataFlowConfig flow, ObjectCreation settings |
+        flow.hasFlow(DataFlow::exprNode(settings), DataFlow::exprNode(this.getSettings())) and
         XmlSettings::insecureResolverSettings(settings, evidence, reason)
       )
       // default is secure
     }
   }
 
-  private module SettingsDataFlowConfig implements DataFlow::ConfigSig {
-    predicate isSource(DataFlow::Node source) {
+  private class SettingsDataFlowConfig extends DataFlow2::Configuration {
+    SettingsDataFlowConfig() { this = "SettingsDataFlowConfig" }
+
+    override predicate isSource(DataFlow::Node source) {
       // flow from places where we construct an XmlReaderSettings
       source
           .asExpr()
@@ -201,23 +199,19 @@ module XmlReader {
           .getType()
           .(RefType)
           .getABaseType*()
-          .hasFullyQualifiedName("System.Xml", "XmlReaderSettings")
+          .hasQualifiedName("System.Xml", "XmlReaderSettings")
     }
 
-    predicate isSink(DataFlow::Node sink) {
+    override predicate isSink(DataFlow::Node sink) {
       sink.asExpr() = any(InsecureXmlReaderCreate create).getSettings()
     }
   }
-
-  private module SettingsDataFlow = DataFlow::Global<SettingsDataFlowConfig>;
 }
 
 /** Provides predicates related to `System.Xml.XmlTextReader`. */
 module XmlTextReader {
   private class InsecureXmlTextReader extends InsecureXmlProcessing, ObjectCreation {
-    InsecureXmlTextReader() {
-      this.getObjectType().hasFullyQualifiedName("System.Xml", "XmlTextReader")
-    }
+    InsecureXmlTextReader() { this.getObjectType().hasQualifiedName("System.Xml", "XmlTextReader") }
 
     override predicate isUnsafe(string reason) {
       not exists(Expr xmlResolverVal |
@@ -252,8 +246,8 @@ module XmlDocument {
    */
   class InsecureXmlDocument extends InsecureXmlProcessing, MethodCall {
     InsecureXmlDocument() {
-      this.getTarget().hasFullyQualifiedName("System.Xml", "XmlDocument", "Load") or
-      this.getTarget().hasFullyQualifiedName("System.Xml", "XmlDocument", "LoadXml")
+      this.getTarget().hasQualifiedName("System.Xml", "XmlDocument", "Load") or
+      this.getTarget().hasQualifiedName("System.Xml", "XmlDocument", "LoadXml")
     }
 
     override predicate isUnsafe(string reason) {

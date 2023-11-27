@@ -14,7 +14,7 @@ import java
 import semmle.code.java.StringFormat
 
 predicate explicitToStringCall(Expr e) {
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     ma.getMethod() instanceof ToStringMethod and
     e = ma.getQualifier()
   )

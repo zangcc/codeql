@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
     const char *hello = "Hello, World\n";
     const char **p = &hello;
     (*p)++;
-    printf(hello); // BAD
+    printf(hello); // BAD [NOT DETECTED]
   }
   {
     // Same as above block but through a C++ reference
@@ -112,7 +112,7 @@ int main(int argc, char **argv) {
   {
     const char *hello = "Hello, World\n";
     const char *const *p = &hello; // harmless reference to const pointer
-    printf(hello); // GOOD [FALSE POSITIVE]
+    printf(hello); // GOOD
     hello++; // modification comes after use and so does no harm
   }
   printf(argc > 2 ? "More than one\n" : _("Only one\n")); // GOOD
@@ -155,11 +155,4 @@ void print_ith_message() {
 void fmt_via_strcpy(char *data) {
     strcpy(data, "some string");
     printf(data); // BAD
-}
-
-void fmt_with_assignment() {
-  const char *x, *y;
-
-  x = y = "a";
-  printf(y); // GOOD
 }

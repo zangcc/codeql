@@ -21,7 +21,6 @@ import com.semmle.util.exception.Exceptions;
 import com.semmle.util.io.WholeIO;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,25 +32,23 @@ public class JSONParser {
   private int offset;
   private int length;
   private String src;
+  private List<ParseError> recoverableErrors;
 
-  public static Pair<JSONValue, List<ParseError>> parseValue(String json) throws ParseError {
-    JSONParser parser = new JSONParser(json);
-
-    JSONValue value = parser.readValue();
-    parser.consumeWhitespace();
-    if (parser.offset < parser.length) parser.raise("Expected end of input");
-
-    return Pair.make(value, Collections.emptyList());
-  }
-
-  private JSONParser(String json) throws ParseError {
-    this.line = 1;
-    this.column = 0;
-    this.offset = 0;
+  public Pair<JSONValue, List<ParseError>> parseValue(String json) throws ParseError {
+    line = 1;
+    column = 0;
+    offset = 0;
+    recoverableErrors = new ArrayList<ParseError>();
 
     if (json == null) raise("Input string may not be null");
-    this.length = json.length();
-    this.src = json;
+    length = json.length();
+    src = json;
+
+    JSONValue value = readValue();
+    consumeWhitespace();
+    if (offset < length) raise("Expected end of input");
+
+    return Pair.make(value, recoverableErrors);
   }
 
   private <T> T raise(String msg) throws ParseError {
@@ -79,7 +76,7 @@ public class JSONParser {
   }
 
   private char peek() {
-    return offset < length ? src.charAt(offset) : Character.MAX_VALUE;
+    return offset < length ? src.charAt(offset) : (char) -1;
   }
 
   private JSONValue readValue() throws ParseError {
@@ -350,16 +347,17 @@ public class JSONParser {
     }
   }
 
-  /** Skips the line comment starting at the current position. */
+  /** Skips the line comment starting at the current position and records a recoverable error. */
   private void skipLineComment() throws ParseError {
     Position pos = new Position(line, column, offset);
     char c;
     next();
     next();
-    while ((c = peek()) != '\r' && c != '\n' && c != Character.MAX_VALUE) next();
+    while ((c = peek()) != '\r' && c != '\n' && c != -1) next();
+    recoverableErrors.add(new ParseError("Comments are not legal in JSON.", pos));
   }
 
-  /** Skips the block comment starting at the current position. */
+  /** Skips the block comment starting at the current position and records a recoverable error. */
   private void skipBlockComment() throws ParseError {
     Position pos = new Position(line, column, offset);
     char c;
@@ -367,13 +365,14 @@ public class JSONParser {
     next();
     do {
       c = peek();
-      if (c == Character.MAX_VALUE) raise("Unterminated comment");
+      if (c < 0) raise("Unterminated comment.");
       next();
       if (c == '*' && peek() == '/') {
         next();
         break;
       }
     } while (true);
+    recoverableErrors.add(new ParseError("Comments are not legal in JSON.", pos));
   }
 
   private void consume(char token) throws ParseError {
@@ -386,6 +385,7 @@ public class JSONParser {
   }
 
   public static void main(String[] args) throws ParseError {
-    System.out.println(JSONParser.parseValue(new WholeIO().strictread(new File(args[0]))).fst());
+    JSONParser parser = new JSONParser();
+    System.out.println(parser.parseValue(new WholeIO().strictread(new File(args[0]))).fst());
   }
 }

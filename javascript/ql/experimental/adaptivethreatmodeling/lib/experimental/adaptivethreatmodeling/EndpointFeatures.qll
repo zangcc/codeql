@@ -204,8 +204,7 @@ class FileImports extends EndpointFeature, TFileImports {
  * will be treated by tokenization as if they were spaces.
  */
 class ContextSurroundingFunctionParameters extends EndpointFeature,
-  TContextSurroundingFunctionParameters
-{
+  TContextSurroundingFunctionParameters {
   override string getName() { result = "contextSurroundingFunctionParameters" }
 
   Function getRelevantFunction(DataFlow::Node endpoint) {

@@ -3,8 +3,10 @@ import semmle.code.java.frameworks.JaxWS
 import semmle.code.java.security.XSS
 import TestUtilities.InlineExpectationsTest
 
-module JaxRsTest implements TestSig {
-  string getARelevantTag() {
+class JaxRsTest extends InlineExpectationsTest {
+  JaxRsTest() { this = "JaxRsTest" }
+
+  override string getARelevantTag() {
     result =
       [
         "ResourceMethod", "RootResourceClass", "NonRootResourceClass",
@@ -16,7 +18,7 @@ module JaxRsTest implements TestSig {
       ]
   }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "ResourceMethod" and
     exists(JaxRsResourceMethod resourceMethod |
       resourceMethod.getLocation() = location and
@@ -123,7 +125,7 @@ module JaxRsTest implements TestSig {
     )
     or
     tag = "MessageBodyReaderReadFromCall" and
-    exists(MethodCall ma |
+    exists(MethodAccess ma |
       ma.getMethod() instanceof MessageBodyReaderReadFrom and
       ma.getLocation() = location and
       element = ma.toString() and
@@ -131,7 +133,7 @@ module JaxRsTest implements TestSig {
     )
     or
     tag = "MessageBodyReaderReadCall" and
-    exists(MethodCall ma |
+    exists(MethodAccess ma |
       ma.getMethod() instanceof MessageBodyReaderRead and
       ma.getLocation() = location and
       element = ma.toString() and
@@ -166,5 +168,3 @@ module JaxRsTest implements TestSig {
     )
   }
 }
-
-import MakeTest<JaxRsTest>

@@ -11,18 +11,27 @@
  */
 
 import java
-import semmle.code.java.security.internal.ArraySizing
-import semmle.code.java.security.ImproperValidationOfArrayConstructionQuery
-import ImproperValidationOfArrayConstructionFlow::PathGraph
+import ArraySizing
+import semmle.code.java.dataflow.FlowSources
+import DataFlow::PathGraph
+
+class Conf extends TaintTracking::Configuration {
+  Conf() { this = "RemoteUserInputTocanThrowOutOfBoundsDueToEmptyArrayConfig" }
+
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) {
+    any(CheckableArrayAccess caa).canThrowOutOfBoundsDueToEmptyArray(sink.asExpr(), _)
+  }
+}
 
 from
-  ImproperValidationOfArrayConstructionFlow::PathNode source,
-  ImproperValidationOfArrayConstructionFlow::PathNode sink, Expr sizeExpr,
+  DataFlow::PathNode source, DataFlow::PathNode sink, Expr sizeExpr,
   ArrayCreationExpr arrayCreation, CheckableArrayAccess arrayAccess
 where
   arrayAccess.canThrowOutOfBoundsDueToEmptyArray(sizeExpr, arrayCreation) and
   sizeExpr = sink.getNode().asExpr() and
-  ImproperValidationOfArrayConstructionFlow::flowPath(source, sink)
+  any(Conf conf).hasFlowPath(source, sink)
 select arrayAccess.getIndexExpr(), source, sink,
   "This accesses the $@, but the array is initialized using a $@ which may be zero.", arrayCreation,
   "array", source.getNode(), "user-provided value"

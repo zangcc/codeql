@@ -6,7 +6,7 @@ class C {
         ~C();
 };
 
-static void f(int b) {
+void f(int b) {
     int i;
 
     if (({
@@ -18,7 +18,7 @@ static void f(int b) {
         ;
 }
 
-static void g(int b) {
+void g(int b) {
     void *ptr;
     int i;
 

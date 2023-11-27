@@ -1,7 +1,5 @@
 .. _codeql-cli-reference:
 
-:orphan:
-
 CodeQL CLI reference
 ====================
 

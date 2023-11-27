@@ -1,6 +1,6 @@
 namespace eehandler {
 
-static void f() {
+void f() {
 	try {
 		try {
 			throw 1;
@@ -11,7 +11,7 @@ static void f() {
 	}
 }
 
-static void g(bool condition) {
+void g(bool condition) {
 	try {
 		if (condition) throw 1;
 	} catch (...) {

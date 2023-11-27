@@ -12,26 +12,8 @@ class PackageJson extends JsonObject {
     this.isTopLevel()
   }
 
-  /**
-   * Gets the name of this package.
-   * If the package is located under the package `pkg1` and its relative path is `foo/bar`, then the resulting package name will be `pkg1/foo/bar`.
-   */
-  string getPackageName() {
-    result = this.getPropStringValue("name")
-    or
-    exists(
-      PackageJson parentPkg, Container currentDir, Container parentDir, string parentPkgName,
-      string pkgNameDiff
-    |
-      currentDir = this.getJsonFile().getParentContainer() and
-      parentDir = parentPkg.getJsonFile().getParentContainer() and
-      parentPkgName = parentPkg.getPropStringValue("name") and
-      parentDir.getAChildContainer+() = currentDir and
-      pkgNameDiff = currentDir.getAbsolutePath().suffix(parentDir.getAbsolutePath().length()) and
-      not exists(pkgNameDiff.indexOf("/node_modules/")) and
-      result = parentPkgName + pkgNameDiff
-    )
-  }
+  /** Gets the name of this package. */
+  string getPackageName() { result = this.getPropStringValue("name") }
 
   /** Gets the version of this package. */
   string getVersion() { result = this.getPropStringValue("version") }
@@ -262,6 +244,9 @@ class PackageJson extends JsonObject {
   Module getTypingsModule() { result.getFile() = this.getTypingsFile() }
 }
 
+/** DEPRECATED: Alias for PackageJson */
+deprecated class PackageJSON = PackageJson;
+
 /**
  * A representation of bug tracker information for an NPM package.
  */
@@ -367,6 +352,9 @@ class NpmPackage extends @folder {
   /** Gets the `package.json` object of this package. */
   PackageJson getPackageJson() { result = pkg }
 
+  /** DEPRECATED: Alias for getPackageJson */
+  deprecated PackageJSON getPackageJSON() { result = this.getPackageJson() }
+
   /** Gets the name of this package. */
   string getPackageName() { result = this.getPackageJson().getPackageName() }
 
@@ -404,6 +392,9 @@ class NpmPackage extends @folder {
    */
   predicate declaresDependency(string p, string v) { pkg.declaresDependency(p, v) }
 }
+
+/** DEPRECATED: Alias for NpmPackage */
+deprecated class NPMPackage = NpmPackage;
 
 /**
  * Gets the parent folder of `c`, provided that they belong to the same NPM

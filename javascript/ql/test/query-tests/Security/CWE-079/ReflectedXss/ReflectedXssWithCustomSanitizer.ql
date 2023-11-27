@@ -5,11 +5,11 @@ import javascript
 import semmle.javascript.security.dataflow.ReflectedXssQuery
 
 class IsVarNameSanitizer extends TaintTracking::AdditionalSanitizerGuardNode, DataFlow::CallNode {
-  IsVarNameSanitizer() { this.getCalleeName() = "isVarName" }
+  IsVarNameSanitizer() { getCalleeName() = "isVarName" }
 
   override predicate sanitizes(boolean outcome, Expr e) {
     outcome = true and
-    e = this.getArgument(0).asExpr()
+    e = getArgument(0).asExpr()
   }
 
   override predicate appliesTo(TaintTracking::Configuration cfg) { cfg instanceof Configuration }
@@ -17,4 +17,4 @@ class IsVarNameSanitizer extends TaintTracking::AdditionalSanitizerGuardNode, Da
 
 from Configuration xss, Source source, Sink sink
 where xss.hasFlow(source, sink)
-select sink, "Cross-site scripting vulnerability due to $@.", source, "user-provided value"
+select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), "Cross-site scripting vulnerability due to $@.", source, "user-provided value"

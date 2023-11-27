@@ -5,4 +5,3 @@ dependencies:
   codeql/csharp-queries: ${workspace}
 extractor: csharp
 tests: .
-warnOnImplicitThis: true

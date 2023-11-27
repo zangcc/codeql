@@ -1,0 +1,38 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "IncorrectPrivilegeAssignment.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "6400e9ccf96cf3f3d9c5bfbc6fc03b621153afe2"
+  debugInfo: "6776e33b6bf177af24557b572c946c41d02e64c7"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "92988971e35af5916c71aa9bd5d0d2204c2d540b"
+- cached: "51a90f9af6d20acf168f2380c25c45703a0cacc0"
+  debugInfo: "08868cfa8025ea5aa9edf2f40614ef67f7d673be"
+- cached: "623cdfa7ba405f5d2e322a2f5e0899f8946d13c0"
+  debugInfo: "15402a86f823dcfffcb73058ce271a6096285ba4"
+- cached: "5e5cf3e67a725b16b6d01a2023ba55e65b6322d1"
+  debugInfo: "8b33c6045c2eccfed8c02ebd9217bc90012c615b"
+- cached: "3a65a71867a3302b9ca6acc6adcc6746d306ce4b"
+  debugInfo: "ea7e9da18768cedd41b61e85104e33b9f6353d38"
+- cached: "0217aabcf4f371e72842b722c303a70b23dff627"
+  debugInfo: "d270aca183a6d725641f7bda8fb910ed4b3c9309"
+- cached: "2072c056f08fb0aa4fbde527aab6943dbf3ef07e"
+  debugInfo: "f38154e64c907c332e99c0efccc60884012d1679"
+- cached: "f2ace63a77c3b10010a7fa8999c39198f1e55c74"
+  debugInfo: "2dbda641174498fdb4121313dbee720098aa4bd4"
+- cached: "56b24619f70c4302b74db4593526f50252ba8ebd"
+  debugInfo: "2260b9fe04e862f9a9b15ad63ec85e1acbe93eb7"
+- cached: "d59c2822e3e92ff66756c31a07badc9708626358"
+  debugInfo: "0282bb7dbef0cbdcfd2b73c03f77bc7d408f61a5"
+- cached: "87ef9f5d13f8d2635ff23b336dafb7f70c135fcd"
+  debugInfo: "618f673639620f1b688181ec127cab07cf6d06ac"
+- cached: "939b32e3cefc9265b6ce73104a5d435aa8eb3d18"
+  debugInfo: "21f7a11ccb1949a52655aa771a33e91245567618"
+results:
+  '#select':
+    resultArranger: "4\"fc\"ei12\"msg\"s\"fcsnd\"ei120s"
+inputsDigest: "63197b0c5e5a80a095298bf0b5917ef31176c2ec"

@@ -3,17 +3,16 @@ private import swift
 cached
 newtype TControlFlowElement =
   TAstElement(AstNode n) or
-  TFuncDeclElement(Function func) { func.hasBody() } or
-  TClosureElement(ClosureExpr clos) { isNormalAutoClosureOrExplicitClosure(clos) } or
+  TFuncDeclElement(AbstractFunctionDecl func) { func.hasBody() } or
+  TClosureElement(ClosureExpr clos) or
   TPropertyGetterElement(Decl accessor, Expr ref) { isPropertyGetterElement(accessor, ref) } or
-  TPropertySetterElement(Accessor accessor, AssignExpr assign) {
+  TPropertySetterElement(AccessorDecl accessor, AssignExpr assign) {
     isPropertySetterElement(accessor, assign)
   } or
-  TPropertyObserverElement(Accessor observer, AssignExpr assign) {
+  TPropertyObserverElement(AccessorDecl observer, AssignExpr assign) {
     isPropertyObserverElement(observer, assign)
   } or
-  TKeyPathElement(KeyPathExpr expr) or
-  TNilCoalescingTestElement(NilCoalescingExpr expr)
+  TKeyPathElement(KeyPathExpr expr)
 
 predicate isLValue(Expr e) { any(AssignExpr assign).getDest() = e }
 
@@ -25,29 +24,20 @@ predicate ignoreAstElement(AstNode n) {
   isPropertySetterElement(_, n)
 }
 
-private Accessor getAnAccessor(Decl d) {
-  result = d.(VarDecl).getAnAccessor() or
-  result = d.(SubscriptDecl).getAnAccessor()
+private AccessorDecl getAnAccessorDecl(Decl d) {
+  result = d.(VarDecl).getAnAccessorDecl() or
+  result = d.(SubscriptDecl).getAnAccessorDecl()
 }
 
-predicate isPropertyGetterElement(Accessor accessor, Expr ref) {
+predicate isPropertyGetterElement(AccessorDecl accessor, Expr ref) {
   hasDirectToImplementationOrOrdinarySemantics(ref) and
   isRValue(ref) and
   accessor.isGetter() and
-  accessor = getAnAccessor([ref.(LookupExpr).getMember(), ref.(DeclRefExpr).getDecl()])
+  accessor = getAnAccessorDecl([ref.(LookupExpr).getMember(), ref.(DeclRefExpr).getDecl()])
 }
 
-predicate isPropertyGetterElement(PropertyGetterElement pge, Accessor accessor, Expr ref) {
+predicate isPropertyGetterElement(PropertyGetterElement pge, AccessorDecl accessor, Expr ref) {
   pge = TPropertyGetterElement(accessor, ref)
-}
-
-predicate isNormalAutoClosureOrExplicitClosure(ClosureExpr clos) {
-  // short-circuiting operators have a `BinaryExpr` as the parent of the `AutoClosureExpr`,
-  // so we exclude them by checking for a `CallExpr`.
-  clos instanceof AutoClosureExpr and
-  exists(CallExpr call | call.getAnArgument().getExpr() = clos)
-  or
-  clos instanceof ExplicitClosureExpr
 }
 
 private predicate hasDirectToImplementationSemantics(Expr e) {
@@ -70,30 +60,32 @@ private predicate hasDirectToImplementationOrOrdinarySemantics(Expr e) {
   hasDirectToImplementationSemantics(e) or hasOrdinarySemantics(e)
 }
 
-private predicate isPropertySetterElement(Accessor accessor, AssignExpr assign) {
+private predicate isPropertySetterElement(AccessorDecl accessor, AssignExpr assign) {
   exists(Expr lhs | lhs = assign.getDest() |
     hasDirectToImplementationOrOrdinarySemantics(lhs) and
     accessor.isSetter() and
     isLValue(lhs) and
-    accessor = getAnAccessor([lhs.(LookupExpr).getMember(), lhs.(DeclRefExpr).getDecl()])
+    accessor = getAnAccessorDecl([lhs.(LookupExpr).getMember(), lhs.(DeclRefExpr).getDecl()])
   )
 }
 
-predicate isPropertySetterElement(PropertySetterElement pse, Accessor accessor, AssignExpr assign) {
+predicate isPropertySetterElement(
+  PropertySetterElement pse, AccessorDecl accessor, AssignExpr assign
+) {
   pse = TPropertySetterElement(accessor, assign)
 }
 
-private predicate isPropertyObserverElement(Accessor observer, AssignExpr assign) {
+private predicate isPropertyObserverElement(AccessorDecl observer, AssignExpr assign) {
   exists(Expr lhs | lhs = assign.getDest() |
     hasDirectToImplementationOrOrdinarySemantics(lhs) and
     observer.isPropertyObserver() and
     isLValue(lhs) and
-    observer = getAnAccessor([lhs.(LookupExpr).getMember(), lhs.(DeclRefExpr).getDecl()])
+    observer = getAnAccessorDecl([lhs.(LookupExpr).getMember(), lhs.(DeclRefExpr).getDecl()])
   )
 }
 
 predicate isPropertyObserverElement(
-  PropertyObserverElement poe, Accessor accessor, AssignExpr assign
+  PropertyObserverElement poe, AccessorDecl accessor, AssignExpr assign
 ) {
   poe = TPropertyObserverElement(accessor, assign)
 }
@@ -119,7 +111,7 @@ class AstElement extends ControlFlowElement, TAstElement {
 }
 
 class PropertyGetterElement extends ControlFlowElement, TPropertyGetterElement {
-  Accessor accessor;
+  AccessorDecl accessor;
   Expr ref;
 
   PropertyGetterElement() { this = TPropertyGetterElement(accessor, ref) }
@@ -130,13 +122,13 @@ class PropertyGetterElement extends ControlFlowElement, TPropertyGetterElement {
 
   Expr getRef() { result = ref }
 
-  Accessor getAccessor() { result = accessor }
+  AccessorDecl getAccessorDecl() { result = accessor }
 
   Expr getBase() { result = ref.(LookupExpr).getBase() }
 }
 
 class PropertySetterElement extends ControlFlowElement, TPropertySetterElement {
-  Accessor accessor;
+  AccessorDecl accessor;
   AssignExpr assign;
 
   PropertySetterElement() { this = TPropertySetterElement(accessor, assign) }
@@ -145,7 +137,7 @@ class PropertySetterElement extends ControlFlowElement, TPropertySetterElement {
 
   override Location getLocation() { result = assign.getLocation() }
 
-  Accessor getAccessor() { result = accessor }
+  AccessorDecl getAccessorDecl() { result = accessor }
 
   AssignExpr getAssignExpr() { result = assign }
 
@@ -153,7 +145,7 @@ class PropertySetterElement extends ControlFlowElement, TPropertySetterElement {
 }
 
 class PropertyObserverElement extends ControlFlowElement, TPropertyObserverElement {
-  Accessor observer;
+  AccessorDecl observer;
   AssignExpr assign;
 
   PropertyObserverElement() { this = TPropertyObserverElement(observer, assign) }
@@ -168,7 +160,7 @@ class PropertyObserverElement extends ControlFlowElement, TPropertyObserverEleme
 
   override Location getLocation() { result = assign.getLocation() }
 
-  Accessor getObserver() { result = observer }
+  AccessorDecl getObserver() { result = observer }
 
   predicate isWillSet() { observer.isWillSet() }
 
@@ -180,7 +172,7 @@ class PropertyObserverElement extends ControlFlowElement, TPropertyObserverEleme
 }
 
 class FuncDeclElement extends ControlFlowElement, TFuncDeclElement {
-  Function func;
+  AbstractFunctionDecl func;
 
   FuncDeclElement() { this = TFuncDeclElement(func) }
 
@@ -188,7 +180,7 @@ class FuncDeclElement extends ControlFlowElement, TFuncDeclElement {
 
   override Location getLocation() { result = func.getLocation() }
 
-  Function getAst() { result = func }
+  AbstractFunctionDecl getAst() { result = func }
 }
 
 class KeyPathElement extends ControlFlowElement, TKeyPathElement {
@@ -203,10 +195,6 @@ class KeyPathElement extends ControlFlowElement, TKeyPathElement {
   override string toString() { result = expr.toString() }
 }
 
-/**
- * A control flow element representing a closure in its role as a control flow
- * scope.
- */
 class ClosureElement extends ControlFlowElement, TClosureElement {
   ClosureExpr expr;
 
@@ -217,16 +205,4 @@ class ClosureElement extends ControlFlowElement, TClosureElement {
   ClosureExpr getAst() { result = expr }
 
   override string toString() { result = expr.toString() }
-}
-
-class NilCoalescingElement extends ControlFlowElement, TNilCoalescingTestElement {
-  NilCoalescingExpr expr;
-
-  NilCoalescingElement() { this = TNilCoalescingTestElement(expr) }
-
-  override Location getLocation() { result = expr.getLocation() }
-
-  NilCoalescingExpr getAst() { result = expr }
-
-  override string toString() { result = "emptiness test for " + expr.toString() }
 }

@@ -46,7 +46,7 @@ module XML {
       )
     }
 
-    override JS::Expr getSourceArgument() { result = this.getArgument(0) }
+    override JS::Expr getSourceArgument() { result = getArgument(0) }
 
     override predicate resolvesEntities(EntityKind kind) {
       // internal entities are always resolved
@@ -54,7 +54,7 @@ module XML {
       or
       // other entities are only resolved if the configuration option `noent` is set to `true`
       exists(JS::Expr noent |
-        this.hasOptionArgument(1, "noent", noent) and
+        hasOptionArgument(1, "noent", noent) and
         noent.mayHaveBooleanValue(true)
       )
     }
@@ -66,24 +66,23 @@ module XML {
     private API::Node doc() {
       result = call.getReturn()
       or
-      result = this.doc().getMember("encoding").getReturn()
+      result = doc().getMember("encoding").getReturn()
       or
-      result = this.element().getMember("doc").getReturn()
+      result = element().getMember("doc").getReturn()
       or
-      result = this.element().getMember("parent").getReturn()
+      result = element().getMember("parent").getReturn()
     }
 
     /**
      * Gets an `Element` from the `libxmljs` library.
      */
     private API::Node element() {
-      result = this.doc().getMember(["child", "get", "node", "root"]).getReturn()
+      result = doc().getMember(["child", "get", "node", "root"]).getReturn()
+      or
+      result = [doc(), element()].getMember(["childNodes", "find"]).getReturn().getAMember()
       or
       result =
-        [this.doc(), this.element()].getMember(["childNodes", "find"]).getReturn().getAMember()
-      or
-      result =
-        this.element()
+        element()
             .getMember([
                 "parent", "prevSibling", "nextSibling", "remove", "clone", "node", "child",
                 "prevElement", "nextElement"
@@ -95,20 +94,19 @@ module XML {
      * Gets an `Attr` from the `libxmljs` library.
      */
     private API::Node attr() {
-      result = this.element().getMember("attr").getReturn()
+      result = element().getMember("attr").getReturn()
       or
-      result = this.element().getMember("attrs").getReturn().getAMember()
+      result = element().getMember("attrs").getReturn().getAMember()
     }
 
     override DataFlow::Node getAResult() {
-      result = [this.doc(), this.element(), this.attr()].asSource()
+      result = [doc(), element(), attr()].asSource()
       or
-      result = this.element().getMember(["name", "text"]).getACall()
+      result = element().getMember(["name", "text"]).getACall()
       or
-      result = this.attr().getMember(["name", "value"]).getACall()
+      result = attr().getMember(["name", "value"]).getACall()
       or
-      result =
-        this.element().getMember("namespace").getReturn().getMember(["href", "prefix"]).getACall()
+      result = element().getMember("namespace").getReturn().getMember(["href", "prefix"]).getACall()
     }
   }
 
@@ -123,7 +121,7 @@ module XML {
       this = parser.getMember("parseString").getACall().asExpr()
     }
 
-    override JS::Expr getSourceArgument() { result = this.getArgument(0) }
+    override JS::Expr getSourceArgument() { result = getArgument(0) }
 
     override predicate resolvesEntities(EntityKind kind) {
       // entities are resolved by default
@@ -146,7 +144,7 @@ module XML {
       this = parser.getMember("push").getACall().asExpr()
     }
 
-    override JS::Expr getSourceArgument() { result = this.getArgument(0) }
+    override JS::Expr getSourceArgument() { result = getArgument(0) }
 
     override predicate resolvesEntities(EntityKind kind) {
       // entities are resolved by default
@@ -169,7 +167,7 @@ module XML {
       this = parser.getMember(["parse", "write"]).getACall().asExpr()
     }
 
-    override JS::Expr getSourceArgument() { result = this.getArgument(0) }
+    override JS::Expr getSourceArgument() { result = getArgument(0) }
 
     override predicate resolvesEntities(EntityKind kind) {
       // only internal entities are resolved by default
@@ -192,10 +190,10 @@ module XML {
             .getAMethodCall("parseFromString")
             .asExpr() and
       // type contains the string `xml`, that is, it's not `text/html`
-      this.getArgument(1).mayHaveStringValue(any(string tp | tp.matches("%xml%")))
+      getArgument(1).mayHaveStringValue(any(string tp | tp.matches("%xml%")))
     }
 
-    override JS::Expr getSourceArgument() { result = this.getArgument(0) }
+    override JS::Expr getSourceArgument() { result = getArgument(0) }
 
     override predicate resolvesEntities(XML::EntityKind kind) { kind = InternalEntity() }
 
@@ -217,7 +215,7 @@ module XML {
       )
     }
 
-    override JS::Expr getSourceArgument() { result = this.getArgument(0) }
+    override JS::Expr getSourceArgument() { result = getArgument(0) }
 
     override predicate resolvesEntities(XML::EntityKind kind) { any() }
   }
@@ -230,7 +228,7 @@ module XML {
       this.getCallee().(JS::PropAccess).getQualifiedName() = "goog.dom.xml.loadXml"
     }
 
-    override JS::Expr getSourceArgument() { result = this.getArgument(0) }
+    override JS::Expr getSourceArgument() { result = getArgument(0) }
 
     override predicate resolvesEntities(XML::EntityKind kind) { kind = InternalEntity() }
   }
@@ -248,7 +246,7 @@ module XML {
       )
     }
 
-    override JS::Expr getSourceArgument() { result = this.getArgument(0) }
+    override JS::Expr getSourceArgument() { result = getArgument(0) }
 
     override predicate resolvesEntities(XML::EntityKind kind) {
       // sax-js (the parser used) does not expand entities.
@@ -275,7 +273,7 @@ module XML {
       this = parser.getAMemberCall("write").asExpr()
     }
 
-    override JS::Expr getSourceArgument() { result = this.getArgument(0) }
+    override JS::Expr getSourceArgument() { result = getArgument(0) }
 
     override predicate resolvesEntities(XML::EntityKind kind) {
       // sax-js does not expand entities.
@@ -300,7 +298,7 @@ module XML {
             .asExpr()
     }
 
-    override JS::Expr getSourceArgument() { result = this.getArgument(0) }
+    override JS::Expr getSourceArgument() { result = getArgument(0) }
 
     override predicate resolvesEntities(XML::EntityKind kind) {
       // xml-js does not expand custom entities.
@@ -321,7 +319,7 @@ module XML {
       this = parser.getReturn().getMember("write").getACall().asExpr()
     }
 
-    override JS::Expr getSourceArgument() { result = this.getArgument(0) }
+    override JS::Expr getSourceArgument() { result = getArgument(0) }
 
     override predicate resolvesEntities(XML::EntityKind kind) {
       // htmlparser2 does not expand entities.

@@ -43,16 +43,11 @@ class MethodCallSynth extends MethodCallImpl, TMethodCallSynth {
 
   final override AstNode getReceiverImpl() { synthChild(this, 0, result) }
 
-  final override AstNode getArgumentImpl(int n) {
-    synthChild(this, n + 1, result) and
-    n in [0 .. this.getNumberOfArgumentsImpl() - 1]
-  }
+  final override AstNode getArgumentImpl(int n) { synthChild(this, n + 1, result) and n >= 0 }
 
   final override int getNumberOfArgumentsImpl() { this = TMethodCallSynth(_, _, _, _, result) }
 
-  final override Block getBlockImpl() {
-    synthChild(this, this.getNumberOfArgumentsImpl() + 1, result)
-  }
+  final override Block getBlockImpl() { synthChild(this, -2, result) }
 }
 
 class IdentifierMethodCall extends MethodCallImpl, TIdentifierMethodCall {
@@ -121,15 +116,13 @@ private Ruby::AstNode getSuperParent(Ruby::Super sup) {
   result = sup
   or
   result = getSuperParent(sup).getParent() and
-  not result instanceof Ruby::Method and
-  not result instanceof Ruby::SingletonMethod
+  not result instanceof Ruby::Method
 }
 
 private string getSuperMethodName(Ruby::Super sup) {
-  exists(Ruby::AstNode meth | meth = getSuperParent(sup).getParent() |
+  exists(Ruby::Method meth |
+    meth = getSuperParent(sup).getParent() and
     result = any(Method c | toGenerated(c) = meth).getName()
-    or
-    result = any(SingletonMethod c | toGenerated(c) = meth).getName()
   )
 }
 

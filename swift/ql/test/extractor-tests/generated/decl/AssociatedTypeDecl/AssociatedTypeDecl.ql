@@ -4,7 +4,7 @@ import TestUtils
 
 from
   AssociatedTypeDecl x, ModuleDecl getModule, int getNumberOfMembers, Type getInterfaceType,
-  string getName, int getNumberOfInheritedTypes
+  string getName, int getNumberOfBaseTypes
 where
   toBeTested(x) and
   not x.isUnknown() and
@@ -12,6 +12,6 @@ where
   getNumberOfMembers = x.getNumberOfMembers() and
   getInterfaceType = x.getInterfaceType() and
   getName = x.getName() and
-  getNumberOfInheritedTypes = x.getNumberOfInheritedTypes()
+  getNumberOfBaseTypes = x.getNumberOfBaseTypes()
 select x, "getModule:", getModule, "getNumberOfMembers:", getNumberOfMembers, "getInterfaceType:",
-  getInterfaceType, "getName:", getName, "getNumberOfInheritedTypes:", getNumberOfInheritedTypes
+  getInterfaceType, "getName:", getName, "getNumberOfBaseTypes:", getNumberOfBaseTypes

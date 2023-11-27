@@ -241,6 +241,7 @@ const astProperties: string[] = [
     "constructor",
     "declarationList",
     "declarations",
+    "illegalDecorators",
     "default",
     "delete",
     "dotDotDotToken",
@@ -360,10 +361,7 @@ function handleParseCommand(command: ParseCommand, checkPending = true) {
     let filename = command.filename;
     let expectedFilename = state.pendingFiles[state.pendingFileIndex];
     if (expectedFilename !== filename && checkPending) {
-        // File was requested out of order. This happens in rare cases because the Java process decided against extracting it,
-        // for example because it was too large. Just recover and accept that some work was wasted.
-        state.pendingResponse = null;
-        state.pendingFileIndex = state.pendingFiles.indexOf(filename);
+        throw new Error("File requested out of order. Expected '" + expectedFilename + "' but got '" + filename + "'");
     }
     ++state.pendingFileIndex;
     let response = state.pendingResponse || extractFile(command.filename);
@@ -581,6 +579,7 @@ function handleOpenProjectCommand(command: OpenProjectCommand) {
     // inverse mapping, nor a way to enumerate all known module names. So we discover all
     // modules on the type roots (usually "node_modules/@types" but this is configurable).
     let typeRoots = ts.getEffectiveTypeRoots(config.options, {
+        directoryExists: (path) => ts.sys.directoryExists(path),
         getCurrentDirectory: () => basePath,
     });
 

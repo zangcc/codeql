@@ -1,8 +1,6 @@
-namespace {
 class C { };
-}
 
-static void f() {
+void f() {
 	C* c = new C();
 	delete c;
 }

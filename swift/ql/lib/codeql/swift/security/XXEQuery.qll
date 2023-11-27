@@ -12,19 +12,16 @@ import codeql.swift.security.XXEExtensions
 /**
  * A taint-tracking configuration for XML external entities (XXE) vulnerabilities.
  */
-module XxeConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
+class XxeConfiguration extends TaintTracking::Configuration {
+  XxeConfiguration() { this = "XxeConfiguration" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof XxeSink }
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
 
-  predicate isBarrier(DataFlow::Node barrier) { barrier instanceof XxeBarrier }
+  override predicate isSink(DataFlow::Node sink) { sink instanceof XxeSink }
 
-  predicate isAdditionalFlowStep(DataFlow::Node n1, DataFlow::Node n2) {
-    any(XxeAdditionalFlowStep s).step(n1, n2)
+  override predicate isSanitizer(DataFlow::Node sanitizer) { sanitizer instanceof XxeSanitizer }
+
+  override predicate isAdditionalTaintStep(DataFlow::Node n1, DataFlow::Node n2) {
+    any(XxeAdditionalTaintStep s).step(n1, n2)
   }
 }
-
-/**
- * Detect taint flow of XML external entities (XXE) vulnerabilities.
- */
-module XxeFlow = TaintTracking::Global<XxeConfig>;

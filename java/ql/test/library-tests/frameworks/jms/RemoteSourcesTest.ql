@@ -2,15 +2,15 @@ import java
 import semmle.code.java.dataflow.FlowSources
 import TestUtilities.InlineExpectationsTest
 
-module JmsRemoteSourcesTest implements TestSig {
-  string getARelevantTag() { result = "source" }
+class JmsRemoteSourcesTest extends InlineExpectationsTest {
+  JmsRemoteSourcesTest() { this = "JmsRemoteSourcesTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "source" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "source" and
     exists(RemoteFlowSource source |
       location = source.getLocation() and element = source.toString() and value = ""
     )
   }
 }
-
-import MakeTest<JmsRemoteSourcesTest>

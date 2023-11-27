@@ -4,6 +4,9 @@
 
 import javascript
 
+/** DEPRECATED: Alias for `Urijs` */
+deprecated module urijs = Urijs;
+
 /**
  * Provides classes for working with [urijs](http://medialize.github.io/URI.js/) code.
  */
@@ -70,6 +73,9 @@ module Urijs {
   }
 }
 
+/** DEPRECATED: Alias for `Uridashjs` */
+deprecated module uridashjs = Uridashjs;
+
 /**
  * Provides classes for working with [uri-js](https://github.com/garycourt/uri-js) code.
  */
@@ -95,6 +101,9 @@ module Uridashjs {
   }
 }
 
+/** DEPRECATED: Alias for `Punycode` */
+deprecated module punycode = Punycode;
+
 /**
  * Provides classes for working with [punycode](https://github.com/bestiejs/punycode.js) code.
  */
@@ -119,6 +128,9 @@ module Punycode {
     }
   }
 }
+
+/** DEPRECATED: Alias for `UrlParse` */
+deprecated module urlParse = UrlParse;
 
 /**
  * Provides classes for working with [url-parse](https://github.com/unshiftio/url-parse) code.
@@ -157,6 +169,9 @@ module UrlParse {
   }
 }
 
+/** DEPRECATED: Alias for `Querystringify` */
+deprecated module querystringify = Querystringify;
+
 /**
  * Provides classes for working with [querystringify](https://github.com/unshiftio/querystringify) code.
  */
@@ -187,6 +202,9 @@ module Querystringify {
   }
 }
 
+/** DEPRECATED: Alias for `Querydashstring` */
+deprecated module querydashstring = Querydashstring;
+
 /**
  * Provides classes for working with [query-string](https://github.com/sindresorhus/query-string) code.
  */
@@ -212,6 +230,9 @@ module Querydashstring {
   }
 }
 
+/** DEPRECATED: Alias for `Url` */
+deprecated module url = Url;
+
 /**
  * Provides classes for working with [url](https://nodejs.org/api/url.html) code.
  */
@@ -234,6 +255,9 @@ module Url {
     }
   }
 }
+
+/** DEPRECATED: Alias for `Querystring` */
+deprecated module querystring = Querystring;
 
 /**
  * Provides classes for working with [querystring](https://nodejs.org/api/querystring.html) code.

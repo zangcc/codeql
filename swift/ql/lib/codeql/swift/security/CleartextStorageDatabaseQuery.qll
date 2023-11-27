@@ -13,45 +13,37 @@ import codeql.swift.security.CleartextStorageDatabaseExtensions
  * A taint configuration from sensitive information to expressions that are
  * transmitted over a network.
  */
-module CleartextStorageDatabaseConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) { node.asExpr() instanceof SensitiveExpr }
+class CleartextStorageConfig extends TaintTracking::Configuration {
+  CleartextStorageConfig() { this = "CleartextStorageConfig" }
 
-  predicate isSink(DataFlow::Node node) { node instanceof CleartextStorageDatabaseSink }
+  override predicate isSource(DataFlow::Node node) { node.asExpr() instanceof SensitiveExpr }
 
-  predicate isBarrier(DataFlow::Node barrier) { barrier instanceof CleartextStorageDatabaseBarrier }
+  override predicate isSink(DataFlow::Node node) { node instanceof CleartextStorageDatabaseSink }
 
-  predicate isAdditionalFlowStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
-    any(CleartextStorageDatabaseAdditionalFlowStep s).step(nodeFrom, nodeTo)
+  override predicate isSanitizer(DataFlow::Node sanitizer) {
+    sanitizer instanceof CleartextStorageDatabaseSanitizer
   }
 
-  predicate isBarrierIn(DataFlow::Node node) {
+  override predicate isAdditionalTaintStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
+    any(CleartextStorageDatabaseAdditionalTaintStep s).step(nodeFrom, nodeTo)
+  }
+
+  override predicate isSanitizerIn(DataFlow::Node node) {
     // make sources barriers so that we only report the closest instance
     isSource(node)
   }
 
-  predicate allowImplicitRead(DataFlow::Node node, DataFlow::ContentSet c) {
+  override predicate allowImplicitRead(DataFlow::Node node, DataFlow::ContentSet c) {
     // flow out from fields of an `NSManagedObject` or `RealmSwiftObject` at the sink,
     // for example in `realmObj.data = sensitive`.
     isSink(node) and
-    exists(NominalTypeDecl d, Decl cx |
-      (
-        d.getType().getUnderlyingType().getABaseType*().getName() = "NSManagedObject" or
-        d.getType() instanceof RealmSwiftObjectType
-      ) and
-      cx.asNominalTypeDecl() = d and
+    exists(ClassOrStructDecl cd, Decl cx |
+      cd.getABaseTypeDecl*().getName() = ["NSManagedObject", "RealmSwiftObject"] and
+      cx.asNominalTypeDecl() = cd and
       c.getAReadContent().(DataFlow::Content::FieldContent).getField() = cx.getAMember()
     )
     or
-    // flow out from dictionary tuple values at the sink (this is essential
-    // for some of the SQLite.swift models).
-    isSink(node) and
-    node.asExpr().getType().getUnderlyingType() instanceof DictionaryType and
-    c.getAReadContent().(DataFlow::Content::TupleContent).getIndex() = 1
+    // any default implicit reads
+    super.allowImplicitRead(node, c)
   }
 }
-
-/**
- * Detect taint flow of sensitive information to expressions that are
- * transmitted over a network.
- */
-module CleartextStorageDatabaseFlow = TaintTracking::Global<CleartextStorageDatabaseConfig>;

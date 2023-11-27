@@ -2,8 +2,6 @@ using System.Text;
 using System.Web;
 using System.Web.Security;
 using System.Windows.Forms;
-using System.IO;
-using System.Security.Cryptography;
 
 public class ClearTextStorageHandler : IHttpHandler
 {
@@ -26,31 +24,11 @@ public class ClearTextStorageHandler : IHttpHandler
         logger.Warn(GetPassword());
         // GOOD: Logging encrypted sensitive data
         logger.Warn(Encode(GetPassword(), "Password"));
-
-        // BAD: Storing sensitive data in local file 
-        using (var writeStream = File.Open("passwords.txt", FileMode.Create))
-        {
-            var writer = new StreamWriter(writeStream);
-            writer.Write(GetPassword());
-            writer.Close();
-        }
-
-        // GOOD: Storing encrypted sensitive data
-        using (var writeStream = File.Open("passwords.txt", FileMode.Create))
-        {
-            var writer = new StreamWriter(new CryptoStream(writeStream, GetEncryptor(), CryptoStreamMode.Write));
-            writer.Write(GetPassword());
-            writer.Close();
-        }
     }
 
     public string Encode(string value, string type)
     {
         return Encoding.UTF8.GetString(MachineKey.Protect(Encoding.UTF8.GetBytes(value), type));
-    }
-
-    public ICryptoTransform GetEncryptor(){
-        return null;
     }
 
     public string GetPassword()

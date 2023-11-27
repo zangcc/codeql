@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"go/ast"
 	"go/types"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"unicode/utf8"
@@ -50,7 +51,7 @@ func NewWriter(path string, pkg *packages.Package) (*Writer, error) {
 	if err != nil {
 		return nil, err
 	}
-	tmpFile, err := os.CreateTemp(trapFileDir, filepath.Base(trapFilePath))
+	tmpFile, err := ioutil.TempFile(trapFileDir, filepath.Base(trapFilePath))
 	if err != nil {
 		return nil, err
 	}

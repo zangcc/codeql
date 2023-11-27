@@ -2,10 +2,12 @@ import java
 import semmle.code.java.security.ImproperIntentVerificationQuery
 import TestUtilities.InlineExpectationsTest
 
-module HasFlowTest implements TestSig {
-  string getARelevantTag() { result = "hasResult" }
+class HasFlowTest extends InlineExpectationsTest {
+  HasFlowTest() { this = "HasFlowTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasResult" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasResult" and
     exists(Method orm | unverifiedSystemReceiver(_, orm, _) |
       orm.getLocation() = location and
@@ -14,5 +16,3 @@ module HasFlowTest implements TestSig {
     )
   }
 }
-
-import MakeTest<HasFlowTest>

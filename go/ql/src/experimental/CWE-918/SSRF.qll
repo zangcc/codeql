@@ -17,11 +17,9 @@ module ServerSideRequestForgery {
   private import semmle.go.dataflow.Properties
 
   /**
-   * DEPRECATED: Use `Flow` instead.
-   *
    * A taint-tracking configuration for reasoning about request forgery.
    */
-  deprecated class Configuration extends TaintTracking::Configuration {
+  class Configuration extends TaintTracking::Configuration {
     Configuration() { this = "SSRF" }
 
     override predicate isSource(DataFlow::Node source) { source instanceof Source }
@@ -45,26 +43,6 @@ module ServerSideRequestForgery {
       node instanceof SanitizerEdge
     }
   }
-
-  private module Config implements DataFlow::ConfigSig {
-    predicate isSource(DataFlow::Node source) { source instanceof Source }
-
-    predicate isSink(DataFlow::Node sink) { sink instanceof Sink }
-
-    predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
-      // propagate to a URL when its host is assigned to
-      exists(Write w, Field f, SsaWithFields v | f.hasQualifiedName("net/url", "URL", "Host") |
-        w.writesField(v.getAUse(), f, node1) and node2 = v.getAUse()
-      )
-    }
-
-    predicate isBarrier(DataFlow::Node node) { node instanceof Sanitizer }
-
-    predicate isBarrierOut(DataFlow::Node node) { node instanceof SanitizerEdge }
-  }
-
-  /** Tracks taint flow for reasoning about request forgery vulnerabilities. */
-  module Flow = TaintTracking::Global<Config>;
 
   /** A data flow source for request forgery vulnerabilities. */
   abstract class Source extends DataFlow::Node { }
@@ -154,7 +132,7 @@ module ServerSideRequestForgery {
   }
 
   /**
-   * A value which has boolean or numeric type, considered as a sanitizer for SSRF.
+   * If the tainted variable is a boolean or has numeric type is not possible to exploit a SSRF
    */
   class NumSanitizer extends Sanitizer {
     NumSanitizer() {
@@ -164,8 +142,8 @@ module ServerSideRequestForgery {
   }
 
   /**
-   * A body received from a request, where certain tags on our struct's fields have been used to hint
-   * to the binding function to run some validations for that field. If these binding functions returns
+   * When we receive a body from a request, we can use certain tags on our struct's fields to hint
+   * the binding function to run some validations for that field. If these binding functions returns
    * no error, then we consider these fields safe for SSRF.
    */
   class BodySanitizer extends Sanitizer instanceof CheckedAlphanumericStructFieldRead { }

@@ -1,5 +1,5 @@
-﻿using Xunit;
-using Semmle.Util;
+﻿using Semmle.Util;
+using Xunit;
 
 namespace Semmle.Extraction.Tests
 {

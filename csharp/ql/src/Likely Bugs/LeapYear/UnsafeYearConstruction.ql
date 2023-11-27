@@ -10,30 +10,32 @@
  */
 
 import csharp
-import UnsafeYearCreationFromArithmetic::PathGraph
+import DataFlow::PathGraph
 
-module UnsafeYearCreationFromArithmeticConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
+class UnsafeYearCreationFromArithmeticConfiguration extends TaintTracking::Configuration {
+  UnsafeYearCreationFromArithmeticConfiguration() {
+    this = "UnsafeYearCreationFromArithmeticConfiguration"
+  }
+
+  override predicate isSource(DataFlow::Node source) {
     exists(ArithmeticOperation ao, PropertyAccess pa | ao = source.asExpr() |
       pa = ao.getAChild*() and
-      pa.getProperty().hasFullyQualifiedName("System.DateTime", "Year")
+      pa.getProperty().hasQualifiedName("System.DateTime", "Year")
     )
   }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSink(DataFlow::Node sink) {
     exists(ObjectCreation oc |
       sink.asExpr() = oc.getArgumentForName("year") and
-      oc.getObjectType().getABaseType*().hasFullyQualifiedName("System", "DateTime")
+      oc.getObjectType().getABaseType*().hasQualifiedName("System", "DateTime")
     )
   }
 }
 
-module UnsafeYearCreationFromArithmetic =
-  TaintTracking::Global<UnsafeYearCreationFromArithmeticConfig>;
-
 from
-  UnsafeYearCreationFromArithmetic::PathNode source, UnsafeYearCreationFromArithmetic::PathNode sink
-where UnsafeYearCreationFromArithmetic::flowPath(source, sink)
+  UnsafeYearCreationFromArithmeticConfiguration config, DataFlow::PathNode source,
+  DataFlow::PathNode sink
+where config.hasFlowPath(source, sink)
 select sink, source, sink,
   "This $@ based on a 'System.DateTime.Year' property is used in a construction of a new 'System.DateTime' object, flowing to the 'year' argument.",
   source, "arithmetic operation"

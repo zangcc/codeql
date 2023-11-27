@@ -16,11 +16,11 @@
 import csharp
 import semmle.code.csharp.security.dataflow.ReDoSQuery
 import semmle.code.csharp.frameworks.system.text.RegularExpressions
-import ReDoS::PathGraph
+import semmle.code.csharp.dataflow.DataFlow::DataFlow::PathGraph
 
-from ReDoS::PathNode source, ReDoS::PathNode sink
+from TaintTrackingConfiguration c, DataFlow::PathNode source, DataFlow::PathNode sink
 where
-  ReDoS::flowPath(source, sink) and
+  c.hasFlowPath(source, sink) and
   // No global timeout set
   not exists(RegexGlobalTimeout r) and
   (

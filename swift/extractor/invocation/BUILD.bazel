@@ -8,7 +8,6 @@ swift_cc_library(
     deps = [
         "//swift/extractor/config",
         "//swift/extractor/infra",
-        "//swift/extractor/mangler",
         "//swift/extractor/remapping",
     ],
 )

@@ -2,12 +2,14 @@ import java
 import semmle.code.java.security.Mail
 import TestUtilities.InlineExpectationsTest
 
-module InsecureJavaMailTest implements TestSig {
-  string getARelevantTag() { result = "hasInsecureJavaMail" }
+class InsecureJavaMailTest extends InlineExpectationsTest {
+  InsecureJavaMailTest() { this = "HasInsecureJavaMailTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasInsecureJavaMail" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasInsecureJavaMail" and
-    exists(MethodCall ma |
+    exists(MethodAccess ma |
       ma.getLocation() = location and
       element = ma.toString() and
       value = ""
@@ -20,5 +22,3 @@ module InsecureJavaMailTest implements TestSig {
     )
   }
 }
-
-import MakeTest<InsecureJavaMailTest>

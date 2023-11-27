@@ -1,7 +1,7 @@
 import default
 import semmle.code.java.dispatch.VirtualDispatch
 
-from MethodCall m
+from MethodAccess m
 where
   m.getEnclosingCallable().getName() = "run" and
   m.getMethod().fromSource()

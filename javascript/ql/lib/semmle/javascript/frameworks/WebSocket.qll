@@ -249,6 +249,9 @@ module ServerWebSocket {
     override Http::RouteHandler getRouteHandler() { result = handler }
   }
 
+  /** DEPRECATED: Alias for ServerHttpRequest */
+  deprecated class ServerHTTPRequest = ServerHttpRequest;
+
   /**
    * An access user-controlled HTTP request input in a request to a WebSocket server.
    */

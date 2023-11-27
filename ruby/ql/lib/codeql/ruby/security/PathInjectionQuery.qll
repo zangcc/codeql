@@ -3,7 +3,7 @@
  * path injection vulnerabilities.
  *
  * Note, for performance reasons: only import this file if
- * `PathInjectionFlow` is needed, otherwise
+ * `PathInjection::Configuration` is needed, otherwise
  * `PathInjectionCustomizations` should be imported instead.
  */
 
@@ -15,9 +15,8 @@ private import codeql.ruby.TaintTracking
 /**
  * A taint-tracking configuration for reasoning about path injection
  * vulnerabilities.
- * DEPRECATED: Use `PathInjectionFlow`
  */
-deprecated class Configuration extends TaintTracking::Configuration {
+class Configuration extends TaintTracking::Configuration {
   Configuration() { this = "PathInjection" }
 
   override predicate isSource(DataFlow::Node source) { source instanceof PathInjection::Source }
@@ -27,19 +26,8 @@ deprecated class Configuration extends TaintTracking::Configuration {
   override predicate isSanitizer(DataFlow::Node node) {
     node instanceof Path::PathSanitization or node instanceof PathInjection::Sanitizer
   }
-}
 
-private module PathInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof PathInjection::Source }
-
-  predicate isSink(DataFlow::Node sink) { sink instanceof PathInjection::Sink }
-
-  predicate isBarrier(DataFlow::Node node) {
-    node instanceof Path::PathSanitization or node instanceof PathInjection::Sanitizer
+  deprecated override predicate isSanitizerGuard(DataFlow::BarrierGuard guard) {
+    guard instanceof PathInjection::SanitizerGuard
   }
 }
-
-/**
- * Taint-tracking for detecting path injection vulnerabilities.
- */
-module PathInjectionFlow = TaintTracking::Global<PathInjectionConfig>;

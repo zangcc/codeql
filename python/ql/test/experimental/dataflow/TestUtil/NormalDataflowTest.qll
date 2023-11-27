@@ -3,20 +3,20 @@ import experimental.dataflow.TestUtil.FlowTest
 import experimental.dataflow.testConfig
 private import semmle.python.dataflow.new.internal.PrintNode
 
-module DataFlowTest implements FlowTestSig {
-  string flowTag() { result = "flow" }
+class DataFlowTest extends FlowTest {
+  DataFlowTest() { this = "DataFlowTest" }
 
-  predicate relevantFlow(DataFlow::Node source, DataFlow::Node sink) {
-    TestFlow::flow(source, sink)
+  override string flowTag() { result = "flow" }
+
+  override predicate relevantFlow(DataFlow::Node source, DataFlow::Node sink) {
+    exists(TestConfiguration cfg | cfg.hasFlow(source, sink))
   }
 }
-
-import MakeTest<MakeTestSig<DataFlowTest>>
 
 query predicate missingAnnotationOnSink(Location location, string error, string element) {
   error = "ERROR, you should add `# $ MISSING: flow` annotation" and
   exists(DataFlow::Node sink |
-    TestConfig::isSink(sink) and
+    any(TestConfiguration config).isSink(sink) and
     // note: we only care about `SINK` and not `SINK_F`, so we have to reconstruct manually.
     exists(DataFlow::CallCfgNode call |
       call.getFunction().asCfgNode().(NameNode).getId() = "SINK" and
@@ -24,8 +24,8 @@ query predicate missingAnnotationOnSink(Location location, string error, string 
     ) and
     location = sink.getLocation() and
     element = prettyExpr(sink.asExpr()) and
-    not TestFlow::flowTo(sink) and
-    not exists(FalseNegativeTestExpectation missingResult |
+    not any(TestConfiguration config).hasFlow(_, sink) and
+    not exists(FalseNegativeExpectation missingResult |
       missingResult.getTag() = "flow" and
       missingResult.getLocation().getFile() = location.getFile() and
       missingResult.getLocation().getStartLine() = location.getStartLine()

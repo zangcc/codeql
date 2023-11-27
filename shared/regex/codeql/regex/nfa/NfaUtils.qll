@@ -3,8 +3,6 @@
  */
 
 private import codeql.regex.RegexTreeView
-private import codeql.util.Numbers
-private import codeql.util.Strings
 
 /**
  * Classes and predicates that create an NFA and various algorithms for working with it.
@@ -16,7 +14,20 @@ module Make<RegexTreeViewSig TreeImpl> {
    * Gets the char after `c` (from a simplified ASCII table).
    */
   private string nextChar(string c) {
-    exists(int code | code = asciiPrintable(c) | code + 1 = asciiPrintable(result))
+    exists(int code | code = ascii(c) | code + 1 = ascii(result))
+  }
+
+  /**
+   * Gets an approximation for the ASCII code for `char`.
+   * Only the easily printable chars are included (so no newline, tab, null, etc).
+   */
+  private int ascii(string char) {
+    char =
+      rank[result](string c |
+        c =
+          "! \"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+              .charAt(_)
+      )
   }
 
   /**
@@ -48,12 +59,10 @@ module Make<RegexTreeViewSig TreeImpl> {
     forex(RegExpTerm child | child = t.(RegExpSequence).getAChild() | matchesEpsilon(child))
   }
 
-  final private class FinalRegExpSubPattern = RegExpSubPattern;
-
   /**
    * A lookahead/lookbehind that matches the empty string.
    */
-  class EmptyPositiveSubPattern extends FinalRegExpSubPattern {
+  class EmptyPositiveSubPattern instanceof RegExpSubPattern {
     EmptyPositiveSubPattern() {
       (
         this instanceof RegExpPositiveLookahead
@@ -62,18 +71,19 @@ module Make<RegexTreeViewSig TreeImpl> {
       ) and
       matchesEpsilon(this.getOperand())
     }
+
+    /** Gets a string representation of this sub-pattern. */
+    string toString() { result = super.toString() }
   }
 
   /** DEPRECATED: Use `EmptyPositiveSubPattern` instead. */
   deprecated class EmptyPositiveSubPatttern = EmptyPositiveSubPattern;
 
-  final private class FinalRegExpTerm = RegExpTerm;
-
   /**
    * A branch in a disjunction that is the root node in a literal, or a literal
    * whose root node is not a disjunction.
    */
-  class RegExpRoot extends FinalRegExpTerm {
+  class RegExpRoot instanceof RegExpTerm {
     RegExpRoot() {
       exists(RegExpParent parent |
         exists(RegExpAlt alt |
@@ -97,6 +107,12 @@ module Make<RegexTreeViewSig TreeImpl> {
       // not excluded for library specific reasons
       not isExcluded(super.getRootTerm().getParent())
     }
+
+    /** Gets a string representation of this root term. */
+    string toString() { result = this.(RegExpTerm).toString() }
+
+    /** Gets the outermost term of this regular expression. */
+    RegExpTerm getRootTerm() { result = super.getRootTerm() }
   }
 
   /**
@@ -115,15 +131,22 @@ module Make<RegexTreeViewSig TreeImpl> {
   /**
    * A regexp term that is relevant for this ReDoS analysis.
    */
-  class RelevantRegExpTerm extends FinalRegExpTerm {
+  class RelevantRegExpTerm instanceof RegExpTerm {
     RelevantRegExpTerm() { getRoot(this).isRelevant() }
+
+    /** Gets a string representation of this term. */
+    string toString() { result = super.toString() }
+
+    /** Gets the raw source text of this term. */
+    string getRawValue() { result = super.getRawValue() }
+
+    /** Gets the outermost term of this regular expression. */
+    RegExpTerm getRootTerm() { result = super.getRootTerm() }
   }
 
   /**
    * Gets a string for the full location of `t`.
    */
-  bindingset[t]
-  pragma[inline_late]
   string getTermLocationString(RegExpTerm t) {
     exists(string file, int startLine, int startColumn, int endLine, int endColumn |
       t.hasLocationInfo(file, startLine, startColumn, endLine, endColumn) and
@@ -164,17 +187,17 @@ module Make<RegexTreeViewSig TreeImpl> {
     /** An input symbol corresponding to character `c`. */
     Char(string c) {
       c =
-        getACodepoint(any(RegexpCharacterConstant cc |
-            cc instanceof RelevantRegExpTerm and
-            not isIgnoreCase(cc.getRootTerm())
-          ).getValue())
+        any(RegexpCharacterConstant cc |
+          cc instanceof RelevantRegExpTerm and
+          not isIgnoreCase(cc.getRootTerm())
+        ).getValue().charAt(_)
       or
       // normalize everything to lower case if the regexp is case insensitive
       c =
         any(RegexpCharacterConstant cc, string char |
           cc instanceof RelevantRegExpTerm and
           isIgnoreCase(cc.getRootTerm()) and
-          char = getACodepoint(cc.getValue())
+          char = cc.getValue().charAt(_)
         |
           char.toLowerCase()
         )
@@ -368,9 +391,9 @@ module Make<RegexTreeViewSig TreeImpl> {
      * Includes all printable ascii chars, all constants mentioned in a regexp, and all chars matches by the regexp `/\s|\d|\w/`.
      */
     string getARelevantChar() {
-      exists(asciiPrintable(result))
+      exists(ascii(result))
       or
-      exists(RegexpCharacterConstant c | result = getACodepoint(c.getValue()))
+      exists(RegexpCharacterConstant c | result = c.getValue().charAt(_))
       or
       classEscapeMatches(_, result)
     }
@@ -426,15 +449,7 @@ module Make<RegexTreeViewSig TreeImpl> {
       }
 
       bindingset[char]
-      override predicate matches(string char) {
-        not hasChildThatMatches(cc, char) and
-        (
-          // detect unsupported char classes that doesn't match anything (e.g. `\p{L}` in ruby), and don't report any matches
-          hasChildThatMatches(cc, _)
-          or
-          not exists(cc.getAChild()) // [^] still matches everything
-        )
-      }
+      override predicate matches(string char) { not hasChildThatMatches(cc, char) }
     }
 
     /**
@@ -519,9 +534,7 @@ module Make<RegexTreeViewSig TreeImpl> {
 
       bindingset[char]
       override predicate matches(string char) {
-        not classEscapeMatches(charClass.toLowerCase(), char) and
-        // detect unsupported char classes (e.g. `\p{L}` in ruby), and don't report any matches
-        classEscapeMatches(charClass.toLowerCase(), _)
+        not classEscapeMatches(charClass.toLowerCase(), char)
       }
     }
 
@@ -668,12 +681,6 @@ module Make<RegexTreeViewSig TreeImpl> {
     )
   }
 
-  pragma[noinline]
-  private int getCodepointLengthForState(string s) {
-    result = getCodepointLength(s) and
-    s = any(RegexpCharacterConstant reg).getValue()
-  }
-
   /**
    * Holds if the NFA has a transition from `q1` to `q2` labelled with `lbl`.
    */
@@ -682,16 +689,16 @@ module Make<RegexTreeViewSig TreeImpl> {
       q1 = Match(s, i) and
       (
         not isIgnoreCase(s.getRootTerm()) and
-        lbl = Char(getCodepointAt(s.getValue(), i))
+        lbl = Char(s.getValue().charAt(i))
         or
         // normalize everything to lower case if the regexp is case insensitive
         isIgnoreCase(s.getRootTerm()) and
-        exists(string c | c = getCodepointAt(s.getValue(), i) | lbl = Char(c.toLowerCase()))
+        exists(string c | c = s.getValue().charAt(i) | lbl = Char(c.toLowerCase()))
       ) and
       (
         q2 = Match(s, i + 1)
         or
-        getCodepointLengthForState(s.getValue()) = i + 1 and
+        s.getValue().length() = i + 1 and
         q2 = after(s)
       )
     )
@@ -719,12 +726,6 @@ module Make<RegexTreeViewSig TreeImpl> {
     exists(RegExpSequence seq | lbl = Epsilon() | q1 = before(seq) and q2 = before(seq.getChild(0)))
     or
     exists(RegExpGroup grp | lbl = Epsilon() | q1 = before(grp) and q2 = before(grp.getChild(0)))
-    or
-    exists(RegExpGroup grp | lbl = Epsilon() |
-      not exists(grp.getAChild()) and
-      q1 = before(grp) and
-      q2 = before(grp.getSuccessor())
-    )
     or
     exists(EffectivelyStar star | lbl = Epsilon() |
       q1 = before(star) and q2 = before(star.getChild(0))
@@ -798,7 +799,7 @@ module Make<RegexTreeViewSig TreeImpl> {
     Match(RelevantRegExpTerm t, int i) {
       i = 0
       or
-      exists(getCodepointAt(t.(RegexpCharacterConstant).getValue(), i))
+      exists(t.(RegexpCharacterConstant).getValue().charAt(i))
     } or
     /**
      * An accept state, where exactly the given input string is accepted.
@@ -824,7 +825,7 @@ module Make<RegexTreeViewSig TreeImpl> {
    * which represents the state of the NFA before starting to
    * match `t`, or the `i`th character in `t` if `t` is a constant.
    */
-  final class State extends TState {
+  class State extends TState {
     RegExpTerm repr;
 
     State() {
@@ -850,13 +851,6 @@ module Make<RegexTreeViewSig TreeImpl> {
      * Gets the term represented by this state.
      */
     RegExpTerm getRepr() { result = repr }
-
-    /**
-     * Holds if the term represented by this state is found at the specified location offsets.
-     */
-    predicate hasLocationInfo(string file, int line, int column, int endline, int endcolumn) {
-      repr.hasLocationInfo(file, line, column, endline, endcolumn)
-    }
   }
 
   /**
@@ -1016,10 +1010,16 @@ module Make<RegexTreeViewSig TreeImpl> {
     }
 
     /** A state within a regular expression that contains a candidate state. */
-    class RelevantState extends State {
+    class RelevantState instanceof State {
       RelevantState() {
         exists(State s | isCandidate(s) | getRoot(s.getRepr()) = getRoot(this.getRepr()))
       }
+
+      /** Gets a string representation for this state in a regular expression. */
+      string toString() { result = State.super.toString() }
+
+      /** Gets the term represented by this state. */
+      RegExpTerm getRepr() { result = State.super.getRepr() }
     }
   }
 
@@ -1085,9 +1085,7 @@ module Make<RegexTreeViewSig TreeImpl> {
        */
       predicate reachesOnlyRejectableSuffixes(State fork, string w) {
         isReDoSCandidate(fork, w) and
-        forex(State next | next = process(fork, w, getCodepointLengthForCandidate(w) - 1) |
-          isLikelyRejectable(next)
-        ) and
+        forex(State next | next = process(fork, w, w.length() - 1) | isLikelyRejectable(next)) and
         not getProcessPrevious(fork, _, w) = acceptsAnySuffix() // we stop `process(..)` early if we can, check here if it happened.
       }
 
@@ -1165,7 +1163,7 @@ module Make<RegexTreeViewSig TreeImpl> {
       private string relevant(RegExpRoot root) {
         root = relevantRoot() and
         (
-          exists(asciiPrintable(result)) and exists(root)
+          exists(ascii(result)) and exists(root)
           or
           exists(InputSymbol s | belongsTo(s, root) | result = intersect(s, _))
           or
@@ -1197,13 +1195,6 @@ module Make<RegexTreeViewSig TreeImpl> {
         exists(string char | char = ["|", "\n", "Z"] | not deltaClosedChar(s, char, _))
       }
 
-      // `process` can't use pragma[inline] predicates. So a materialized version of `getCodepointAt` is needed.
-      pragma[noinline]
-      private string getCodePointAtForProcess(string str, int i) {
-        result = getCodepointAt(str, i) and
-        isReDoSCandidate(_, str)
-      }
-
       /**
        * Gets a state that can be reached from pumpable `fork` consuming all
        * chars in `w` any number of times followed by the first `i+1` characters of `w`.
@@ -1213,19 +1204,13 @@ module Make<RegexTreeViewSig TreeImpl> {
         exists(State prev | prev = getProcessPrevious(fork, i, w) |
           not prev = acceptsAnySuffix() and // we stop `process(..)` early if we can. If the successor accepts any suffix, then we know it can never be rejected.
           exists(string char, InputSymbol sym |
-            char = getCodePointAtForProcess(w, i) and
+            char = w.charAt(i) and
             deltaClosed(prev, sym, result) and
             // noopt to prevent joining `prev` with all possible `chars` that could transition away from `prev`.
             // Instead only join with the set of `chars` where a relevant `InputSymbol` has already been found.
             sym = getAProcessInputSymbol(char)
           )
         )
-      }
-
-      pragma[noinline]
-      private int getCodepointLengthForCandidate(string s) {
-        result = getCodepointLength(s) and
-        isReDoSCandidate(_, s)
       }
 
       /**
@@ -1241,7 +1226,7 @@ module Make<RegexTreeViewSig TreeImpl> {
           or
           // repeat until fixpoint
           i = 0 and
-          result = process(fork, w, getCodepointLengthForCandidate(w) - 1)
+          result = process(fork, w, w.length() - 1)
         )
       }
 
@@ -1257,9 +1242,7 @@ module Make<RegexTreeViewSig TreeImpl> {
       /**
        * Gets a `char` that occurs in a `pump` string.
        */
-      private string getAProcessChar() {
-        result = getACodepoint(any(string s | isReDoSCandidate(_, s)))
-      }
+      private string getAProcessChar() { result = any(string s | isReDoSCandidate(_, s)).charAt(_) }
     }
 
     /**
@@ -1294,6 +1277,19 @@ module Make<RegexTreeViewSig TreeImpl> {
         or
         not exists(Prefix::prefix(s)) and prefixMsg = ""
       )
+    }
+
+    /**
+     * Gets the result of backslash-escaping newlines, carriage-returns and
+     * backslashes in `s`.
+     */
+    bindingset[s]
+    private string escape(string s) {
+      result =
+        s.replaceAll("\\", "\\\\")
+            .replaceAll("\n", "\\n")
+            .replaceAll("\r", "\\r")
+            .replaceAll("\t", "\\t")
     }
 
     /**
@@ -1374,8 +1370,7 @@ module Make<RegexTreeViewSig TreeImpl> {
         result = getChar(ancestor) and
         ancestor = getAnAncestor(n) and
         i = nodeDepth(ancestor)
-      ) and
-      nodeDepth(n) < 100
+      )
     }
 
     /** Gets a string corresponding to `node`. */

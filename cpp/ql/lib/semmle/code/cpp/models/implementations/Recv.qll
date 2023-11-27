@@ -11,8 +11,7 @@ import semmle.code.cpp.models.interfaces.SideEffect
 
 /** The function `recv` and its assorted variants */
 private class Recv extends AliasFunction, ArrayFunction, SideEffectFunction,
-  RemoteFlowSourceFunction
-{
+  RemoteFlowSourceFunction {
   Recv() {
     this.hasGlobalName([
         "recv", // recv(socket, dest, len, flags)

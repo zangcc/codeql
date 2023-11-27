@@ -13,9 +13,9 @@
 import codeql.ruby.AST
 import codeql.ruby.DataFlow
 import codeql.ruby.security.ServerSideRequestForgeryQuery
-import ServerSideRequestForgeryFlow::PathGraph
+import DataFlow::PathGraph
 
-from ServerSideRequestForgeryFlow::PathNode source, ServerSideRequestForgeryFlow::PathNode sink
-where ServerSideRequestForgeryFlow::flowPath(source, sink)
+from Configuration config, DataFlow::PathNode source, DataFlow::PathNode sink
+where config.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "The URL of this request depends on a $@.", source.getNode(),
   "user-provided value"

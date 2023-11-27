@@ -15,13 +15,13 @@
 import swift
 import codeql.swift.dataflow.DataFlow
 import codeql.swift.security.UnsafeWebViewFetchQuery
-import UnsafeWebViewFetchFlow::PathGraph
+import DataFlow::PathGraph
 
 from
-  UnsafeWebViewFetchFlow::PathNode sourceNode, UnsafeWebViewFetchFlow::PathNode sinkNode,
+  UnsafeWebViewFetchConfig config, DataFlow::PathNode sourceNode, DataFlow::PathNode sinkNode,
   UnsafeWebViewFetchSink sink, string message
 where
-  UnsafeWebViewFetchFlow::flowPath(sourceNode, sinkNode) and
+  config.hasFlowPath(sourceNode, sinkNode) and
   sink = sinkNode.getNode() and
   (
     // no base URL
@@ -33,7 +33,7 @@ where
     message = "Tainted data is used in a WebView fetch without restricting the base URL."
     or
     // base URL is also tainted
-    UnsafeWebViewFetchFlow::flowToExpr(sink.getBaseUrl()) and
+    config.hasFlowToExpr(sink.getBaseUrl()) and
     message = "Tainted data is used in a WebView fetch with a tainted base URL."
   )
 select sink, sourceNode, sinkNode, message

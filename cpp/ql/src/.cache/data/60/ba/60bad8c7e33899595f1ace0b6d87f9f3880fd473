@@ -1,0 +1,24 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "OpenCallMissingModeArgument.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "71aeec42ce2f60e7e2d20ea62cb6c1e212e14394"
+  debugInfo: "13e44878d9f7eb504888e377571c26a1d5cc67ff"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "9771be31ee085cb7e04c29085bb901e6edbb8ff6"
+- cached: "6c8b3996f913a2c301248eb9686264937fe1493c"
+  debugInfo: "335835d16cee1793bd08cc9c26d57dbb67f85029"
+- cached: "5a7f9fbc1550c93084b1c41446939bca46efe511"
+  debugInfo: "0f44d926c176aa515471277741e16bae1e892adc"
+- cached: "2407ffc6dc5373c4974dadf0af691749a6e8ee39"
+  debugInfo: "8869cbc8d02d9d75e4b5c60a26e420d5a82ae074"
+- cached: "240b83ba93034a6a5f4f014137a636e74a9e96f2"
+  debugInfo: "9729347e90faf8a5b1d444fed016c7263ee08cfe"
+results:
+  '#select':
+    resultArranger: "2\"fc\"ei120s"
+inputsDigest: "60bad8c7e33899595f1ace0b6d87f9f3880fd473"

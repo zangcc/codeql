@@ -1,8 +1,8 @@
 using Xunit;
-using System;
-using System.IO;
 using Semmle.Util;
+using System.IO;
 using Semmle.Util.Logging;
+using System;
 
 namespace SemmleTests.Semmle.Util
 {

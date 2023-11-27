@@ -16,19 +16,13 @@
 import csharp
 import semmle.code.csharp.security.dataflow.flowsources.Stored
 import semmle.code.csharp.security.dataflow.CommandInjectionQuery
-import StoredCommandInjection::PathGraph
+import semmle.code.csharp.dataflow.DataFlow::DataFlow::PathGraph
 
-module StoredCommandInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof StoredFlowSource }
-
-  predicate isSink = CommandInjectionConfig::isSink/1;
-
-  predicate isBarrier = CommandInjectionConfig::isBarrier/1;
+class StoredTaintTrackingConfiguration extends TaintTrackingConfiguration {
+  override predicate isSource(DataFlow::Node source) { source instanceof StoredFlowSource }
 }
 
-module StoredCommandInjection = TaintTracking::Global<StoredCommandInjectionConfig>;
-
-from StoredCommandInjection::PathNode source, StoredCommandInjection::PathNode sink
-where StoredCommandInjection::flowPath(source, sink)
+from StoredTaintTrackingConfiguration c, DataFlow::PathNode source, DataFlow::PathNode sink
+where c.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This command line depends on a $@.", source.getNode(),
   "stored (potentially user-provided) value"

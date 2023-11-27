@@ -13,7 +13,7 @@ class Types
 
     class D : B<string>
     {
-        public override void M() => Sink(this); // $ hasValueFlow=line:32 $ hasValueFlow=line:33 $ hasValueFlow=line:40
+        public override void M() => Sink(this);
     }
 
     static void M1()
@@ -41,13 +41,13 @@ class Types
         M9(new D()); // no flow
 
         object o = null; // flow
-        Sink(o); // $ hasValueFlow=line:43
+        Sink(o);
     }
 
     static void M2(A a)
     {
         if (a is C c)
-            Sink(c); // $ hasValueFlow=line:23
+            Sink(c);
     }
 
     static void M3(A a)
@@ -55,18 +55,18 @@ class Types
         switch (a)
         {
             case D d:
-                Sink(d); // $ hasValueFlow=line:35
+                Sink(d);
                 break;
         }
     }
 
-    static void M4(A a) => Sink((C)a); // $ hasValueFlow=line:25
+    static void M4(A a) => Sink((C)a);
 
-    static void M5<T>(T x) => Sink(x); // $ hasValueFlow=line:26 $ hasValueFlow=line:37
+    static void M5<T>(T x) => Sink(x);
 
-    static void M6<T>(T x) where T : A => Sink(x); // $ hasValueFlow=line:27 $ hasValueFlow=line:38
+    static void M6<T>(T x) where T : A => Sink(x);
 
-    static void M7<T>(T x) where T : class => Sink(x); // $ hasValueFlow=line:28 $ hasValueFlow=line:39
+    static void M7<T>(T x) where T : class => Sink(x);
 
     static void M8<T>(T x)
     {
@@ -77,7 +77,7 @@ class Types
     static void M9(A a)
     {
         if (a is B<int> b)
-            Sink(b); // $ hasValueFlow=line:30
+            Sink(b);
     }
 
     static void Sink<T>(T x) { }
@@ -112,15 +112,15 @@ class Types
 
             public override void M()
             {
-                Sink(this.Field); // $ hasValueFlow=line:110
+                Sink(this.Field);
             }
 
             void M10()
             {
                 var a = new A();
                 var e2 = new E2();
-                Sink(Through(a)); // $ hasValueFlow=line:120
-                Sink(Through(e2)); // $ hasValueFlow=line:121
+                Sink(Through(a)); // flow
+                Sink(Through(e2)); // flow
                 Sink((E2)Through(a)); // no flow
                 Sink((A)Through(e2)); // no flow
             }
@@ -150,28 +150,6 @@ class Types
 
     class FieldC : FieldA
     {
-        public override void M() => Sink(this.Field); // $ hasValueFlow=line:144
-    }
-
-    class F
-    {
-        public virtual void M() { }
-
-        class F1<T> : F
-        {
-            public override void M() => Sink(this); // $ hasValueFlow=line:167
-        }
-
-        class F2 : F { }
-
-        F GetF1() => new F1<int>();
-
-        F GetF2() => new F2();
-
-        private void M2()
-        {
-            GetF1().M();
-            GetF2().M();
-        }
+        public override void M() => Sink(this.Field);
     }
 }

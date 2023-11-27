@@ -162,13 +162,17 @@ class XmlReaderSettingsCreation extends ObjectCreation {
   }
 }
 
-private module SettingsDataFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source.asExpr() instanceof XmlReaderSettingsCreation }
+private class SettingsDataFlowConfig extends DataFlow3::Configuration {
+  SettingsDataFlowConfig() { this = "SettingsDataFlowConfig" }
 
-  predicate isSink(DataFlow::Node sink) { sink.asExpr() instanceof XmlReaderSettingsInstance }
+  override predicate isSource(DataFlow::Node source) {
+    source.asExpr() instanceof XmlReaderSettingsCreation
+  }
+
+  override predicate isSink(DataFlow::Node sink) {
+    sink.asExpr() instanceof XmlReaderSettingsInstance
+  }
 }
-
-private module SettingsDataFlow = DataFlow::Global<SettingsDataFlowConfig>;
 
 /** A call to `XmlReader.Create`. */
 class XmlReaderCreateCall extends MethodCall {
@@ -186,6 +190,8 @@ class XmlReaderSettingsInstance extends Expr {
 
   /** Gets a possible creation point for this instance of `XmlReaderSettings`. */
   XmlReaderSettingsCreation getASettingsCreation() {
-    SettingsDataFlow::flow(DataFlow::exprNode(result), DataFlow::exprNode(this))
+    exists(SettingsDataFlowConfig settingsFlow |
+      settingsFlow.hasFlow(DataFlow::exprNode(result), DataFlow::exprNode(this))
+    )
   }
 }

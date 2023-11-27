@@ -6,4 +6,3 @@ groups:
     - experimental
 mlModels:
     - "resources/*.codeqlmodel"
-warnOnImplicitThis: true

@@ -4,15 +4,12 @@ private import semmle.code.java.regex.RegexTreeView::RegexTreeView as TreeView
 import codeql.regex.nfa.ExponentialBackTracking::Make<TreeView> as ExponentialBackTracking
 import semmle.code.java.regex.regex
 
-bindingset[s]
-string quote(string s) { if s.matches("% %") then result = "\"" + s + "\"" else result = s }
+class HasExpRedos extends InlineExpectationsTest {
+  HasExpRedos() { this = "HasExpRedos" }
 
-module HasExpRedos implements TestSig {
-  string getARelevantTag() {
-    result = ["hasExpRedos", "hasParseFailure", "hasPump", "hasPrefixMsg"]
-  }
+  override string getARelevantTag() { result = ["hasExpRedos", "hasParseFailure"] }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasExpRedos" and
     exists(TreeView::RegExpTerm t |
       ExponentialBackTracking::hasReDoSResult(t, _, _, _) and
@@ -30,22 +27,4 @@ module HasExpRedos implements TestSig {
       element = r.toString()
     )
   }
-
-  predicate hasOptionalResult(Location location, string element, string tag, string value) {
-    exists(TreeView::RegExpTerm t, Regex r, string pump, string prefixMsg |
-      ExponentialBackTracking::hasReDoSResult(t, pump, _, prefixMsg) and
-      t.occursInRegex(r, _, _) and
-      (
-        tag = "hasPrefixMsg" and
-        value = quote(prefixMsg)
-        or
-        tag = "hasPump" and
-        value = pump
-      ) and
-      location = r.getLocation() and
-      element = r.toString()
-    )
-  }
 }
-
-import MakeTest<HasExpRedos>

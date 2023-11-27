@@ -12,10 +12,10 @@
  */
 
 import codeql.ruby.AST
+import DataFlow::PathGraph
 import codeql.ruby.security.LogInjectionQuery
-import LogInjectionFlow::PathGraph
 
-from LogInjectionFlow::PathNode source, LogInjectionFlow::PathNode sink
-where LogInjectionFlow::flowPath(source, sink)
+from LogInjectionConfiguration config, DataFlow::PathNode source, DataFlow::PathNode sink
+where config.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "Log entry depends on a $@.", source.getNode(),
   "user-provided value"

@@ -17,12 +17,12 @@ import semmle.code.csharp.metrics.Coupling
 
 predicate potentiallyUsedFromXaml(RefType t) {
   t.getABaseType*()
-      .hasFullyQualifiedName("System.Windows.Data", ["IValueConverter", "IMultiValueConverter"])
+      .hasQualifiedName("System.Windows.Data", ["IValueConverter", "IMultiValueConverter"])
 }
 
 class ExportAttribute extends Attribute {
   ExportAttribute() {
-    this.getType().hasFullyQualifiedName("System.ComponentModel.Composition", "ExportAttribute")
+    getType().hasQualifiedName("System.ComponentModel.Composition", "ExportAttribute")
   }
 }
 

@@ -13,11 +13,19 @@ module Make<RegexTreeViewSig TreeImpl> {
   private import TreeImpl
   import NfaUtils::Make<TreeImpl>
 
-  final private class FinalRegExpTerm = RegExpTerm;
-
   /** A root term */
-  final class RootTerm extends FinalRegExpTerm {
+  class RootTerm instanceof RegExpTerm {
     RootTerm() { this.isRootTerm() }
+
+    /** Gets a string representation of this term. */
+    string toString() { result = super.toString() }
+
+    /** Holds if this term has the specified location. */
+    predicate hasLocationInfo(
+      string filepath, int startline, int startcolumn, int endline, int endcolumn
+    ) {
+      super.hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn)
+    }
   }
 
   /**

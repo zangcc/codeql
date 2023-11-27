@@ -27,26 +27,26 @@ class ReferenceEqualityTestOnObject extends EqualityOperation {
     // One or both of the operands has type object or interface.
     exists(getObjectOperand(this)) and
     // Neither operand is 'null'.
-    not this.getAnOperand() instanceof NullLiteral and
-    not exists(Type t | t = this.getAnOperand().stripImplicitCasts().getType() |
+    not getAnOperand() instanceof NullLiteral and
+    not exists(Type t | t = getAnOperand().stripImplicitCasts().getType() |
       t instanceof NullType or
       t instanceof ValueType
     ) and
     // Neither operand is a constant - a reference comparison may well be intended for those.
-    not this.getAnOperand().(FieldAccess).getTarget().isReadOnly() and
-    not this.getAnOperand().hasValue() and
+    not getAnOperand().(FieldAccess).getTarget().isReadOnly() and
+    not getAnOperand().hasValue() and
     // Not a short-cut test in a custom `Equals` method
     not exists(EqualsMethod m |
-      this.getEnclosingCallable() = m and
-      this.getAnOperand() instanceof ThisAccess and
-      this.getAnOperand() = m.getParameter(0).getAnAccess()
+      getEnclosingCallable() = m and
+      getAnOperand() instanceof ThisAccess and
+      getAnOperand() = m.getParameter(0).getAnAccess()
     ) and
     // Reference comparisons in Moq methods are used to define mocks
     not exists(MethodCall mc, Namespace n |
       mc.getTarget().getDeclaringType().getNamespace().getParentNamespace*() = n and
       n.hasName("Moq") and
       not exists(n.getParentNamespace()) and
-      mc.getAnArgument() = this.getEnclosingCallable()
+      mc.getAnArgument() = getEnclosingCallable()
     )
   }
 
@@ -54,7 +54,7 @@ class ReferenceEqualityTestOnObject extends EqualityOperation {
     result = getObjectOperand(this) and
     // Avoid duplicate results: only include left operand if both operands
     // have object type
-    (result = this.getRightOperand() implies not this.getLeftOperand() = getObjectOperand(this))
+    (result = getRightOperand() implies not getLeftOperand() = getObjectOperand(this))
   }
 }
 

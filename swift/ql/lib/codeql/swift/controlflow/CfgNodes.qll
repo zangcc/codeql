@@ -118,16 +118,6 @@ class ExprCfgNode extends CfgNode {
   Expr getExpr() { result = e }
 }
 
-/** A control-flow node that wraps a pattern. */
-class PatternCfgNode extends CfgNode {
-  Pattern p;
-
-  PatternCfgNode() { p = this.getNode().asAstNode() }
-
-  /** Gets the underlying pattern. */
-  Pattern getPattern() { result = p }
-}
-
 /** A control-flow node that wraps a property getter. */
 class PropertyGetterCfgNode extends CfgNode {
   override PropertyGetterElement n;
@@ -136,7 +126,7 @@ class PropertyGetterCfgNode extends CfgNode {
 
   CfgNode getBase() { result.getAst() = n.getBase() }
 
-  Accessor getAccessor() { result = n.getAccessor() }
+  AccessorDecl getAccessorDecl() { result = n.getAccessorDecl() }
 }
 
 /** A control-flow node that wraps a property setter. */
@@ -149,7 +139,7 @@ class PropertySetterCfgNode extends CfgNode {
 
   CfgNode getSource() { result.getAst() = n.getAssignExpr().getSource() }
 
-  Accessor getAccessor() { result = n.getAccessor() }
+  AccessorDecl getAccessorDecl() { result = n.getAccessorDecl() }
 }
 
 class PropertyObserverCfgNode extends CfgNode {
@@ -161,7 +151,7 @@ class PropertyObserverCfgNode extends CfgNode {
 
   CfgNode getSource() { result.getAst() = n.getAssignExpr().getSource() }
 
-  Accessor getAccessor() { result = n.getObserver() }
+  AccessorDecl getAccessorDecl() { result = n.getObserver() }
 }
 
 class ApplyExprCfgNode extends ExprCfgNode {
@@ -171,33 +161,11 @@ class ApplyExprCfgNode extends ExprCfgNode {
 
   CfgNode getQualifier() { result.getAst() = e.getQualifier() }
 
-  Callable getStaticTarget() { result = e.getStaticTarget() }
+  AbstractFunctionDecl getStaticTarget() { result = e.getStaticTarget() }
 
-  CfgNode getFunction() { result.getAst() = e.getFunction() }
+  Expr getFunction() { result = e.getFunction() }
 }
 
 class CallExprCfgNode extends ApplyExprCfgNode {
   override CallExpr e;
-}
-
-/** A control-flow node that wraps a key-path application. */
-class KeyPathApplicationExprCfgNode extends ExprCfgNode {
-  override KeyPathApplicationExpr e;
-
-  /**
-   * Gets the control-flow node that wraps the key-path of
-   * this control-flow element.
-   */
-  CfgNode getKeyPath() { result.getAst() = e.getKeyPath() }
-
-  /**
-   * Gets the control-flow node that wraps the base of
-   * this control-flow element.
-   */
-  CfgNode getBase() { result.getAst() = e.getBase() }
-}
-
-/** A control-flow node that wraps a key-path expression. */
-class KeyPathExprCfgNode extends ExprCfgNode {
-  override KeyPathExpr e;
 }

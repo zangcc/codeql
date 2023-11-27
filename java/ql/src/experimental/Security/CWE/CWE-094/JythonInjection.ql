@@ -14,9 +14,8 @@
 
 import java
 import semmle.code.java.dataflow.FlowSources
-import semmle.code.java.dataflow.TaintTracking
 import semmle.code.java.frameworks.spring.SpringController
-import CodeInjectionFlow::PathGraph
+import DataFlow::PathGraph
 
 /** The class `org.python.util.PythonInterpreter`. */
 class PythonInterpreter extends RefType {
@@ -37,7 +36,7 @@ class BytecodeLoader extends RefType {
 }
 
 /** Holds if a Jython expression if evaluated, compiled or executed. */
-predicate runsCode(MethodCall ma, Expr sink) {
+predicate runsCode(MethodAccess ma, Expr sink) {
   exists(Method m | m = ma.getMethod() |
     m instanceof InterpretExprMethod and
     sink = ma.getArgument(0)
@@ -56,7 +55,7 @@ class LoadClassMethod extends Method {
  * Holds if `ma` is a call to a class-loading method, and `sink` is the byte array
  * representing the class to be loaded.
  */
-predicate loadsClass(MethodCall ma, Expr sink) {
+predicate loadsClass(MethodAccess ma, Expr sink) {
   exists(Method m, int i | m = ma.getMethod() |
     m instanceof LoadClassMethod and
     m.getParameter(i).getType() instanceof Array and // makeClass(java.lang.String name, byte[] data, ...)
@@ -78,7 +77,7 @@ class PyCompileMethod extends Method {
 }
 
 /** Holds if source code is compiled with `PyCompileMethod`. */
-predicate compile(MethodCall ma, Expr sink) {
+predicate compile(MethodAccess ma, Expr sink) {
   exists(Method m | m = ma.getMethod() |
     m instanceof PyCompileMethod and
     sink = ma.getArgument(0)
@@ -87,7 +86,7 @@ predicate compile(MethodCall ma, Expr sink) {
 
 /** An expression loaded by Jython. */
 class CodeInjectionSink extends DataFlow::ExprNode {
-  MethodCall methodAccess;
+  MethodAccess methodAccess;
 
   CodeInjectionSink() {
     runsCode(methodAccess, this.getExpr()) or
@@ -95,26 +94,22 @@ class CodeInjectionSink extends DataFlow::ExprNode {
     compile(methodAccess, this.getExpr())
   }
 
-  MethodCall getMethodCall() { result = methodAccess }
+  MethodAccess getMethodAccess() { result = methodAccess }
 }
 
 /**
- * A taint configuration for tracking flow from `ThreatModelFlowSource` to a Jython method call
+ * A taint configuration for tracking flow from `RemoteFlowSource` to a Jython method call
  * `CodeInjectionSink` that executes injected code.
  */
-module CodeInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+class CodeInjectionConfiguration extends TaintTracking::Configuration {
+  CodeInjectionConfiguration() { this = "CodeInjectionConfiguration" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof CodeInjectionSink }
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) { sink instanceof CodeInjectionSink }
 }
 
-/**
- * Taint tracking flow from `ThreatModelFlowSource` to a Jython method call
- * `CodeInjectionSink` that executes injected code.
- */
-module CodeInjectionFlow = TaintTracking::Global<CodeInjectionConfig>;
-
-from CodeInjectionFlow::PathNode source, CodeInjectionFlow::PathNode sink
-where CodeInjectionFlow::flowPath(source, sink)
-select sink.getNode().(CodeInjectionSink).getMethodCall(), source, sink, "Jython evaluate $@.",
+from DataFlow::PathNode source, DataFlow::PathNode sink, CodeInjectionConfiguration conf
+where conf.hasFlowPath(source, sink)
+select sink.getNode().(CodeInjectionSink).getMethodAccess(), source, sink, "Jython evaluate $@.",
   source.getNode(), "user input"

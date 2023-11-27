@@ -2,10 +2,12 @@ import python
 import semmle.python.essa.SsaCompute
 import TestUtilities.InlineExpectationsTest
 
-module UseTest implements TestSig {
-  string getARelevantTag() { result in ["use-use", "def-use", "def"] }
+class UseTest extends InlineExpectationsTest {
+  UseTest() { this = "UseTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result in ["use-use", "def-use", "def"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(string name | name in ["x", "y"] |
       exists(NameNode nodeTo, Location prevLoc |
@@ -37,5 +39,3 @@ module UseTest implements TestSig {
     )
   }
 }
-
-import MakeTest<UseTest>

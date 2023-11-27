@@ -1,6 +1,5 @@
 package play.mvc;
 
-import akka.util.ByteString;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.File;
 import java.net.URI;
@@ -33,12 +32,24 @@ public class Http {
 
     public Context(Request request, JavaContextComponents components) {}
 
-    public Context(Long id, play.api.mvc.RequestHeader header, Request request,
-        Map<String, String> sessionData, Map<String, String> flashData, Map<String, Object> args,
+    public Context(
+        Long id,
+        play.api.mvc.RequestHeader header,
+        Request request,
+        Map<String, String> sessionData,
+        Map<String, String> flashData,
+        Map<String, Object> args,
         JavaContextComponents components) {}
 
-    public Context(Long id, play.api.mvc.RequestHeader header, Request request, Response response,
-        Session session, Flash flash, Map<String, Object> args, JavaContextComponents components) {}
+    public Context(
+        Long id,
+        play.api.mvc.RequestHeader header,
+        Request request,
+        Response response,
+        Session session,
+        Flash flash,
+        Map<String, Object> args,
+        JavaContextComponents components) {}
 
     public Long id() {
       return 0L;
@@ -317,8 +328,8 @@ public class Http {
       return null;
     }
 
-    public RequestBuilder bodyMultipart(List<String> data,
-        Files.TemporaryFileCreator temporaryFileCreator, String mat) {
+    public RequestBuilder bodyMultipart(
+        List<String> data, Files.TemporaryFileCreator temporaryFileCreator, String mat) {
       return null;
     }
 
@@ -525,10 +536,6 @@ public class Http {
 
   public abstract static class RawBuffer {
 
-    public abstract ByteString asBytes();
-
-    public abstract ByteString asBytes(int maxLength);
-
     public abstract Long size();
 
     public abstract File asFile();
@@ -552,8 +559,7 @@ public class Http {
       }
     }
 
-    public interface Part<A> {
-    }
+    public interface Part<A> {}
 
     public static class FilePart<A> implements Part<A> {
 
@@ -571,15 +577,7 @@ public class Http {
         return "";
       }
 
-      public String getDispositionType() {
-        return "";
-      }
-
       public A getFile() {
-        return null;
-      }
-
-      public A getRef() {
         return null;
       }
     }
@@ -609,10 +607,6 @@ public class Http {
   public static final class RequestBody {
 
     public RequestBody(Object body) {}
-
-    public ByteString asBytes() {
-      return null;
-    }
 
     public <A> MultipartFormData<A> asMultipartFormData() {
       return null;
@@ -646,10 +640,6 @@ public class Http {
       return null;
     }
 
-    public <A> Optional<A> parseJson(Class<A> clazz) {
-      return null;
-    }
-
     public String toString() {
       return "";
     }
@@ -667,8 +657,15 @@ public class Http {
     public void setContentType(String contentType) {}
 
     @Deprecated
-    public void setCookie(String name, String value, Integer maxAge, String path, String domain,
-        boolean secure, boolean httpOnly, SameSite sameSite) {}
+    public void setCookie(
+        String name,
+        String value,
+        Integer maxAge,
+        String path,
+        String domain,
+        boolean secure,
+        boolean httpOnly,
+        SameSite sameSite) {}
 
     public void setCookie(Cookie cookie) {}
 
@@ -737,12 +734,25 @@ public class Http {
 
   public static class Cookie {
 
-    public Cookie(String name, String value, Integer maxAge, String path, String domain,
-        boolean secure, boolean httpOnly, SameSite sameSite) {}
+    public Cookie(
+        String name,
+        String value,
+        Integer maxAge,
+        String path,
+        String domain,
+        boolean secure,
+        boolean httpOnly,
+        SameSite sameSite) {}
 
     @Deprecated
-    public Cookie(String name, String value, Integer maxAge, String path, String domain,
-        boolean secure, boolean httpOnly) {}
+    public Cookie(
+        String name,
+        String value,
+        Integer maxAge,
+        String path,
+        String domain,
+        boolean secure,
+        boolean httpOnly) {}
 
     public static CookieBuilder builder(String name, String value) {
       return null;
@@ -781,7 +791,9 @@ public class Http {
     }
 
     public enum SameSite {
-      STRICT("Strict"), LAX("Lax"), NONE("None");
+      STRICT("Strict"),
+      LAX("Lax"),
+      NONE("None");
 
       SameSite(String value) {}
 
@@ -844,8 +856,6 @@ public class Http {
   public interface Cookies extends Iterable<Cookie> {
 
     Cookie get(String name);
-
-    Optional<Cookie> getCookie(String name);
   }
 
   public interface HeaderNames {

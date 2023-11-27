@@ -26,7 +26,7 @@ class C2 {
     }
 };
 
-static void f1(void) {
+void f1(void) {
     if (C1(1) == C1(2)) {
         ;
     }
@@ -35,7 +35,7 @@ static void f1(void) {
     }
 }
 
-static void f2(void) {
+void f2(void) {
     if (C2(1) == C2(2)) {
         ;
     }

@@ -42,8 +42,8 @@ private predicate closeableType(RefType t) {
  * An access to a method on a type in the 'java.sql` package that creates a closeable object in the `java.sql` package.
  * For example, `PreparedStatement.executeQuery()` or `Connection.prepareStatement(String)`.
  */
-class SqlResourceOpeningMethodCall extends MethodCall {
-  SqlResourceOpeningMethodCall() {
+class SqlResourceOpeningMethodAccess extends MethodAccess {
+  SqlResourceOpeningMethodAccess() {
     exists(Method m | this.getMethod() = m |
       m.getDeclaringType().hasQualifiedName("java.sql", _) and
       m.getReturnType().(RefType).hasQualifiedName("java.sql", _) and
@@ -54,16 +54,13 @@ class SqlResourceOpeningMethodCall extends MethodCall {
   }
 }
 
-/** DEPRECATED: Alias for `SqlResourceOpeningMethodCall`. */
-deprecated class SqlResourceOpeningMethodAccess = SqlResourceOpeningMethodCall;
-
 /**
  * A candidate for a "closeable init" expression, which may require calling a "close" method.
  */
 class CloseableInitExpr extends Expr {
   CloseableInitExpr() {
     this instanceof ClassInstanceExpr or
-    this instanceof SqlResourceOpeningMethodCall
+    this instanceof SqlResourceOpeningMethodAccess
   }
 }
 
@@ -89,7 +86,7 @@ private predicate closeableInit(Expr e, Expr parent) {
     )
   )
   or
-  exists(SqlResourceOpeningMethodCall ma | ma = e and parent = e)
+  exists(SqlResourceOpeningMethodAccess ma | ma = e and parent = e)
   or
   exists(LocalVariableDecl v, Expr f | e = v.getAnAccess() and flowsInto(f, v) |
     closeableInit(f, parent)
@@ -221,7 +218,7 @@ private predicate closeCalled(Variable v) {
   exists(TryStmt try | try.getAResourceVariable() = v)
   or
   // Otherwise, there should be an explicit call to a method whose name contains "close".
-  exists(MethodCall e |
+  exists(MethodAccess e |
     v = getCloseableVariable(_) or v instanceof Parameter or v instanceof LocalVariableDecl
   |
     e.getMethod().getName().toLowerCase().matches("%close%") and
@@ -266,7 +263,7 @@ private predicate closedResource(CloseableInitExpr cie) {
 }
 
 private predicate immediatelyClosed(ClassInstanceExpr cie) {
-  exists(MethodCall ma | ma.getQualifier() = cie | ma.getMethod().hasName("close"))
+  exists(MethodAccess ma | ma.getQualifier() = cie | ma.getMethod().hasName("close"))
 }
 
 /**
@@ -308,10 +305,10 @@ predicate noNeedToClose(CloseableInitExpr cie) {
       flowsInto(sqlStmt, v) and
       closedResource(sqlStmt) and
       cie.getType() instanceof TypeResultSet and
-      cie.(SqlResourceOpeningMethodCall).getQualifier() = v.getAnAccess()
+      cie.(SqlResourceOpeningMethodAccess).getQualifier() = v.getAnAccess()
     )
     or
-    exists(MethodCall ma | cie.(ClassInstanceExpr).getAnArgument() = ma |
+    exists(MethodAccess ma | cie.(ClassInstanceExpr).getAnArgument() = ma |
       ma.getMethod() instanceof ServletResponseGetOutputStreamMethod or
       ma.getMethod() instanceof ServletResponseGetWriterMethod or
       ma.getMethod() instanceof ServletRequestGetBodyMethod

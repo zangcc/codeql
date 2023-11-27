@@ -7,14 +7,16 @@ private import semmle.python.Frameworks
 // this import needs to be public to get the query predicates propagated to the actual test files
 import TestUtilities.InlineExpectationsTest
 
-module MadSinkTest implements TestSig {
-  string getARelevantTag() {
+class MadSinkTest extends InlineExpectationsTest {
+  MadSinkTest() { this = "MadSinkTest" }
+
+  override string getARelevantTag() {
     exists(string kind | exists(ModelOutput::getASinkNode(kind)) |
       result = "mad-sink[" + kind + "]"
     )
   }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(DataFlow::Node sink, string kind |
       sink = ModelOutput::getASinkNode(kind).asSink() and
@@ -26,12 +28,14 @@ module MadSinkTest implements TestSig {
   }
 }
 
-module MadSourceTest implements TestSig {
-  string getARelevantTag() {
+class MadSourceTest extends InlineExpectationsTest {
+  MadSourceTest() { this = "MadSourceTest" }
+
+  override string getARelevantTag() {
     exists(string kind | exists(ModelOutput::getASourceNode(kind)) | result = "mad-source__" + kind)
   }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(DataFlow::Node source, string kind |
       source = ModelOutput::getASourceNode(kind).asSource() and
@@ -42,5 +46,3 @@ module MadSourceTest implements TestSig {
     )
   }
 }
-
-import MakeTest<MergeTests<MadSinkTest, MadSourceTest>>

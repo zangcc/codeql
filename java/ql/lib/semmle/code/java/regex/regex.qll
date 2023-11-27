@@ -472,48 +472,12 @@ abstract class RegexString extends StringLiteral {
     )
   }
 
-  /**
-   * Holds if the initial part of a parse mode, not containing any
-   * mode characters is between `start` and `end`.
-   */
-  private predicate flagGroupStartNoModes(int start, int end) {
+  private predicate flagGroupStart(int start, int end, string c) {
     this.isGroupStart(start) and
     this.getChar(start + 1) = "?" and
-    this.getChar(start + 2) in ["i", "m", "s", "u", "x", "U"] and
-    end = start + 2
-  }
-
-  /**
-   * Holds if `pos` contains a mode character from the
-   * flag group starting at `start`.
-   */
-  private predicate modeCharacter(int start, int pos) {
-    this.flagGroupStartNoModes(start, pos)
-    or
-    this.modeCharacter(start, pos - 1) and
-    this.getChar(pos) in ["i", "m", "s", "u", "x", "U"]
-  }
-
-  /**
-   * Holds if a parse mode group is between `start` and `end`.
-   */
-  private predicate flagGroupStart(int start, int end) {
-    this.flagGroupStartNoModes(start, _) and
-    end = max(int i | this.modeCharacter(start, i) | i + 1)
-  }
-
-  /**
-   * Holds if a parse mode group of this regex includes the mode flag `c`.
-   * For example the following parse mode group, with mode flag `i`:
-   * ```
-   * (?i)
-   * ```
-   */
-  private predicate flag(string c) {
-    exists(int pos |
-      this.modeCharacter(_, pos) and
-      this.getChar(pos) = c
-    )
+    end = start + 3 and
+    c = this.getChar(start + 2) and
+    c in ["i", "m", "s", "u", "x", "U"]
   }
 
   /**
@@ -521,7 +485,7 @@ abstract class RegexString extends StringLiteral {
    * it is defined by a prefix.
    */
   string getModeFromPrefix() {
-    exists(string c | this.flag(c) |
+    exists(string c | this.flagGroupStart(_, _, c) |
       c = "i" and result = "IGNORECASE"
       or
       c = "m" and result = "MULTILINE"
@@ -576,7 +540,7 @@ abstract class RegexString extends StringLiteral {
   private predicate groupStart(int start, int end) {
     this.nonCapturingGroupStart(start, end)
     or
-    this.flagGroupStart(start, end)
+    this.flagGroupStart(start, end, _)
     or
     this.namedGroupStart(start, end)
     or

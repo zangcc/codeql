@@ -22,22 +22,22 @@ abstract class FlagKind extends string {
 
   private predicate flagFlowStepTC(DataFlow::Node node1, DataFlow::Node node2) {
     node2 = node1 and
-    this.isFlagWithName(node1)
+    isFlagWithName(node1)
     or
     exists(DataFlow::Node nodeMid |
       flagFlowStep(nodeMid, node2) and
-      this.flagFlowStepTC(node1, nodeMid)
+      flagFlowStepTC(node1, nodeMid)
     )
   }
 
   private predicate isFlagWithName(DataFlow::Node flag) {
-    exists(VarAccess v | v.getVariable().getName() = this.getAFlagName() |
+    exists(VarAccess v | v.getVariable().getName() = getAFlagName() |
       flag.asExpr() = v and v.getType() instanceof FlagType
     )
     or
-    exists(StringLiteral s | s.getValue() = this.getAFlagName() | flag.asExpr() = s)
+    exists(StringLiteral s | s.getValue() = getAFlagName() | flag.asExpr() = s)
     or
-    exists(MethodCall ma | ma.getMethod().getName() = this.getAFlagName() |
+    exists(MethodAccess ma | ma.getMethod().getName() = getAFlagName() |
       flag.asExpr() = ma and
       ma.getType() instanceof FlagType
     )
@@ -46,8 +46,8 @@ abstract class FlagKind extends string {
   /** Gets a node representing a (likely) security flag. */
   DataFlow::Node getAFlag() {
     exists(DataFlow::Node flag |
-      this.isFlagWithName(flag) and
-      this.flagFlowStepTC(flag, result)
+      isFlagWithName(flag) and
+      flagFlowStepTC(flag, result)
     )
   }
 }
@@ -83,11 +83,11 @@ private class FlagType extends Type {
 private predicate flagFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
   DataFlow::localFlowStep(node1, node2)
   or
-  exists(MethodCall ma | ma.getMethod() = any(EnvReadMethod m) |
+  exists(MethodAccess ma | ma.getMethod() = any(EnvReadMethod m) |
     ma = node2.asExpr() and ma.getAnArgument() = node1.asExpr()
   )
   or
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     ma.getMethod().hasName("parseBoolean") and
     ma.getMethod().getDeclaringType().hasQualifiedName("java.lang", "Boolean")
   |

@@ -1,9 +1,12 @@
 /** Provides classes for assertions. */
 
+private import semmle.code.csharp.controlflow.internal.ControlFlowGraphImpl
 private import semmle.code.csharp.frameworks.system.Diagnostics
 private import semmle.code.csharp.frameworks.system.diagnostics.Contracts
 private import semmle.code.csharp.frameworks.test.VisualStudio
 private import semmle.code.csharp.frameworks.System
+private import ControlFlow
+private import ControlFlow::BasicBlocks
 
 private newtype TAssertionFailure =
   TExceptionAssertionFailure(Class c) or
@@ -33,6 +36,26 @@ class AssertionFailure extends TAssertionFailure {
 abstract class AssertMethod extends Method {
   /** Gets the index of a parameter being asserted. */
   abstract int getAnAssertionIndex();
+
+  /**
+   * DEPRECATED: Use `getAnAssertionIndex()` instead.
+   *
+   * Gets the index of a parameter being asserted.
+   */
+  deprecated final int getAssertionIndex() { result = this.getAnAssertionIndex() }
+
+  /** Gets the parameter at position `i` being asserted. */
+  final Parameter getAssertedParameter(int i) {
+    result = this.getParameter(i) and
+    i = this.getAnAssertionIndex()
+  }
+
+  /**
+   * DEPRECATED: Use `getAssertedParameter(_)` instead.
+   *
+   * Gets a parameter being asserted.
+   */
+  deprecated final Parameter getAssertedParameter() { result = this.getAssertedParameter(_) }
 
   /** Gets the failure type if the assertion fails for argument `i`, if any. */
   abstract AssertionFailure getAssertionFailure(int i);
@@ -149,8 +172,7 @@ private predicate isDoesNotReturnIfAttributeParameter(Parameter p, boolean value
  * A method with a parameter that is annotated with
  * `System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute(false)`.
  */
-class SystemDiagnosticsCodeAnalysisDoesNotReturnIfAnnotatedAssertTrueMethod extends BooleanAssertMethod
-{
+class SystemDiagnosticsCodeAnalysisDoesNotReturnIfAnnotatedAssertTrueMethod extends BooleanAssertMethod {
   private int i_;
 
   SystemDiagnosticsCodeAnalysisDoesNotReturnIfAnnotatedAssertTrueMethod() {
@@ -168,8 +190,7 @@ class SystemDiagnosticsCodeAnalysisDoesNotReturnIfAnnotatedAssertTrueMethod exte
  * A method with a parameter that is annotated with
  * `System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute(true)`.
  */
-class SystemDiagnosticsCodeAnalysisDoesNotReturnIfAnnotatedAssertFalseMethod extends BooleanAssertMethod
-{
+class SystemDiagnosticsCodeAnalysisDoesNotReturnIfAnnotatedAssertFalseMethod extends BooleanAssertMethod {
   private int i_;
 
   SystemDiagnosticsCodeAnalysisDoesNotReturnIfAnnotatedAssertFalseMethod() {
@@ -299,12 +320,6 @@ class NUnitAssertNonNullMethod extends NullnessAssertMethod, NUnitAssertMethod {
   override int getAnAssertionIndex(boolean b) { result = this.getAnAssertionIndex() and b = false }
 }
 
-pragma[nomagic]
-private predicate parameterAssertion(Assertion a, int index, Parameter p) {
-  strictcount(AssignableDefinition def | def.getTarget() = p) = 1 and
-  a.getExpr(index) = p.getAnAccess()
-}
-
 /** A method that forwards to another assertion method. */
 class ForwarderAssertMethod extends AssertMethod {
   private Assertion a;
@@ -313,9 +328,10 @@ class ForwarderAssertMethod extends AssertMethod {
 
   ForwarderAssertMethod() {
     p = this.getAParameter() and
+    strictcount(AssignableDefinition def | def.getTarget() = p) = 1 and
     forex(ControlFlowElement body | body = this.getBody() |
       bodyAsserts(this, body, a) and
-      parameterAssertion(a, forwarderIndex, p)
+      a.getExpr(forwarderIndex) = p.getAnAccess()
     )
   }
 

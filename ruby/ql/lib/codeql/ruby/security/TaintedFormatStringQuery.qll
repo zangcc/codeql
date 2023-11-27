@@ -13,23 +13,7 @@ private import TaintedFormatStringCustomizations::TaintedFormatString
 /**
  * A taint-tracking configuration for format injections.
  */
-module TaintedFormatStringConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof Source }
-
-  predicate isSink(DataFlow::Node sink) { sink instanceof Sink }
-
-  predicate isBarrier(DataFlow::Node node) { node instanceof Sanitizer }
-}
-
-/**
- * Taint-tracking for format injections.
- */
-module TaintedFormatStringFlow = TaintTracking::Global<TaintedFormatStringConfig>;
-
-/**
- * DEPRECATED. Use the `TaintedFormatStringFlow` module instead.
- */
-deprecated class Configuration extends TaintTracking::Configuration {
+class Configuration extends TaintTracking::Configuration {
   Configuration() { this = "TaintedFormatString" }
 
   override predicate isSource(DataFlow::Node source) { source instanceof Source }

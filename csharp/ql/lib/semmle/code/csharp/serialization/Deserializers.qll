@@ -90,7 +90,7 @@ private class WrapperDeserializer extends UnsafeDeserializer {
 /** BinaryFormatter */
 private class BinaryFormatterClass extends Class {
   BinaryFormatterClass() {
-    this.hasFullyQualifiedName("System.Runtime.Serialization.Formatters.Binary", "BinaryFormatter")
+    this.hasQualifiedName("System.Runtime.Serialization.Formatters.Binary", "BinaryFormatter")
   }
 }
 
@@ -121,7 +121,7 @@ class BinaryFormatterUnsafeDeserializeMethodResponseMethod extends Method, Unsaf
 /** SoapFormatter */
 private class SoapFormatterClass extends Class {
   SoapFormatterClass() {
-    this.hasFullyQualifiedName("System.Runtime.Serialization.Formatters.Soap", "SoapFormatter")
+    this.hasQualifiedName("System.Runtime.Serialization.Formatters.Soap", "SoapFormatter")
   }
 }
 
@@ -135,9 +135,7 @@ class SoapFormatterDeserializeMethod extends Method, UnsafeDeserializer {
 
 /** ObjectStateFormatter */
 private class ObjectStateFormatterClass extends Class {
-  ObjectStateFormatterClass() {
-    this.hasFullyQualifiedName("System.Web.UI", "ObjectStateFormatter")
-  }
+  ObjectStateFormatterClass() { this.hasQualifiedName("System.Web.UI", "ObjectStateFormatter") }
 }
 
 /** `System.Web.UI.ObjectStateFormatter.Deserialize` method */
@@ -151,7 +149,7 @@ class ObjectStateFormatterDeserializeMethod extends Method, UnsafeDeserializer {
 /** NetDataContractSerializer */
 class NetDataContractSerializerClass extends Class {
   NetDataContractSerializerClass() {
-    this.hasFullyQualifiedName("System.Runtime.Serialization", "NetDataContractSerializer")
+    this.hasQualifiedName("System.Runtime.Serialization", "NetDataContractSerializer")
   }
 }
 
@@ -174,7 +172,7 @@ class NetDataContractSerializerReadObjectMethod extends Method, UnsafeDeserializ
 /** DataContractJsonSerializer */
 class DataContractJsonSerializerClass extends Class {
   DataContractJsonSerializerClass() {
-    this.hasFullyQualifiedName("System.Runtime.Serialization.Json", "DataContractJsonSerializer")
+    this.hasQualifiedName("System.Runtime.Serialization.Json", "DataContractJsonSerializer")
   }
 }
 
@@ -189,7 +187,7 @@ class DataContractJsonSerializerReadObjectMethod extends Method, UnsafeDeseriali
 /** JavaScriptSerializer */
 class JavaScriptSerializerClass extends Class {
   JavaScriptSerializerClass() {
-    this.hasFullyQualifiedName("System.Web.Script.Serialization", "JavaScriptSerializer")
+    this.hasQualifiedName("System.Web.Script.Serialization", "JavaScriptSerializer")
   }
 }
 
@@ -212,7 +210,7 @@ class JavaScriptSerializerClassDeserializeObjectMethod extends Method, UnsafeDes
 /** XmlObjectSerializer */
 class XmlObjectSerializerClass extends Class {
   XmlObjectSerializerClass() {
-    this.hasFullyQualifiedName("System.Runtime.Serialization", "XmlObjectSerializer")
+    this.hasQualifiedName("System.Runtime.Serialization", "XmlObjectSerializer")
   }
 }
 
@@ -226,7 +224,7 @@ class XmlObjectSerializerReadObjectMethod extends Method, UnsafeDeserializer {
 
 /** XmlSerializer */
 class XmlSerializerClass extends Class {
-  XmlSerializerClass() { this.hasFullyQualifiedName("System.Xml.Serialization", "XmlSerializer") }
+  XmlSerializerClass() { this.hasQualifiedName("System.Xml.Serialization", "XmlSerializer") }
 }
 
 /** `System.Xml.Serialization.XmlSerializer.Deserialize` method */
@@ -240,7 +238,7 @@ class XmlSerializerDeserializeMethod extends Method, UnsafeDeserializer {
 /** DataContractSerializer */
 class DataContractSerializerClass extends Class {
   DataContractSerializerClass() {
-    this.hasFullyQualifiedName("System.Runtime.Serialization", "DataContractSerializer")
+    this.hasQualifiedName("System.Runtime.Serialization", "DataContractSerializer")
   }
 }
 
@@ -254,9 +252,7 @@ class DataContractSerializerReadObjectMethod extends Method, UnsafeDeserializer 
 
 /** XmlMessageFormatter */
 class XmlMessageFormatterClass extends Class {
-  XmlMessageFormatterClass() {
-    this.hasFullyQualifiedName("System.Messaging", "XmlMessageFormatter")
-  }
+  XmlMessageFormatterClass() { this.hasQualifiedName("System.Messaging", "XmlMessageFormatter") }
 }
 
 /** `System.Messaging.XmlMessageFormatter.Read` method */
@@ -269,7 +265,7 @@ class XmlMessageFormatterReadMethod extends Method, UnsafeDeserializer {
 
 /** LosFormatter */
 private class LosFormatterClass extends Class {
-  LosFormatterClass() { this.hasFullyQualifiedName("System.Web.UI", "LosFormatter") }
+  LosFormatterClass() { this.hasQualifiedName("System.Web.UI", "LosFormatter") }
 }
 
 /** `System.Web.UI.LosFormatter.Deserialize` method */
@@ -282,7 +278,7 @@ class LosFormatterDeserializeMethod extends Method, UnsafeDeserializer {
 
 /** fastJSON */
 private class FastJsonClass extends Class {
-  FastJsonClass() { this.hasFullyQualifiedName("fastJSON", "JSON") }
+  FastJsonClass() { this.hasQualifiedName("fastJSON", "JSON") }
 }
 
 /** `fastJSON.JSON.ToObject` method */
@@ -296,7 +292,7 @@ class FastJsonClassToObjectMethod extends Method, UnsafeDeserializer {
 
 /** Activity */
 private class ActivityClass extends Class {
-  ActivityClass() { this.hasFullyQualifiedName("System.Workflow.ComponentModel", "Activity") }
+  ActivityClass() { this.hasQualifiedName("System.Workflow.ComponentModel", "Activity") }
 }
 
 /** `System.Workflow.ComponentModel.Activity.Load` method */
@@ -309,7 +305,7 @@ class ActivityLoadMethod extends Method, UnsafeDeserializer {
 
 /** ResourceReader */
 private class ResourceReaderClass extends Class {
-  ResourceReaderClass() { this.hasFullyQualifiedName("System.Resources", "ResourceReader") }
+  ResourceReaderClass() { this.hasQualifiedName("System.Resources", "ResourceReader") }
 }
 
 /** `System.Resources.ResourceReader` constructor */
@@ -323,7 +319,7 @@ class ResourceReaderConstructor extends Constructor, UnsafeDeserializer {
 /** BinaryMessageFormatter */
 private class BinaryMessageFormatterClass extends Class {
   BinaryMessageFormatterClass() {
-    this.hasFullyQualifiedName("System.Messaging", "BinaryMessageFormatter")
+    this.hasQualifiedName("System.Messaging", "BinaryMessageFormatter")
   }
 }
 
@@ -337,7 +333,7 @@ class BinaryMessageFormatterReadMethod extends Method, UnsafeDeserializer {
 
 /** XamlReader */
 private class XamlReaderClass extends Class {
-  XamlReaderClass() { this.hasFullyQualifiedName("System.Windows.Markup", "XamlReader") }
+  XamlReaderClass() { this.hasQualifiedName("System.Windows.Markup", "XamlReader") }
 }
 
 /** `System.Windows.Markup.XamlReader.Parse` method */
@@ -368,7 +364,7 @@ class XamlReaderLoadAsyncMethod extends Method, UnsafeDeserializer {
 
 /** ProxyObject */
 private class ProxyObjectClass extends Class {
-  ProxyObjectClass() { this.hasFullyQualifiedName("Microsoft.Web.Design.Remote", "ProxyObject") }
+  ProxyObjectClass() { this.hasQualifiedName("Microsoft.Web.Design.Remote", "ProxyObject") }
 }
 
 /** `Microsoft.Web.Design.Remote.ProxyObject.DecodeValue` method */
@@ -389,7 +385,7 @@ class ProxyObjectDecodeSerializedObjectMethod extends Method, UnsafeDeserializer
 
 /** SweetJayson */
 private class JaysonConverterClass extends Class {
-  JaysonConverterClass() { this.hasFullyQualifiedName("Sweet.Jayson", "JaysonConverter") }
+  JaysonConverterClass() { this.hasQualifiedName("Sweet.Jayson", "JaysonConverter") }
 }
 
 /** `Sweet.Jayson.JaysonConverter.ToObject` method */
@@ -404,7 +400,7 @@ class JaysonConverterToObjectMethod extends Method, UnsafeDeserializer {
 /** ServiceStack.Text.JsonSerializer */
 private class ServiceStackTextJsonSerializerClass extends Class {
   ServiceStackTextJsonSerializerClass() {
-    this.hasFullyQualifiedName("ServiceStack.Text", "JsonSerializer")
+    this.hasQualifiedName("ServiceStack.Text", "JsonSerializer")
   }
 }
 
@@ -438,7 +434,7 @@ class ServiceStackTextJsonSerializerDeserializeFromStreamMethod extends Method, 
 /** ServiceStack.Text.TypeSerializer */
 private class ServiceStackTextTypeSerializerClass extends Class {
   ServiceStackTextTypeSerializerClass() {
-    this.hasFullyQualifiedName("ServiceStack.Text", "TypeSerializer")
+    this.hasQualifiedName("ServiceStack.Text", "TypeSerializer")
   }
 }
 
@@ -472,7 +468,7 @@ class ServiceStackTextTypeSerializerDeserializeFromStreamMethod extends Method, 
 /** ServiceStack.Text.CsvSerializer */
 private class ServiceStackTextCsvSerializerClass extends Class {
   ServiceStackTextCsvSerializerClass() {
-    this.hasFullyQualifiedName("ServiceStack.Text", "CsvSerializer")
+    this.hasQualifiedName("ServiceStack.Text", "CsvSerializer")
   }
 }
 
@@ -506,7 +502,7 @@ class ServiceStackTextCsvSerializerDeserializeFromStreamMethod extends Method, U
 /** ServiceStack.Text.XmlSerializer */
 private class ServiceStackTextXmlSerializerClass extends Class {
   ServiceStackTextXmlSerializerClass() {
-    this.hasFullyQualifiedName("ServiceStack.Text", "XmlSerializer")
+    this.hasQualifiedName("ServiceStack.Text", "XmlSerializer")
   }
 }
 
@@ -539,9 +535,7 @@ class ServiceStackTextXmlSerializerDeserializeFromStreamMethod extends Method, U
 
 /** MBrace.FsPickler.FsPicklerSerializer */
 private class FsPicklerSerializerClass extends Class {
-  FsPicklerSerializerClass() {
-    this.hasFullyQualifiedName("MBrace.FsPickler", "FsPicklerSerializer")
-  }
+  FsPicklerSerializerClass() { this.hasQualifiedName("MBrace.FsPickler", "FsPicklerSerializer") }
 }
 
 /** `MBrace.FsPickler.FsPicklerSerializer.Deserialize` method */
@@ -610,9 +604,7 @@ class FsPicklerSerializerClassUnPickleUntypedMethod extends Method, UnsafeDeseri
 
 /** MBrace.CsPickler.CsPicklerSerializer */
 private class CsPicklerSerializerClass extends Class {
-  CsPicklerSerializerClass() {
-    this.hasFullyQualifiedName("MBrace.CsPickler", "CsPicklerSerializer")
-  }
+  CsPicklerSerializerClass() { this.hasQualifiedName("MBrace.CsPickler", "CsPicklerSerializer") }
 }
 
 /** `MBrace.FsPickler.CsPicklerSerializer.Deserialize` method */
@@ -634,7 +626,7 @@ class CsPicklerSerializerClassUnPickleMethod extends Method, UnsafeDeserializer 
 /** MBrace.CsPickler.CsPicklerTextSerializer */
 private class CsPicklerTextSerializerClass extends Class {
   CsPicklerTextSerializerClass() {
-    this.hasFullyQualifiedName("MBrace.CsPickler", "CsPicklerTextSerializer")
+    this.hasQualifiedName("MBrace.CsPickler", "CsPicklerTextSerializer")
   }
 }
 
@@ -648,7 +640,7 @@ class CsPicklerSerializerClassUnPickleOfStringMethod extends Method, UnsafeDeser
 
 /** Polenter.Serialization.SharpSerializer */
 private class SharpSerializerClass extends Class {
-  SharpSerializerClass() { this.hasFullyQualifiedName("Polenter.Serialization", "SharpSerializer") }
+  SharpSerializerClass() { this.hasQualifiedName("Polenter.Serialization", "SharpSerializer") }
 }
 
 /** `Polenter.Serialization.SharpSerializer.Deserialize` method */
@@ -662,7 +654,7 @@ class SharpSerializerClassDeserializeMethod extends Method, UnsafeDeserializer {
 /** YamlDotNet.Serialization.Deserializer */
 private class YamlDotNetDeserializerClass extends Class {
   YamlDotNetDeserializerClass() {
-    this.hasFullyQualifiedName("YamlDotNet.Serialization", "Deserializer")
+    this.hasQualifiedName("YamlDotNet.Serialization", "Deserializer")
   }
 }
 

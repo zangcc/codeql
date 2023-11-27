@@ -46,6 +46,9 @@ predicate canReuseSsaForVariable(IRAutomaticVariable var) {
   not allocationEscapes(var)
 }
 
+/** DEPRECATED: Alias for canReuseSsaForVariable */
+deprecated predicate canReuseSSAForVariable = canReuseSsaForVariable/1;
+
 private newtype TMemoryLocation = MkMemoryLocation(Allocation var) { isVariableModeled(var) }
 
 private MemoryLocation getMemoryLocation(Allocation var) { result.getAllocation() = var }
@@ -72,10 +75,13 @@ class MemoryLocation extends TMemoryLocation {
   final predicate canReuseSsa() { canReuseSsaForVariable(var) }
 
   /** DEPRECATED: Alias for canReuseSsa */
-  deprecated predicate canReuseSSA() { this.canReuseSsa() }
+  deprecated predicate canReuseSSA() { canReuseSsa() }
 }
 
 predicate canReuseSsaForOldResult(Instruction instr) { none() }
+
+/** DEPRECATED: Alias for canReuseSsaForOldResult */
+deprecated predicate canReuseSSAForOldResult = canReuseSsaForOldResult/1;
 
 /**
  * Represents a set of `MemoryLocation`s that cannot overlap with

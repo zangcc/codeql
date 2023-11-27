@@ -2,10 +2,12 @@ import java
 import semmle.code.xml.AndroidManifest
 import TestUtilities.InlineExpectationsTest
 
-module ContentProviderIncompletePermissionsTest implements TestSig {
-  string getARelevantTag() { result = "hasIncompletePermissions" }
+class ContentProviderIncompletePermissionsTest extends InlineExpectationsTest {
+  ContentProviderIncompletePermissionsTest() { this = "ContentProviderIncompletePermissionsTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasIncompletePermissions" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasIncompletePermissions" and
     exists(AndroidProviderXmlElement provider |
       provider.getLocation() = location and
@@ -18,5 +20,3 @@ module ContentProviderIncompletePermissionsTest implements TestSig {
     )
   }
 }
-
-import MakeTest<ContentProviderIncompletePermissionsTest>

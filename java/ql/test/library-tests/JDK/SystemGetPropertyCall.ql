@@ -1,5 +1,5 @@
 import java
 
-from MethodCallSystemGetProperty ma
+from MethodAccessSystemGetProperty ma
 where ma.hasCompileTimeConstantGetPropertyName("user.dir")
 select ma

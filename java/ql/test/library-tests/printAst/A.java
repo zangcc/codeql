@@ -56,18 +56,4 @@ class A {
            return;
        }
    }
-
-   enum E {
-    /**
-     * Javadoc for enum constant
-     */
-    A,
-    B,
-    C;
-   }
-
-   /**
-    * Javadoc for fields
-    */
-    int i, j, k;
 }

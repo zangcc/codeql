@@ -1,6 +1,6 @@
 extensions:
   - addsTo:
-      pack: codeql/java-all
+      pack: codeql/java-tests
       extensible: sinkModel
     data:
       - ["my.qltest", "B", False, "sink1", "(Object)", "", "Argument[0]", "qltest", "manual"]

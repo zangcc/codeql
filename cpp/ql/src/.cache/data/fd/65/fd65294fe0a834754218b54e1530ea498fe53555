@@ -1,0 +1,56 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "CleartextBufferWrite.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "71aeec42ce2f60e7e2d20ea62cb6c1e212e14394"
+  debugInfo: "37dc5f0b1db6e91020858c9db9aa624dfbbea407"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "674616469a4efc637f98a8f0dc50436883d7acfb"
+- cached: "044d74fa556004cf073fbebb429a14e249bb9b1f"
+  debugInfo: "a08b306490cc0fc77e6c13f5fda060f29c1b351e"
+- cached: "d06004fe75ab6afcce284a7da2f0c5b710c30e8e"
+  debugInfo: "9cb4da0d06db576ac2355b3151d9ea5f85e9c9fd"
+- cached: "5a7f9fbc1550c93084b1c41446939bca46efe511"
+  debugInfo: "b2e910d29edafed466abfd43c63b2706e766c2a9"
+- cached: "3a65a71867a3302b9ca6acc6adcc6746d306ce4b"
+  debugInfo: "76948451cb12c83afb5916ebed4f9261b079338a"
+- cached: "edeec5474c60e245e25d33a39a9e53be74577b2e"
+  debugInfo: "7fc9ae1b10822da62aedceca4a22a865eb73a4a8"
+- cached: "6c8b3996f913a2c301248eb9686264937fe1493c"
+  debugInfo: "f8829f3ba9b5ee72a5666ecb4f509af522812ee4"
+- cached: "7543171f31eeb07fa757382853836916e6046f54"
+  debugInfo: "3baa192f31f25cce531f3994500d64b2764b94fb"
+- cached: "93bc1a39e2999d066a38bfeada01f6a522be7ae3"
+  debugInfo: "d61f3c130b5a0d4c5795962cc4e9b02ab762e251"
+- cached: "c6ce827f1f72c88858b02b5427bb8905409a3c5d"
+  debugInfo: "2e354764a5b44d720857b7b4f09aee93e26f9404"
+- cached: "ab8d406f732ef99ab821b1b6ecbf6a1f2b0ec605"
+  debugInfo: "56e45e075468a5fccb76c738cc71c4dddab903be"
+- cached: "3bf6b25cb8f58a4a528d6873a7fbe4b0a653afa0"
+  debugInfo: "2b3583e465e22d9f90d1863eb729913c5379b916"
+- cached: "f46b2ffeb463fbdab15eec51966934c2e904f764"
+  debugInfo: "c3bd5587aa355ca91d2811e41fec2edbe18d3178"
+- cached: "2ef7e25a08ff7392723b1154815d3a061895c9ce"
+  debugInfo: "95ceb5891b1db496bfe3c25e236c83142a739900"
+- cached: "378f45db5c3a5cedfcc8d66f831ad01bbe9b79a6"
+  debugInfo: "7a7eb638ac90b9481246c8d4c313405de67fe446"
+- cached: "1bb3a319847b5381d924b76316cb9dbedb21e57d"
+  debugInfo: "7dc8c690be0ce7a822fab45d64ba420113af9ab4"
+- cached: "2112925a6f2d85c9876c6f1ff037a3db132d335e"
+  debugInfo: "66cd9f9959cf4877faa740fe97a1180c87e3ce32"
+- cached: "ab8f4f183e92233a0e9266009fe40ba06830c6e6"
+  debugInfo: "bae479681f48b949cb4535b55f528c4b03a13f02"
+results:
+  edges:
+    resultArranger: "2\"a\"ei12\"b\"ei12"
+  nodes:
+    resultArranger: "3\"n\"ei12\"key\"s\"val\"s"
+  subpaths:
+    resultArranger: "4\"arg\"ei12\"par\"ei12\"ret\"ei12\"out\"ei12"
+  '#select':
+    resultArranger: "6\"w\"ei12\"sourceNode\"ei12\"sinkNode\"ei120s\"source\"ei120s"
+inputsDigest: "fd65294fe0a834754218b54e1530ea498fe53555"

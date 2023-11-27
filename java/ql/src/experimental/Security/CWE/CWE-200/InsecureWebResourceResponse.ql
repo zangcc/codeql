@@ -16,20 +16,19 @@ import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.dataflow.TaintTracking
 import semmle.code.java.security.PathSanitizer
 import AndroidWebResourceResponse
-import InsecureWebResourceResponseFlow::PathGraph
+import DataFlow::PathGraph
 
-module InsecureWebResourceResponseConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src instanceof ThreatModelFlowSource }
+class InsecureWebResourceResponseConfig extends TaintTracking::Configuration {
+  InsecureWebResourceResponseConfig() { this = "InsecureWebResourceResponseConfig" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof WebResourceResponseSink }
+  override predicate isSource(DataFlow::Node src) { src instanceof RemoteFlowSource }
 
-  predicate isBarrier(DataFlow::Node node) { node instanceof PathInjectionSanitizer }
+  override predicate isSink(DataFlow::Node sink) { sink instanceof WebResourceResponseSink }
+
+  override predicate isSanitizer(DataFlow::Node node) { node instanceof PathInjectionSanitizer }
 }
 
-module InsecureWebResourceResponseFlow = TaintTracking::Global<InsecureWebResourceResponseConfig>;
-
-from
-  InsecureWebResourceResponseFlow::PathNode source, InsecureWebResourceResponseFlow::PathNode sink
-where InsecureWebResourceResponseFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, InsecureWebResourceResponseConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "Leaking arbitrary content in Android from $@.",
   source.getNode(), "this user input"

@@ -6,7 +6,7 @@ module Ssa {
   private import codeql.swift.controlflow.ControlFlowGraph
   private import codeql.swift.controlflow.BasicBlocks as BasicBlocks
 
-  private module SsaInput implements SsaImplCommon::InputSig<Location> {
+  private module SsaInput implements SsaImplCommon::InputSig {
     private import internal.DataFlowPrivate
     private import codeql.swift.controlflow.ControlFlowGraph
     private import codeql.swift.controlflow.CfgNodes
@@ -21,45 +21,7 @@ module Ssa {
 
     class ExitBasicBlock = BasicBlocks::ExitBasicBlock;
 
-    private newtype TSourceVariable =
-      TNormalSourceVariable(VarDecl v) or
-      TKeyPathSourceVariable(EntryNode entry) { entry.getScope() instanceof KeyPathExpr }
-
-    abstract class SourceVariable extends TSourceVariable {
-      abstract string toString();
-
-      VarDecl asVarDecl() { none() }
-
-      EntryNode asKeyPath() { none() }
-
-      DeclRefExpr getAnAccess() { result.getDecl() = this.asVarDecl() }
-
-      Location getLocation() {
-        result = this.asVarDecl().getLocation()
-        or
-        result = this.asKeyPath().getLocation()
-      }
-    }
-
-    private class NormalSourceVariable extends SourceVariable, TNormalSourceVariable {
-      VarDecl v;
-
-      NormalSourceVariable() { this = TNormalSourceVariable(v) }
-
-      override string toString() { result = v.toString() }
-
-      override VarDecl asVarDecl() { result = v }
-    }
-
-    private class KeyPathSourceVariable extends SourceVariable, TKeyPathSourceVariable {
-      EntryNode enter;
-
-      KeyPathSourceVariable() { this = TKeyPathSourceVariable(enter) }
-
-      override string toString() { result = enter.toString() }
-
-      override EntryNode asKeyPath() { result = enter }
-    }
+    class SourceVariable = VarDecl;
 
     predicate variableWrite(BasicBlock bb, int i, SourceVariable v, boolean certain) {
       exists(AssignExpr assign |
@@ -76,24 +38,19 @@ module Ssa {
       // if let x5 = optional { ... }
       // guard let x6 = optional else { ... }
       // ```
-      exists(NamedPattern pattern |
+      exists(Pattern pattern |
         bb.getNode(i).getNode().asAstNode() = pattern and
-        v.asVarDecl() = pattern.getVarDecl() and
+        v.getParentPattern() = pattern and
         certain = true
       )
       or
-      exists(ParamDecl p |
-        p = v.asVarDecl() and
-        bb.getNode(i).getNode().asAstNode() = p and
-        certain = true
-      )
-      or
-      bb.getNode(i) = v.asKeyPath() and
+      v instanceof ParamDecl and
+      bb.getNode(i).getNode().asAstNode() = v and
       certain = true
       or
       // Mark the subexpression as a write of the local variable declared in the `TapExpr`.
       exists(TapExpr tap |
-        v.asVarDecl() = tap.getVar() and
+        v = tap.getVar() and
         bb.getNode(i).getNode().asAstNode() = tap.getSubExpr() and
         certain = true
       )
@@ -103,7 +60,7 @@ module Ssa {
       exists(DeclRefExpr ref |
         not isLValue(ref) and
         bb.getNode(i).getNode().asAstNode() = ref and
-        v.asVarDecl() = ref.getDecl() and
+        v = ref.getDecl() and
         certain = true
       )
       or
@@ -113,27 +70,25 @@ module Ssa {
         certain = true
       )
       or
-      exists(ExitNode exit, Function func |
-        [func.getAParam(), func.getSelfParam()] = v.asVarDecl() and
+      exists(ExitNode exit, AbstractFunctionDecl func |
+        func.getAParam() = v or func.getSelfParam() = v
+      |
         bb.getNode(i) = exit and
-        modifiableParam(v.asVarDecl()) and
+        modifiableParam(v) and
         bb.getScope() = func and
         certain = true
       )
       or
       // Mark the `TapExpr` as a read of the of the local variable.
       exists(TapExpr tap |
-        v.asVarDecl() = tap.getVar() and
+        v = tap.getVar() and
         bb.getNode(i).getNode().asAstNode() = tap and
         certain = true
       )
     }
   }
 
-  /**
-   * INTERNAL: Do not use.
-   */
-  module SsaImpl = SsaImplCommon::Make<Location, SsaInput>;
+  private module SsaImpl = SsaImplCommon::Make<SsaInput>;
 
   cached
   class Definition extends SsaImpl::Definition {
@@ -142,7 +97,7 @@ module Ssa {
 
     cached
     ControlFlowNode getARead() {
-      exists(SsaInput::SourceVariable v, SsaInput::BasicBlock bb, int i |
+      exists(VarDecl v, SsaInput::BasicBlock bb, int i |
         SsaImpl::ssaDefReachesRead(v, this, bb, i) and
         SsaInput::variableRead(bb, i, v, true) and
         result = bb.getNode(i)
@@ -190,16 +145,22 @@ module Ssa {
      */
     cached
     predicate assigns(CfgNode value) {
-      exists(AssignExpr a, SsaInput::BasicBlock bb, int i |
+      exists(
+        AssignExpr a, SsaInput::BasicBlock bb, int i // TODO: use CFG node for assignment expr
+      |
         this.definesAt(_, bb, i) and
         a = bb.getNode(i).getNode().asAstNode() and
         value.getNode().asAstNode() = a.getSource()
       )
       or
-      exists(SsaInput::BasicBlock bb, int blockIndex, NamedPattern np |
-        this.definesAt(_, bb, blockIndex) and
-        np = bb.getNode(blockIndex).getNode().asAstNode() and
-        value.getNode().asAstNode() = np
+      exists(
+        VarDecl var, SsaInput::BasicBlock bb, int blockIndex, PatternBindingDecl pbd, Expr init
+      |
+        this.definesAt(var, bb, blockIndex) and
+        pbd.getAPattern() = bb.getNode(blockIndex).getNode().asAstNode() and
+        init = var.getParentInitializer()
+      |
+        value.getAst() = init
       )
       or
       exists(SsaInput::BasicBlock bb, int blockIndex, ConditionElement ce, Expr init |

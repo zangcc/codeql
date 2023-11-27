@@ -78,8 +78,7 @@ module IncompleteHtmlAttributeSanitization {
    * vulnerabilities.
    */
   class HtmlAttributeConcatenationAsSink extends Sink, DataFlow::ValueNode,
-    HtmlAttributeConcatenation
-  {
+    HtmlAttributeConcatenation {
     override string getADangerousCharacter() {
       this.isInterpretedAsJavaScript() and result = "&"
       or

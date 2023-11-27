@@ -564,9 +564,9 @@ abstract deprecated library class DataSensitiveCallExpr extends Expr {
    * Searches backwards from `getSrc()` to `src`.
    */
   predicate flowsFrom(Element src, boolean allowFromArg) {
-    src = this.getSrc() and allowFromArg = true
+    src = getSrc() and allowFromArg = true
     or
-    exists(Element other, boolean allowOtherFromArg | this.flowsFrom(other, allowOtherFromArg) |
+    exists(Element other, boolean allowOtherFromArg | flowsFrom(other, allowOtherFromArg) |
       exists(boolean otherFromArg | betweenFunctionsValueMoveToStatic(src, other, otherFromArg) |
         otherFromArg = true and allowOtherFromArg = true and allowFromArg = true
         or
@@ -582,28 +582,27 @@ abstract deprecated library class DataSensitiveCallExpr extends Expr {
 
 /** Call through a function pointer. */
 deprecated library class DataSensitiveExprCall extends DataSensitiveCallExpr, ExprCall {
-  override Expr getSrc() { result = this.getExpr() }
+  override Expr getSrc() { result = getExpr() }
 
   override Function resolve() {
-    exists(FunctionAccess fa | this.flowsFrom(fa, true) | result = fa.getTarget())
+    exists(FunctionAccess fa | flowsFrom(fa, true) | result = fa.getTarget())
   }
 }
 
 /** Call to a virtual function. */
 deprecated library class DataSensitiveOverriddenFunctionCall extends DataSensitiveCallExpr,
-  FunctionCall
-{
+  FunctionCall {
   DataSensitiveOverriddenFunctionCall() {
-    exists(this.getTarget().(VirtualFunction).getAnOverridingFunction())
+    exists(getTarget().(VirtualFunction).getAnOverridingFunction())
   }
 
-  override Expr getSrc() { result = this.getQualifier() }
+  override Expr getSrc() { result = getQualifier() }
 
   override MemberFunction resolve() {
     exists(NewExpr new |
-      this.flowsFrom(new, true) and
+      flowsFrom(new, true) and
       memberFunctionFromNewExpr(new, result) and
-      result.overrides*(this.getTarget().(VirtualFunction))
+      result.overrides*(getTarget().(VirtualFunction))
     )
   }
 }

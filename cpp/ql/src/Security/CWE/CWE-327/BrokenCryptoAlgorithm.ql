@@ -150,7 +150,7 @@ class BlamedElement extends Element {
    */
   predicate hasFileRank(File f, int num) {
     exists(int loc |
-      this.getLocation().charLoc(f, loc, _) and
+      getLocation().charLoc(f, loc, _) and
       loc =
         rank[num](BlamedElement other, int loc2 | other.getLocation().charLoc(f, loc2, _) | loc2)
     )

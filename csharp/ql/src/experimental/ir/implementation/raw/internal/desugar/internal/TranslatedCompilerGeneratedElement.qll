@@ -7,8 +7,7 @@ private import experimental.ir.implementation.raw.internal.TranslatedElement
 private import experimental.ir.internal.IRCSharpLanguage as Language
 
 abstract class TranslatedCompilerGeneratedElement extends TranslatedElement,
-  TTranslatedCompilerGeneratedElement
-{
+  TTranslatedCompilerGeneratedElement {
   // The element that generates generated the compiler element can
   // only be a stmt or an expr
   ControlFlowElement generatedBy;
@@ -20,4 +19,7 @@ abstract class TranslatedCompilerGeneratedElement extends TranslatedElement,
   final override Callable getFunction() { result = generatedBy.getEnclosingCallable() }
 
   final override Language::AST getAst() { result = generatedBy }
+
+  /** DEPRECATED: Alias for getAst */
+  deprecated override Language::AST getAST() { result = getAst() }
 }

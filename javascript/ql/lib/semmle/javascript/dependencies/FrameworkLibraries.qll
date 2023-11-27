@@ -137,7 +137,13 @@ abstract class FrameworkLibraryWithUrlRegex extends FrameworkLibrary {
    * the version number.
    */
   abstract string getAUrlRegex();
+
+  /** DEPRECATED: Alias for getAUrlRegex */
+  deprecated string getAURLRegex() { result = this.getAUrlRegex() }
 }
+
+/** DEPRECATED: Alias for FrameworkLibraryWithUrlRegex */
+deprecated class FrameworkLibraryWithURLRegex = FrameworkLibraryWithUrlRegex;
 
 /**
  * A framework library that is referenced by URLs containing the name
@@ -169,7 +175,13 @@ abstract class FrameworkLibraryWithGenericUrl extends FrameworkLibraryWithUrlReg
           "\\.js"
     )
   }
+
+  /** DEPRECATED: Alias for getAUrlRegex */
+  deprecated override string getAURLRegex() { result = this.getAUrlRegex() }
 }
+
+/** DEPRECATED: Alias for FrameworkLibraryWithGenericUrl */
+deprecated class FrameworkLibraryWithGenericURL = FrameworkLibraryWithGenericUrl;
 
 /**
  * Gets a regular expression identifying suffixes that are commonly appended
@@ -270,6 +282,9 @@ class FrameworkLibraryReferenceWithUrl extends FrameworkLibraryReference {
   override predicate info(FrameworkLibrary fl, string v) { matchUrl(this, fl, v) }
 }
 
+/** DEPRECATED: Alias for FrameworkLibraryReferenceWithUrl */
+deprecated class FrameworkLibraryReferenceWithURL = FrameworkLibraryReferenceWithUrl;
+
 /**
  * Holds if the value of `src` attribute `attr` matches the URL pattern of library
  * `fl` at `version`.
@@ -331,8 +346,7 @@ private class JQueryInstance extends FrameworkLibraryInstance {
 /**
  * The jQuery Mobile framework.
  */
-private class JQueryMobile extends FrameworkLibraryWithGenericUrl, FrameworkLibraryWithMarkerComment
-{
+private class JQueryMobile extends FrameworkLibraryWithGenericUrl, FrameworkLibraryWithMarkerComment {
   JQueryMobile() { this = "jquery-mobile" }
 
   override string getAnAlias() { result = "jquery.mobile" }
@@ -357,8 +371,7 @@ private class JQueryUI extends FrameworkLibraryWithGenericUrl, FrameworkLibraryW
  * The jQuery TextExt framework.
  */
 private class JQueryTextExt extends FrameworkLibraryWithGenericUrl,
-  FrameworkLibraryWithMarkerComment
-{
+  FrameworkLibraryWithMarkerComment {
   JQueryTextExt() { this = "jquery-textext" }
 
   override string getAnAlias() { result = "jquery.textext" }
@@ -374,8 +387,7 @@ private class JQueryTextExt extends FrameworkLibraryWithGenericUrl,
  * The jQuery DataTables framework.
  */
 private class JQueryDataTables extends FrameworkLibraryWithGenericUrl,
-  FrameworkLibraryWithMarkerComment
-{
+  FrameworkLibraryWithMarkerComment {
   JQueryDataTables() { this = "jquery-dataTables" }
 
   override string getAnAlias() { result = "jquery.dataTables" }
@@ -388,8 +400,7 @@ private class JQueryDataTables extends FrameworkLibraryWithGenericUrl,
 /**
  * The jQuery jsTree framework.
  */
-private class JQueryJsTree extends FrameworkLibraryWithGenericUrl, FrameworkLibraryWithMarkerComment
-{
+private class JQueryJsTree extends FrameworkLibraryWithGenericUrl, FrameworkLibraryWithMarkerComment {
   JQueryJsTree() { this = "jquery-jstree" }
 
   override string getAnAlias() { result = "jquery.jstree" }
@@ -401,8 +412,7 @@ private class JQueryJsTree extends FrameworkLibraryWithGenericUrl, FrameworkLibr
  * The jQuery Snippet framework.
  */
 private class JQuerySnippet extends FrameworkLibraryWithGenericUrl,
-  FrameworkLibraryWithMarkerComment
-{
+  FrameworkLibraryWithMarkerComment {
   JQuerySnippet() { this = "jquery-snippet" }
 
   override string getAnAlias() { result = "jquery.snippet" }
@@ -938,6 +948,9 @@ private class ApplicationInsights extends FrameworkLibraryWithUrlRegex {
   ApplicationInsights() { this = "ApplicationInsights" }
 
   override string getAUrlRegex() { result = ".*(?:^|/)ai\\.(" + semverRegex() + ")-build\\d+\\.js" }
+
+  /** DEPRECATED: Alias for getAUrlRegex */
+  deprecated override string getAURLRegex() { result = this.getAUrlRegex() }
 }
 
 /**
@@ -956,6 +969,9 @@ private class TwitterTextClassic extends FrameworkLibraryWithUrlRegex {
   TwitterTextClassic() { this = "twitter-text" }
 
   override string getAUrlRegex() { result = ".*(?:^|/)twitter_text" + variantRegex() + "\\.js" }
+
+  /** DEPRECATED: Alias for getAUrlRegex */
+  deprecated override string getAURLRegex() { result = this.getAUrlRegex() }
 }
 
 /**

@@ -132,7 +132,7 @@ class ImportVarDeclProvider extends Stmt {
    * Gets an unacceptable unused variable declared by this import.
    */
   UnusedLocal getAnUnacceptableUnusedLocal() {
-    result = this.getAVarDecl().getVariable() and
+    result = getAVarDecl().getVariable() and
     not whitelisted(result)
   }
 }

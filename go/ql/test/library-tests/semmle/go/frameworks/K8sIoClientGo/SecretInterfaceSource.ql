@@ -1,10 +1,12 @@
 import go
 import TestUtilities.InlineExpectationsTest
 
-module K8sIoApimachineryPkgRuntimeTest implements TestSig {
-  string getARelevantTag() { result = "KsIoClientGo" }
+class K8sIoApimachineryPkgRuntimeTest extends InlineExpectationsTest {
+  K8sIoApimachineryPkgRuntimeTest() { this = "KsIoClientGoTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "KsIoClientGo" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(K8sIoClientGo::SecretInterfaceSource source |
       source
           .hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
@@ -15,5 +17,3 @@ module K8sIoApimachineryPkgRuntimeTest implements TestSig {
     )
   }
 }
-
-import MakeTest<K8sIoApimachineryPkgRuntimeTest>

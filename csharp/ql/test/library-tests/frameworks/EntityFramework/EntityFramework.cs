@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace EFTests
 {
-    public class Person
+    class Person
     {
         public virtual int Id { get; set; }
         public virtual string Name { get; set; }
@@ -17,13 +17,13 @@ namespace EFTests
         public ICollection<Address> Addresses { get; set; }
     }
 
-    public class Address
+    class Address
     {
         public int Id { get; set; }
         public string Street { get; set; }
     }
 
-    public class PersonAddressMap
+    class PersonAddressMap
     {
         public int Id { get; set; }
         public int PersonId { get; set; }
@@ -34,7 +34,7 @@ namespace EFTests
         public Address Address { get; set; }
     }
 
-    public class MyContext : DbContext
+    class MyContext : DbContext
     {
         public virtual DbSet<Person> Persons { get; set; }
         public virtual DbSet<Address> Addresses { get; set; }

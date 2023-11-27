@@ -15,7 +15,7 @@ func TaintTracking_GithubComGofiberFiberV1146() {
 		{
 			fromString656 := source().(string)
 			intoError414 := fiber.NewError(0, fromString656)
-			sink(intoError414) // $ hasTaintFlow="intoError414"
+			sink(intoError414) // $ taintSink
 		}
 	}
 }
@@ -28,79 +28,79 @@ func TaintTracking_GithubComGofiberUtilsV0010() {
 		{
 			fromString989 := source().(string)
 			intoByte982 := utils.GetBytes(fromString989)
-			sink(intoByte982) // $ hasTaintFlow="intoByte982"
+			sink(intoByte982) // $ taintSink
 		}
 		// func GetString(b []byte) string
 		{
 			fromByte417 := source().([]byte)
 			intoString584 := utils.GetString(fromByte417)
-			sink(intoString584) // $ hasTaintFlow="intoString584"
+			sink(intoString584) // $ taintSink
 		}
 		// func ImmutableString(s string) string
 		{
 			fromString991 := source().(string)
 			intoString881 := utils.ImmutableString(fromString991)
-			sink(intoString881) // $ hasTaintFlow="intoString881"
+			sink(intoString881) // $ taintSink
 		}
 		// func ToLower(b string) string
 		{
 			fromString494 := source().(string)
 			intoString873 := utils.ToLower(fromString494)
-			sink(intoString873) // $ hasTaintFlow="intoString873"
+			sink(intoString873) // $ taintSink
 		}
 		// func ToLowerBytes(b []byte) []byte
 		{
 			fromByte599 := source().([]byte)
 			intoByte409 := utils.ToLowerBytes(fromByte599)
-			sink(intoByte409) // $ hasTaintFlow="intoByte409"
+			sink(intoByte409) // $ taintSink
 		}
 		// func ToUpper(b string) string
 		{
 			fromString246 := source().(string)
 			intoString898 := utils.ToUpper(fromString246)
-			sink(intoString898) // $ hasTaintFlow="intoString898"
+			sink(intoString898) // $ taintSink
 		}
 		// func ToUpperBytes(b []byte) []byte
 		{
 			fromByte598 := source().([]byte)
 			intoByte631 := utils.ToUpperBytes(fromByte598)
-			sink(intoByte631) // $ hasTaintFlow="intoByte631"
+			sink(intoByte631) // $ taintSink
 		}
 		// func Trim(s string, cutset byte) string
 		{
 			fromString165 := source().(string)
 			intoString150 := utils.Trim(fromString165, 0)
-			sink(intoString150) // $ hasTaintFlow="intoString150"
+			sink(intoString150) // $ taintSink
 		}
 		// func TrimBytes(b []byte, cutset byte) []byte
 		{
 			fromByte340 := source().([]byte)
 			intoByte471 := utils.TrimBytes(fromByte340, 0)
-			sink(intoByte471) // $ hasTaintFlow="intoByte471"
+			sink(intoByte471) // $ taintSink
 		}
 		// func TrimLeft(s string, cutset byte) string
 		{
 			fromString290 := source().(string)
 			intoString758 := utils.TrimLeft(fromString290, 0)
-			sink(intoString758) // $ hasTaintFlow="intoString758"
+			sink(intoString758) // $ taintSink
 		}
 		// func TrimLeftBytes(b []byte, cutset byte) []byte
 		{
 			fromByte396 := source().([]byte)
 			intoByte707 := utils.TrimLeftBytes(fromByte396, 0)
-			sink(intoByte707) // $ hasTaintFlow="intoByte707"
+			sink(intoByte707) // $ taintSink
 		}
 		// func TrimRight(s string, cutset byte) string
 		{
 			fromString912 := source().(string)
 			intoString718 := utils.TrimRight(fromString912, 0)
-			sink(intoString718) // $ hasTaintFlow="intoString718"
+			sink(intoString718) // $ taintSink
 		}
 		// func TrimRightBytes(b []byte, cutset byte) []byte
 		{
 			fromByte972 := source().([]byte)
 			intoByte633 := utils.TrimRightBytes(fromByte972, 0)
-			sink(intoByte633) // $ hasTaintFlow="intoByte633"
+			sink(intoByte633) // $ taintSink
 		}
 	}
 }

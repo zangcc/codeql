@@ -7,7 +7,7 @@ import semmle.code.java.security.CleartextStorageQuery
 
 private class SharedPrefsCleartextStorageSink extends CleartextStorageSink {
   SharedPrefsCleartextStorageSink() {
-    exists(MethodCall m |
+    exists(MethodAccess m |
       m.getMethod() instanceof PutSharedPreferenceMethod and
       this.asExpr() = m.getArgument(1)
     )
@@ -18,40 +18,37 @@ private class SharedPrefsCleartextStorageSink extends CleartextStorageSink {
  * The call to get a `SharedPreferences.Editor` object, which can set shared preferences and be
  * stored to the device.
  */
-class SharedPreferencesEditorMethodCall extends Storable, MethodCall {
-  SharedPreferencesEditorMethodCall() {
+class SharedPreferencesEditorMethodAccess extends Storable, MethodAccess {
+  SharedPreferencesEditorMethodAccess() {
     this.getMethod() instanceof GetSharedPreferencesEditorMethod and
-    not DataFlow::localExprFlow(any(MethodCall ma |
+    not DataFlow::localExprFlow(any(MethodAccess ma |
         ma.getMethod() instanceof CreateEncryptedSharedPreferencesMethod
       ), this.getQualifier())
   }
 
   /** Gets an input, for example `password` in `editor.putString("password", password);`. */
   override Expr getAnInput() {
-    exists(DataFlow::Node editor |
+    exists(SharedPreferencesFlowConfig conf, DataFlow::Node editor |
       sharedPreferencesInput(editor, result) and
-      SharedPreferencesFlow::flow(DataFlow::exprNode(this), editor)
+      conf.hasFlow(DataFlow::exprNode(this), editor)
     )
   }
 
   /** Gets a store, for example `editor.commit();`. */
   override Expr getAStore() {
-    exists(DataFlow::Node editor |
+    exists(SharedPreferencesFlowConfig conf, DataFlow::Node editor |
       sharedPreferencesStore(editor, result) and
-      SharedPreferencesFlow::flow(DataFlow::exprNode(this), editor)
+      conf.hasFlow(DataFlow::exprNode(this), editor)
     )
   }
 }
-
-/** DEPRECATED: Alias for `SharedPreferencesEditorMethodCall`. */
-deprecated class SharedPreferencesEditorMethodAccess = SharedPreferencesEditorMethodCall;
 
 /**
  * Holds if `input` is the second argument of a setter method
  * called on `editor`, which is an instance of `SharedPreferences$Editor`.
  */
 private predicate sharedPreferencesInput(DataFlow::Node editor, Expr input) {
-  exists(MethodCall m |
+  exists(MethodAccess m |
     m.getMethod() instanceof PutSharedPreferenceMethod and
     input = m.getArgument(1) and
     editor.asExpr() = m.getQualifier().getUnderlyingExpr()
@@ -62,21 +59,21 @@ private predicate sharedPreferencesInput(DataFlow::Node editor, Expr input) {
  * Holds if `m` is a store method called on `editor`,
  * which is an instance of `SharedPreferences$Editor`.
  */
-private predicate sharedPreferencesStore(DataFlow::Node editor, MethodCall m) {
+private predicate sharedPreferencesStore(DataFlow::Node editor, MethodAccess m) {
   m.getMethod() instanceof StoreSharedPreferenceMethod and
   editor.asExpr() = m.getQualifier().getUnderlyingExpr()
 }
 
 /** Flow from `SharedPreferences.Editor` to either a setter or a store method. */
-private module SharedPreferencesFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) {
-    src.asExpr() instanceof SharedPreferencesEditorMethodCall
+private class SharedPreferencesFlowConfig extends DataFlow::Configuration {
+  SharedPreferencesFlowConfig() { this = "SharedPreferencesFlowConfig" }
+
+  override predicate isSource(DataFlow::Node src) {
+    src.asExpr() instanceof SharedPreferencesEditorMethodAccess
   }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSink(DataFlow::Node sink) {
     sharedPreferencesInput(sink, _) or
     sharedPreferencesStore(sink, _)
   }
 }
-
-private module SharedPreferencesFlow = DataFlow::Global<SharedPreferencesFlowConfig>;

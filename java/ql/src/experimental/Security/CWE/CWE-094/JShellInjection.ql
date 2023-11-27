@@ -14,15 +14,16 @@
 import java
 import JShellInjection
 import semmle.code.java.dataflow.FlowSources
-import semmle.code.java.dataflow.TaintTracking
-import JShellInjectionFlow::PathGraph
+import DataFlow::PathGraph
 
-module JShellInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+class JShellInjectionConfiguration extends TaintTracking::Configuration {
+  JShellInjectionConfiguration() { this = "JShellInjectionConfiguration" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof JShellInjectionSink }
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
 
-  predicate isAdditionalFlowStep(DataFlow::Node pred, DataFlow::Node succ) {
+  override predicate isSink(DataFlow::Node sink) { sink instanceof JShellInjectionSink }
+
+  override predicate isAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {
     exists(SourceCodeAnalysisAnalyzeCompletionCall scaacc |
       scaacc.getArgument(0) = pred.asExpr() and scaacc = succ.asExpr()
     )
@@ -33,9 +34,7 @@ module JShellInjectionConfig implements DataFlow::ConfigSig {
   }
 }
 
-module JShellInjectionFlow = TaintTracking::Global<JShellInjectionConfig>;
-
-from JShellInjectionFlow::PathNode source, JShellInjectionFlow::PathNode sink
-where JShellInjectionFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, JShellInjectionConfiguration conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "JShell injection from $@.", source.getNode(),
   "this user input"

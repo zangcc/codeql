@@ -26,6 +26,9 @@ class PersistenceXmlFile extends XmlFile {
   }
 }
 
+/** DEPRECATED: Alias for PersistenceXmlFile */
+deprecated class PersistenceXMLFile = PersistenceXmlFile;
+
 /** The root `persistence` XML element in a `persistence.xml` file. */
 class PersistenceXmlRoot extends XmlElement {
   PersistenceXmlRoot() {

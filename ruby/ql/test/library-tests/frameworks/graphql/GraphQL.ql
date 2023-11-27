@@ -1,6 +1,5 @@
 private import codeql.ruby.frameworks.GraphQL
 private import codeql.ruby.AST
-private import codeql.ruby.dataflow.RemoteFlowSources
 
 query predicate graphqlSchemaObjectClass(GraphqlSchemaObjectClass cls) { any() }
 
@@ -35,5 +34,3 @@ query predicate graphqlFieldResolutionDefinition(
 ) {
   meth.getDefinition() = def
 }
-
-query predicate graphqlRemoteFlowSources(RemoteFlowSource src) { any() }

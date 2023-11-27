@@ -39,8 +39,7 @@ class Field extends MemberVariable {
    * complete most-derived object.
    */
   int getAByteOffsetIn(Class mostDerivedClass) {
-    result =
-      mostDerivedClass.getABaseClassByteOffset(this.getDeclaringType()) + this.getByteOffset()
+    result = mostDerivedClass.getABaseClassByteOffset(getDeclaringType()) + getByteOffset()
   }
 
   /**
@@ -117,10 +116,10 @@ class BitField extends Field {
   int getBitOffset() { fieldoffsets(underlyingElement(this), _, result) }
 
   /** Holds if this bitfield is anonymous. */
-  predicate isAnonymous() { this.hasName("(unnamed bitfield)") }
+  predicate isAnonymous() { hasName("(unnamed bitfield)") }
 
   override predicate isInitializable() {
     // Anonymous bitfields are not initializable.
-    not this.isAnonymous()
+    not isAnonymous()
   }
 }

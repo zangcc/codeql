@@ -19,6 +19,3 @@ def hello():
 
     import dill
     dill.loads(payload) # NOT OK
-
-    import pandas
-    pandas.read_pickle(payload) # NOT OK

@@ -2,10 +2,12 @@ import go
 import TestUtilities.InlineExpectationsTest
 import experimental.frameworks.CleverGo
 
-module HttpRedirectTest implements TestSig {
-  string getARelevantTag() { result = "redirectUrl" }
+class HttpRedirectTest extends InlineExpectationsTest {
+  HttpRedirectTest() { this = "HttpRedirectTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "redirectUrl" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "redirectUrl" and
     exists(Http::Redirect rd |
       rd.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
@@ -15,5 +17,3 @@ module HttpRedirectTest implements TestSig {
     )
   }
 }
-
-import MakeTest<HttpRedirectTest>

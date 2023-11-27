@@ -32,11 +32,6 @@ abstract class MustFlowConfiguration extends string {
   abstract predicate isSink(Operand sink);
 
   /**
-   * Holds if data flow through `instr` is prohibited.
-   */
-  predicate isBarrier(Instruction instr) { none() }
-
-  /**
    * Holds if the additional flow step from `node1` to `node2` must be taken
    * into account in the analysis.
    */
@@ -53,21 +48,18 @@ abstract class MustFlowConfiguration extends string {
    */
   final predicate hasFlowPath(MustFlowPathNode source, MustFlowPathSink sink) {
     this.isSource(source.getInstruction()) and
-    source.getASuccessor*() = sink
+    source.getASuccessor+() = sink
   }
 }
 
 /** Holds if `node` flows from a source. */
 pragma[nomagic]
 private predicate flowsFromSource(Instruction node, MustFlowConfiguration config) {
-  not config.isBarrier(node) and
-  (
-    config.isSource(node)
-    or
-    exists(Instruction mid |
-      step(mid, node, config) and
-      flowsFromSource(mid, pragma[only_bind_into](config))
-    )
+  config.isSource(node)
+  or
+  exists(Instruction mid |
+    step(mid, node, config) and
+    flowsFromSource(mid, pragma[only_bind_into](config))
   )
 }
 

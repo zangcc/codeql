@@ -2,7 +2,6 @@ package main
 
 import (
 	"codeql-go-tests/protobuf/protos/query"
-
 	"github.com/golang/protobuf/proto"
 )
 
@@ -24,7 +23,7 @@ func testMarshal() {
 
 	serialized, _ := proto.Marshal(query)
 
-	sinkBytes(serialized) // $ hasTaintFlow="serialized"
+	sinkBytes(serialized) // BAD
 }
 
 func testCloneThenMarshal() {
@@ -35,7 +34,7 @@ func testCloneThenMarshal() {
 
 	serialized, _ := proto.Marshal(queryClone)
 
-	sinkBytes(serialized) // $ hasTaintFlow="serialized"
+	sinkBytes(serialized) // BAD
 }
 
 func testUnmarshalFieldAccess() {
@@ -43,7 +42,7 @@ func testUnmarshalFieldAccess() {
 	query := &query.Query{}
 	proto.Unmarshal(untrustedSerialized, query)
 
-	sinkString(query.Description) // $ hasTaintFlow="selection of Description"
+	sinkString(query.Description) // BAD
 }
 
 func testUnmarshalGetter() {
@@ -51,7 +50,7 @@ func testUnmarshalGetter() {
 	query := &query.Query{}
 	proto.Unmarshal(untrustedSerialized, query)
 
-	sinkString(query.GetDescription()) // $ hasTaintFlow="call to GetDescription"
+	sinkString(query.GetDescription()) // BAD
 }
 
 func testMergeThenMarshal() {
@@ -63,7 +62,7 @@ func testMergeThenMarshal() {
 
 	serialized, _ := proto.Marshal(query2)
 
-	sinkBytes(serialized) // $ hasTaintFlow="serialized"
+	sinkBytes(serialized) // BAD
 }
 
 func testTaintedSubmessage() {
@@ -75,7 +74,7 @@ func testTaintedSubmessage() {
 
 	serialized, _ := proto.Marshal(query)
 
-	sinkBytes(serialized) // $ hasTaintFlow="serialized"
+	sinkBytes(serialized) // BAD
 }
 
 func testTaintedSubmessageInPlace() {
@@ -87,7 +86,7 @@ func testTaintedSubmessageInPlace() {
 
 	serialized, _ := proto.Marshal(query)
 
-	sinkBytes(serialized) // $ hasTaintFlow="serialized"
+	sinkBytes(serialized) // BAD
 }
 
 func testUnmarshalTaintedSubmessage() {
@@ -95,7 +94,7 @@ func testUnmarshalTaintedSubmessage() {
 	query := &query.Query{}
 	proto.Unmarshal(untrustedSerialized, query)
 
-	sinkString(query.Alerts[0].Msg) // $ hasTaintFlow="selection of Msg"
+	sinkString(query.Alerts[0].Msg) // BAD
 }
 
 // This test should be ok, but is flagged because writing taint to a field of a Message
@@ -103,7 +102,7 @@ func testUnmarshalTaintedSubmessage() {
 func testFieldConflationFalsePositive() {
 	query := &query.Query{}
 	query.Description = getUntrustedString()
-	sinkString(query.Id) // $ SPURIOUS: hasTaintFlow="selection of Id"
+	sinkString(query.Id) // OK (but incorrectly tainted)
 }
 
 // This test should be ok, but it flagged because our current implementation doesn't notice
@@ -115,7 +114,7 @@ func testMessageReuseFalsePositive() {
 
 	serialized, _ := proto.Marshal(query)
 
-	sinkBytes(serialized) // $ SPURIOUS: hasTaintFlow="serialized"
+	sinkBytes(serialized) // OK (but incorrectly tainted)
 }
 
 // This test should be flagged, but we don't notice tainting via an alias of a field.
@@ -126,7 +125,7 @@ func testSubmessageAliasFalseNegative() {
 
 	serialized, _ := proto.Marshal(query)
 
-	sinkBytes(serialized) // $ MISSING: hasTaintFlow="serialized"
+	sinkBytes(serialized) // BAD (but not noticed by our current implementation)
 }
 
 func testTaintedMapFieldWrite() {
@@ -135,7 +134,7 @@ func testTaintedMapFieldWrite() {
 
 	serialized, _ := proto.Marshal(query)
 
-	sinkBytes(serialized) // $ hasTaintFlow="serialized"
+	sinkBytes(serialized) // BAD
 }
 
 func testTaintedMapWriteWholeMap() {
@@ -146,7 +145,7 @@ func testTaintedMapWriteWholeMap() {
 
 	serialized, _ := proto.Marshal(query)
 
-	sinkBytes(serialized) // $ hasTaintFlow="serialized"
+	sinkBytes(serialized) // BAD
 }
 
 func testTaintedMapFieldRead() {
@@ -155,7 +154,7 @@ func testTaintedMapFieldRead() {
 
 	proto.Unmarshal(untrustedSerialized, query)
 
-	sinkString(query.KeyValuePairs[123]) // $ hasTaintFlow="index expression"
+	sinkString(query.KeyValuePairs[123]) // BAD
 }
 
 func testTaintedMapFieldReadViaAlias() {
@@ -166,7 +165,7 @@ func testTaintedMapFieldReadViaAlias() {
 
 	alias := &query.KeyValuePairs
 
-	sinkString((*alias)[123]) // $ hasTaintFlow="index expression"
+	sinkString((*alias)[123]) // BAD
 }
 
 func testTaintedSubmessageInPlaceNonPointerBase() {
@@ -178,5 +177,5 @@ func testTaintedSubmessageInPlaceNonPointerBase() {
 
 	serialized, _ := proto.Marshal(query)
 
-	sinkBytes(serialized) // $ hasTaintFlow="serialized"
+	sinkBytes(serialized) // BAD (but not detected by our current analysis)
 }

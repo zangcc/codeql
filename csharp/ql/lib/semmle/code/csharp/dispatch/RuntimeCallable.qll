@@ -16,7 +16,7 @@ class RuntimeCallable extends DotNet::Callable {
   RuntimeCallable() {
     not this.(Modifiable).isAbstract() and
     (
-      not this.getDeclaringType() instanceof Interface or
+      not getDeclaringType() instanceof Interface or
       this.(Virtualizable).isVirtual()
     )
   }
@@ -35,7 +35,7 @@ class RuntimeMethod extends RuntimeCallable {
 
 /** A run-time instance method. */
 class RuntimeInstanceMethod extends RuntimeMethod {
-  RuntimeInstanceMethod() { not this.isStatic() }
+  RuntimeInstanceMethod() { not isStatic() }
 }
 
 /** A run-time operator. */
@@ -46,5 +46,5 @@ class RuntimeAccessor extends Accessor, RuntimeCallable { }
 
 /** A run-time instance accessor. */
 class RuntimeInstanceAccessor extends RuntimeAccessor {
-  RuntimeInstanceAccessor() { not this.isStatic() }
+  RuntimeInstanceAccessor() { not isStatic() }
 }

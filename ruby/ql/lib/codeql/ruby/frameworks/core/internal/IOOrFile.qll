@@ -63,6 +63,9 @@ abstract class IOOrFileMethodCall extends DataFlow::CallNode {
   /** Gets the API used to perform this call, either "IO" or "File" */
   abstract string getApi();
 
+  /** DEPRECATED: Alias for getApi */
+  deprecated string getAPI() { result = this.getApi() }
+
   /** Gets a node representing the data read or written by this call */
   abstract DataFlow::Node getADataNodeImpl();
 
@@ -112,6 +115,9 @@ class IOOrFileReadMethodCall extends IOOrFileMethodCall {
 
   override string getApi() { result = api }
 
+  /** DEPRECATED: Alias for getApi */
+  deprecated override string getAPI() { result = this.getApi() }
+
   override DataFlow::Node getADataNodeImpl() { result = this }
 
   override string getReceiverKind() { result = receiverKind }
@@ -152,6 +158,9 @@ class IOOrFileWriteMethodCall extends IOOrFileMethodCall {
   }
 
   override string getApi() { result = api }
+
+  /** DEPRECATED: Alias for getApi */
+  deprecated override string getAPI() { result = this.getApi() }
 
   override DataFlow::Node getADataNodeImpl() { result = dataNode }
 

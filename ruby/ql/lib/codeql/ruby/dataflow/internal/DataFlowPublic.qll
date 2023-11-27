@@ -6,17 +6,12 @@ private import codeql.ruby.typetracking.TypeTracker
 private import codeql.ruby.dataflow.SSA
 private import FlowSummaryImpl as FlowSummaryImpl
 private import SsaImpl as SsaImpl
-private import codeql.ruby.ApiGraphs
 
 /**
  * An element, viewed as a node in a data flow graph. Either an expression
  * (`ExprNode`) or a parameter (`ParameterNode`).
  */
 class Node extends TNode {
-  /** Starts backtracking from this node using API graphs. */
-  pragma[inline]
-  API::Node backtrack() { result = API::Internal::getNodeForBacktracking(this) }
-
   /** Gets the expression corresponding to this node, if any. */
   CfgNodes::ExprCfgNode asExpr() { result = this.(ExprNode).getExprNode() }
 
@@ -80,11 +75,6 @@ class Node extends TNode {
       lambdaCreation(this, _, c) and
       result.asCallableAstNode() = c.asCallable()
     )
-  }
-
-  /** Gets the enclosing method, if any. */
-  MethodNode getEnclosingMethod() {
-    result.asCallableAstNode() = this.asExpr().getExpr().getEnclosingMethod()
   }
 }
 
@@ -154,18 +144,6 @@ class CallNode extends LocalSourceNode, ExprNode {
       result.asExpr() = pair.getValue()
     )
   }
-
-  /**
-   * Gets a potential target of this call, if any.
-   */
-  final CallableNode getATarget() {
-    result.asCallableAstNode() = this.asExpr().getExpr().(Call).getATarget()
-  }
-
-  /**
-   * Holds if this is a `super` call.
-   */
-  final predicate isSuperCall() { this.asExpr().getExpr() instanceof SuperCall }
 }
 
 /**
@@ -213,24 +191,12 @@ class ExprNode extends Node, TExprNode {
  * The value of a parameter at function entry, viewed as a node in a data
  * flow graph.
  */
-class ParameterNode extends LocalSourceNode instanceof ParameterNodeImpl {
+class ParameterNode extends LocalSourceNode, TParameterNode instanceof ParameterNodeImpl {
   /** Gets the parameter corresponding to this node, if any. */
   final Parameter getParameter() { result = super.getParameter() }
 
-  /** Gets the callable that this parameter belongs to. */
-  final Callable getCallable() { result = super.getCfgScope() }
-
   /** Gets the name of the parameter, if any. */
   final string getName() { result = this.getParameter().(NamedParameter).getName() }
-}
-
-/**
- * The value of an implicit `self` parameter at function entry, viewed as a node in a data
- * flow graph.
- */
-class SelfParameterNode extends ParameterNode instanceof SelfParameterNodeImpl {
-  /** Gets the underlying `self` variable. */
-  final SelfVariable getSelfVariable() { result = super.getSelfVariable() }
 }
 
 /**
@@ -238,10 +204,6 @@ class SelfParameterNode extends ParameterNode instanceof SelfParameterNodeImpl {
  */
 class LocalSourceNode extends Node {
   LocalSourceNode() { isLocalSourceNode(this) }
-
-  /** Starts tracking this node forward using API graphs. */
-  pragma[inline]
-  API::Node track() { result = API::Internal::getNodeForForwardTracking(this) }
 
   /** Holds if this `LocalSourceNode` can flow to `nodeTo` in one or more local flow steps. */
   pragma[inline]
@@ -363,9 +325,13 @@ private module Cached {
     source = sink and
     source instanceof LocalSourceNode
     or
-    exists(Node mid |
-      hasLocalSource(mid, source) and
+    exists(Node mid | hasLocalSource(mid, source) |
       localFlowStepTypeTracker(mid, sink)
+      or
+      // Explicitly include the SSA param input step as type-tracking omits this step.
+      LocalFlow::localFlowSsaParamInput(mid, sink)
+      or
+      LocalFlow::localFlowSsaParamCaptureInput(mid, sink)
     )
   }
 
@@ -382,11 +348,6 @@ private module Cached {
       call.getEnclosingMethod() = method and
       yield.asExpr().getExpr() = call
     )
-  }
-
-  cached
-  predicate methodHasSuperCall(MethodNode method, CallNode call) {
-    call.isSuperCall() and method = call.getEnclosingMethod()
   }
 
   /**
@@ -415,39 +376,6 @@ private module Cached {
     or
     not access instanceof Namespace and
     result.asExpr().getExpr() = access
-  }
-
-  /**
-   * Gets a module for which `constRef` is the reference to an ancestor module.
-   *
-   * For example, `M` is the ancestry target of `C` in the following examples:
-   * ```rb
-   * class M < C {}
-   *
-   * module M
-   *   include C
-   * end
-   *
-   * module M
-   *   prepend C
-   * end
-   * ```
-   */
-  private ModuleNode getAncestryTarget(ConstRef constRef) { result.getAnAncestorExpr() = constRef }
-
-  /**
-   * Gets a scope in which a constant lookup may access the contents of the module referenced by `constRef`.
-   */
-  cached
-  TConstLookupScope getATargetScope(ConstRef constRef) {
-    result = MkAncestorLookup(getAncestryTarget(constRef).getAnImmediateDescendent*())
-    or
-    constRef.asConstantAccess() = any(ConstantAccess ac).getScopeExpr() and
-    result = MkQualifiedLookup(constRef.asConstantAccess())
-    or
-    result = MkNestedLookup(getAncestryTarget(constRef))
-    or
-    result = MkExactLookup(constRef.asConstantAccess().(Namespace).getModule())
   }
 
   cached
@@ -550,73 +478,6 @@ module Content {
   }
 
   /**
-   * INTERNAL: Do not use.
-   *
-   * An element inside a synthetic splat argument. All positional arguments
-   * (including splat arguments) are implicitly stored inside a synthetic
-   * splat argument. For example, in
-   *
-   * ```rb
-   * foo(1, 2, 3)
-   * ```
-   *
-   * we have an implicit splat argument containing `[1, 2, 3]`.
-   */
-  class SplatContent extends ElementContent, TSplatContent {
-    private int i;
-    private boolean shifted;
-
-    SplatContent() { this = TSplatContent(i, shifted) }
-
-    /** Gets the position of this splat element. */
-    int getPosition() { result = i }
-
-    /**
-     * Holds if this element represents a value from an actual splat argument
-     * that had its index shifted. For example, in
-     *
-     * ```rb
-     * foo(x, *args)
-     * ```
-     *
-     * the elements of `args` will have their index shifted by 1 before being
-     * put into the synthetic splat argument.
-     */
-    predicate isShifted() { shifted = true }
-
-    override string toString() {
-      exists(string s |
-        (if this.isShifted() then s = " (shifted)" else s = "") and
-        result = "splat position " + i + s
-      )
-    }
-  }
-
-  /**
-   * INTERNAL: Do not use.
-   *
-   * An element inside a synthetic hash-splat argument. All keyword arguments
-   * are implicitly stored inside a synthetic hash-splat argument. For example,
-   * in
-   *
-   * ```rb
-   * foo(a: 1, b: 2, c: 3)
-   * ```
-   *
-   * we have an implicit hash-splat argument containing `{:a => 1, :b => 2, :c => 3}`.
-   */
-  class HashSplatContent extends ElementContent, THashSplatContent {
-    private ConstantValue::ConstantSymbolValue cv;
-
-    HashSplatContent() { this = THashSplatContent(cv) }
-
-    /** Gets the hash key. */
-    ConstantValue::ConstantSymbolValue getKey() { result = cv }
-
-    override string toString() { result = "hash-splat position " + cv }
-  }
-
-  /**
    * A value stored behind a getter/setter pair.
    *
    * This is used (only) by type-tracking, as a heuristic since getter/setter pairs tend to operate
@@ -635,18 +496,6 @@ module Content {
 
   /** Gets `AttributeNameContent` of the given name. */
   AttributeNameContent getAttributeName(string name) { result.getName() = name }
-
-  /** A captured variable. */
-  class CapturedVariableContent extends Content, TCapturedVariableContent {
-    private LocalVariable v;
-
-    CapturedVariableContent() { this = TCapturedVariableContent(v) }
-
-    /** Gets the captured variable. */
-    LocalVariable getVariable() { result = v }
-
-    override string toString() { result = "captured " + v }
-  }
 }
 
 /**
@@ -685,21 +534,6 @@ class ContentSet extends TContentSet {
     this = TElementLowerBoundContent(lower, true)
   }
 
-  /**
-   * Holds if this content set represents all `KnownElementContent`s where
-   * the index is of type `type`, as per `ConstantValue::getValueType/0`.
-   */
-  predicate isElementOfType(string type) { this = TElementContentOfTypeContent(type, false) }
-
-  /**
-   * Holds if this content set represents `UnknownElementContent` unioned with
-   * all `KnownElementContent`s where the index is of type `type`, as per
-   * `ConstantValue::getValueType/0`.
-   */
-  predicate isElementOfTypeOrUnknown(string type) {
-    this = TElementContentOfTypeContent(type, true)
-  }
-
   /** Gets a textual representation of this content set. */
   string toString() {
     exists(Content c |
@@ -724,16 +558,6 @@ class ContentSet extends TContentSet {
       includeUnknown = true and
       result = lower + ".."
     )
-    or
-    exists(string type, boolean includeUnknown |
-      this = TElementContentOfTypeContent(type, includeUnknown)
-    |
-      includeUnknown = false and
-      result = "any(" + type + ")!"
-      or
-      includeUnknown = true and
-      result = "any(" + type + ")"
-    )
   }
 
   /** Gets a content that may be stored into when storing into this set. */
@@ -752,14 +576,7 @@ class ContentSet extends TContentSet {
     // step that store only into `1`
     this.isKnownOrUnknownElement(result)
     or
-    // These reverse stores are not as accurate as they could be, but making
-    // them more accurate would result in a large fan-out
-    (
-      this.isElementLowerBound(_) or
-      this.isElementLowerBoundOrUnknown(_) or
-      this.isElementOfType(_) or
-      this.isElementOfTypeOrUnknown(_)
-    ) and
+    this.isElementLowerBound(_) and
     result = TUnknownElementContent()
   }
 
@@ -772,8 +589,6 @@ class ContentSet extends TContentSet {
     or
     exists(Content::KnownElementContent c | this.isKnownOrUnknownElement(c) |
       result = c or
-      result = TSplatContent(c.getIndex().getInt(), _) or
-      result = THashSplatContent(c.getIndex()) or
       result = TUnknownElementContent()
     )
     or
@@ -781,25 +596,9 @@ class ContentSet extends TContentSet {
       this = TElementLowerBoundContent(lower, includeUnknown)
     |
       exists(int i |
-        result.(Content::KnownElementContent).getIndex().isInt(i) or
-        result = TSplatContent(i, _)
-      |
+        result.(Content::KnownElementContent).getIndex().isInt(i) and
         i >= lower
       )
-      or
-      includeUnknown = true and
-      result = TUnknownElementContent()
-    )
-    or
-    exists(string type, boolean includeUnknown |
-      this = TElementContentOfTypeContent(type, includeUnknown)
-    |
-      type = result.(Content::KnownElementContent).getIndex().getValueType()
-      or
-      type = "int" and
-      result instanceof Content::SplatContent
-      or
-      type = result.(Content::HashSplatContent).getKey().getValueType()
       or
       includeUnknown = true and
       result = TUnknownElementContent()
@@ -815,12 +614,6 @@ class ContentSet extends TContentSet {
  * the argument `x`.
  */
 signature predicate guardChecksSig(CfgNodes::AstCfgNode g, CfgNode e, boolean branch);
-
-bindingset[def1, def2]
-pragma[inline_late]
-private predicate sameSourceVariable(Ssa::Definition def1, Ssa::Definition def2) {
-  def1.getSourceVariable() = def2.getSourceVariable()
-}
 
 /**
  * Provides a set of barrier nodes for a guard that validates an expression.
@@ -859,16 +652,16 @@ module BarrierGuard<guardChecksSig/3 guardChecks> {
    * This is restricted to calls where the variable is captured inside a
    * block.
    */
-  private Ssa::CapturedEntryDefinition getAMaybeGuardedCapturedDef() {
+  private Ssa::Definition getAMaybeGuardedCapturedDef() {
     exists(
       CfgNodes::ExprCfgNode g, boolean branch, CfgNodes::ExprCfgNode testedNode,
       Ssa::Definition def, CfgNodes::ExprNodes::CallCfgNode call
     |
       def.getARead() = testedNode and
       guardChecks(g, testedNode, branch) and
+      SsaImpl::captureFlowIn(call, def, result) and
       guardControlsBlock(g, call.getBasicBlock(), branch) and
-      result.getBasicBlock().getScope() = call.getExpr().(MethodCall).getBlock() and
-      sameSourceVariable(def, result)
+      result.getBasicBlock().getScope() = call.getExpr().(MethodCall).getBlock()
     )
   }
 }
@@ -880,6 +673,73 @@ private predicate guardControlsBlock(CfgNodes::AstCfgNode guard, BasicBlock bb, 
     s.getValue() = branch and
     conditionBlock.controls(bb, s)
   )
+}
+
+/**
+ * A guard that validates some expression.
+ *
+ * To use this in a configuration, extend the class and provide a
+ * characteristic predicate precisely specifying the guard, and override
+ * `checks` to specify what is being validated and in which branch.
+ *
+ * It is important that all extending classes in scope are disjoint.
+ */
+abstract deprecated class BarrierGuard extends CfgNodes::ExprCfgNode {
+  private ConditionBlock conditionBlock;
+
+  BarrierGuard() { this = conditionBlock.getLastNode() }
+
+  /** Holds if this guard controls block `b` upon evaluating to `branch`. */
+  private predicate controlsBlock(BasicBlock bb, boolean branch) {
+    exists(SuccessorTypes::BooleanSuccessor s | s.getValue() = branch |
+      conditionBlock.controls(bb, s)
+    )
+  }
+
+  /**
+   * Holds if this guard validates `expr` upon evaluating to `branch`.
+   * For example, the following code validates `foo` when the condition
+   * `foo == "foo"` is true.
+   * ```ruby
+   * if foo == "foo"
+   *   do_something
+   *  else
+   *   do_something_else
+   * end
+   * ```
+   */
+  abstract predicate checks(CfgNode expr, boolean branch);
+
+  /**
+   * Gets an implicit entry definition for a captured variable that
+   * may be guarded, because a call to the capturing callable is guarded.
+   *
+   * This is restricted to calls where the variable is captured inside a
+   * block.
+   */
+  private Ssa::Definition getAMaybeGuardedCapturedDef() {
+    exists(
+      boolean branch, CfgNodes::ExprCfgNode testedNode, Ssa::Definition def,
+      CfgNodes::ExprNodes::CallCfgNode call
+    |
+      def.getARead() = testedNode and
+      this.checks(testedNode, branch) and
+      SsaImpl::captureFlowIn(call, def, result) and
+      this.controlsBlock(call.getBasicBlock(), branch) and
+      result.getBasicBlock().getScope() = call.getExpr().(MethodCall).getBlock()
+    )
+  }
+
+  final Node getAGuardedNode() {
+    exists(boolean branch, CfgNodes::ExprCfgNode testedNode, Ssa::Definition def |
+      def.getARead() = testedNode and
+      def.getARead() = result.asExpr() and
+      this.checks(testedNode, branch) and
+      this.controlsBlock(result.asExpr().getBasicBlock(), branch)
+    )
+    or
+    result.asExpr() = this.getAMaybeGuardedCapturedDef().getARead()
+  }
 }
 
 /**
@@ -989,9 +849,6 @@ class ModuleNode instanceof Module {
   /** Gets a constant or `self` variable that refers to this module. */
   LocalSourceNode getAnImmediateReference() {
     result.asExpr().getExpr() = super.getAnImmediateReference()
-    or
-    // Include 'self' parameters; these are not expressions and so not found by the case above
-    result = this.getAnOwnModuleSelf()
   }
 
   /**
@@ -1118,33 +975,6 @@ class ModuleNode instanceof Module {
    * this predicate.
    */
   ModuleNode getNestedModule(string name) { result = super.getNestedModule(name) }
-
-  /**
-   * Starts tracking the module object using API graphs.
-   *
-   * Concretely, this tracks forward from the following starting points:
-   * - A constant access that resolves to this module.
-   * - `self` in the module scope or in a singleton method of the module.
-   * - A call to `self.class` in an instance method of this module or an ancestor module.
-   */
-  bindingset[this]
-  pragma[inline]
-  API::Node trackModule() { result = API::Internal::getModuleNode(this) }
-
-  /**
-   * Starts tracking instances of this module forward using API graphs.
-   *
-   * Concretely, this tracks forward from the following starting points:
-   * - `self` in instance methods of this module and ancestor modules
-   * - Calls to `new` on the module object
-   *
-   * Note that this includes references to `self` in ancestor modules, but not in descendent modules.
-   * This is usually the desired behavior, particularly if this module was itself found using
-   * a call to `getADescendentModule()`.
-   */
-  bindingset[this]
-  pragma[inline]
-  API::Node trackInstance() { result = API::Internal::getModuleInstance(this) }
 }
 
 /**
@@ -1155,115 +985,9 @@ class ClassNode extends ModuleNode {
 }
 
 /**
- * A data flow node corresponding to a literal expression.
- */
-class LiteralNode extends ExprNode {
-  private CfgNodes::ExprNodes::LiteralCfgNode literalCfgNode;
-
-  LiteralNode() { this.asExpr() = literalCfgNode }
-
-  /** Gets the underlying AST node as a `Literal`. */
-  Literal asLiteralAstNode() { result = literalCfgNode.getExpr() }
-}
-
-/**
- * A data flow node corresponding to an operation expression.
- */
-class OperationNode extends ExprNode {
-  private CfgNodes::ExprNodes::OperationCfgNode operationCfgNode;
-
-  OperationNode() { this.asExpr() = operationCfgNode }
-
-  /** Gets the underlying AST node as an `Operation`. */
-  Operation asOperationAstNode() { result = operationCfgNode.getExpr() }
-
-  /** Gets the operator of this operation. */
-  final string getOperator() { result = operationCfgNode.getOperator() }
-
-  /** Gets an operand of this operation. */
-  final Node getAnOperand() { result.asExpr() = operationCfgNode.getAnOperand() }
-}
-
-/**
- * A data flow node corresponding to a control expression (e.g. `if`, `while`, `for`).
- */
-class ControlExprNode extends ExprNode {
-  private CfgNodes::ExprNodes::ControlExprCfgNode controlExprCfgNode;
-
-  ControlExprNode() { this.asExpr() = controlExprCfgNode }
-
-  /** Gets the underlying AST node as a `ControlExpr`. */
-  ControlExpr asControlExprAstNode() { result = controlExprCfgNode.getExpr() }
-}
-
-/**
- * A data flow node corresponding to a variable access expression.
- */
-class VariableAccessNode extends ExprNode {
-  private CfgNodes::ExprNodes::VariableAccessCfgNode variableAccessCfgNode;
-
-  VariableAccessNode() { this.asExpr() = variableAccessCfgNode }
-
-  /** Gets the underlying AST node as a `VariableAccess`. */
-  VariableAccess asVariableAccessAstNode() { result = variableAccessCfgNode.getExpr() }
-}
-
-/**
- * A data flow node corresponding to a constant access expression.
- */
-class ConstantAccessNode extends ExprNode {
-  private CfgNodes::ExprNodes::ConstantAccessCfgNode constantAccessCfgNode;
-
-  ConstantAccessNode() { this.asExpr() = constantAccessCfgNode }
-
-  /** Gets the underlying AST node as a `ConstantAccess`. */
-  ConstantAccess asConstantAccessAstNode() { result = constantAccessCfgNode.getExpr() }
-
-  /** Gets the node corresponding to the scope expression. */
-  final Node getScopeNode() { result.asExpr() = constantAccessCfgNode.getScopeExpr() }
-}
-
-/**
- * A data flow node corresponding to a LHS expression.
- */
-class LhsExprNode extends ExprNode {
-  private CfgNodes::ExprNodes::LhsExprCfgNode lhsExprCfgNode;
-
-  LhsExprNode() { this.asExpr() = lhsExprCfgNode }
-
-  /** Gets the underlying AST node as a `LhsExpr`. */
-  LhsExpr asLhsExprAstNode() { result = lhsExprCfgNode.getExpr() }
-
-  /**
-   * DEPRECATED: use `getVariable` instead.
-   *
-   * Gets a variable used in (or introduced by) this LHS.
-   */
-  deprecated Variable getAVariable() { result = lhsExprCfgNode.getAVariable() }
-
-  /** Gets the variable used in (or introduced by) this LHS. */
-  Variable getVariable() { result = lhsExprCfgNode.getVariable() }
-}
-
-/**
- * A data flow node corresponding to a statement sequence expression.
- */
-class StmtSequenceNode extends ExprNode {
-  private CfgNodes::ExprNodes::StmtSequenceCfgNode stmtSequenceCfgNode;
-
-  StmtSequenceNode() { this.asExpr() = stmtSequenceCfgNode }
-
-  /** Gets the underlying AST node as a `StmtSequence`. */
-  StmtSequence asStmtSequenceAstNode() { result = stmtSequenceCfgNode.getExpr() }
-
-  /** Gets the last statement in this sequence, if any. */
-  final ExprNode getLastStmt() { result.asExpr() = stmtSequenceCfgNode.getLastStmt() }
-}
-
-/**
  * A data flow node corresponding to a method, block, or lambda expression.
  */
-class CallableNode extends StmtSequenceNode {
+class CallableNode extends ExprNode {
   private Callable callable;
 
   CallableNode() { this.asExpr().getExpr() = callable }
@@ -1310,14 +1034,18 @@ class CallableNode extends StmtSequenceNode {
   }
 
   /**
-   * Gets a data flow node whose value is about to be returned by this callable.
+   * Gets the canonical return node from this callable.
+   *
+   * Each callable has exactly one such node, and its location may not correspond
+   * to any particular return site - consider using `getAReturningNode` to get nodes
+   * whose locations correspond to return sites.
    */
-  Node getAReturnNode() { result.(ReturnNode).(NodeImpl).getCfgScope() = callable }
+  Node getReturn() { result.(SynthReturnNode).getCfgScope() = callable }
 
   /**
-   * DEPRECATED. Use `getAReturnNode` instead.
+   * Gets a data flow node whose value is about to be returned by this callable.
    */
-  deprecated Node getAReturningNode() { result = this.getAReturnNode() }
+  Node getAReturningNode() { result = this.getReturn().(SynthReturnNode).getAnInput() }
 }
 
 /**
@@ -1340,9 +1068,6 @@ class MethodNode extends CallableNode {
 
   /** Holds if this method is protected. */
   predicate isProtected() { this.asCallableAstNode().isProtected() }
-
-  /** Gets a `super` call in this method. */
-  CallNode getASuperCall() { methodHasSuperCall(this, result) }
 }
 
 /**
@@ -1411,16 +1136,13 @@ class HashLiteralNode extends LocalSourceNode, ExprNode {
  * into calls to `Array.[]`, so this includes both desugared calls as well as
  * explicit calls.
  */
-class ArrayLiteralNode extends LocalSourceNode, CallNode {
+class ArrayLiteralNode extends LocalSourceNode, ExprNode {
   ArrayLiteralNode() { super.getExprNode() instanceof CfgNodes::ExprNodes::ArrayLiteralCfgNode }
 
   /**
    * Gets an element of the array.
    */
-  Node getAnElement() { result = this.getElement(_) }
-
-  /** Gets the `i`th element of the array. */
-  Node getElement(int i) { result = this.getPositionalArgument(i) }
+  Node getAnElement() { result = this.(CallNode).getPositionalArgument(_) }
 }
 
 /**
@@ -1462,11 +1184,45 @@ class ConstRef extends LocalSourceNode {
   }
 
   /**
+   * Gets a module for which this constant is the reference to an ancestor module.
+   *
+   * For example, `M` is the ancestry target of `C` in the following examples:
+   * ```rb
+   * class M < C {}
+   *
+   * module M
+   *   include C
+   * end
+   *
+   * module M
+   *   prepend C
+   * end
+   * ```
+   */
+  private ModuleNode getAncestryTarget() { result.getAnAncestorExpr() = this }
+
+  /**
    * Gets the known target module.
    *
    * We resolve these differently to prune out infeasible constant lookups.
    */
   private Module getExactTarget() { result.getAnImmediateReference() = access }
+
+  /**
+   * Gets a scope in which a constant lookup may access the contents of the module referenced by this constant.
+   */
+  cached
+  private TConstLookupScope getATargetScope() {
+    forceCachingInSameStage() and
+    result = MkAncestorLookup(this.getAncestryTarget().getAnImmediateDescendent*())
+    or
+    access = any(ConstantAccess ac).getScopeExpr() and
+    result = MkQualifiedLookup(access)
+    or
+    result = MkNestedLookup(this.getAncestryTarget())
+    or
+    result = MkExactLookup(access.(Namespace).getModule())
+  }
 
   /**
    * Gets the scope expression, or the immediately enclosing `Namespace` (skipping over singleton classes).
@@ -1529,7 +1285,7 @@ class ConstRef extends LocalSourceNode {
   pragma[inline]
   ConstRef getConstant(string name) {
     exists(TConstLookupScope scope |
-      pragma[only_bind_into](scope) = getATargetScope(pragma[only_bind_out](this)) and
+      pragma[only_bind_into](scope) = pragma[only_bind_out](this).getATargetScope() and
       result.accesses(pragma[only_bind_out](scope), name)
     )
   }
@@ -1551,9 +1307,7 @@ class ConstRef extends LocalSourceNode {
    * end
    * ```
    */
-  bindingset[this]
-  pragma[inline_late]
-  ModuleNode getADescendentModule() { MkAncestorLookup(result) = getATargetScope(this) }
+  ModuleNode getADescendentModule() { MkAncestorLookup(result) = this.getATargetScope() }
 }
 
 /**

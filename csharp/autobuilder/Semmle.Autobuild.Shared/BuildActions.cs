@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Semmle.Util;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Xml;
-using Semmle.Util;
+using System.Net.Http;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace Semmle.Autobuild.Shared
 {
@@ -120,10 +121,10 @@ namespace Semmle.Autobuild.Shared
         bool IsMacOs();
 
         /// <summary>
-        /// Gets a value indicating whether we are running on Apple Silicon.
+        /// Gets a value indicating whether we are running on arm.
         /// </summary>
-        /// <returns>True if we are running on Apple Silicon.</returns>
-        bool IsRunningOnAppleSilicon();
+        /// <returns>True if we are running on arm.</returns>
+        bool IsArm();
 
         /// <summary>
         /// Combine path segments, Path.Combine().
@@ -188,39 +189,61 @@ namespace Semmle.Autobuild.Shared
 
         bool IBuildActions.FileExists(string file) => File.Exists(file);
 
-        private static ProcessStartInfo GetProcessStartInfo(string exe, string arguments, string? workingDirectory, IDictionary<string, string>? environment)
+        private static ProcessStartInfo GetProcessStartInfo(string exe, string arguments, string? workingDirectory, IDictionary<string, string>? environment, bool redirectStandardOutput)
         {
             var pi = new ProcessStartInfo(exe, arguments)
             {
                 UseShellExecute = false,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = redirectStandardOutput
             };
             if (workingDirectory is not null)
                 pi.WorkingDirectory = workingDirectory;
 
-            environment?.ForEach(kvp => pi.Environment[kvp.Key] = kvp.Value);
-
+            // Environment variables can only be used when not redirecting stdout
+            if (!redirectStandardOutput)
+            {
+                if (environment is not null)
+                    environment.ForEach(kvp => pi.Environment[kvp.Key] = kvp.Value);
+            }
             return pi;
         }
 
         int IBuildActions.RunProcess(string exe, string args, string? workingDirectory, System.Collections.Generic.IDictionary<string, string>? env, BuildOutputHandler onOutput, BuildOutputHandler onError)
         {
-            var pi = GetProcessStartInfo(exe, args, workingDirectory, env);
-            pi.RedirectStandardError = true;
+            var pi = GetProcessStartInfo(exe, args, workingDirectory, env, true);
+            using var p = new Process
+            {
+                StartInfo = pi
+            };
+            p.StartInfo.RedirectStandardError = true;
+            p.OutputDataReceived += new DataReceivedEventHandler((sender, e) => onOutput(e.Data));
+            p.ErrorDataReceived += new DataReceivedEventHandler((sender, e) => onError(e.Data));
 
-            return pi.ReadOutput(out _, onOut: s => onOutput(s), onError: s => onError(s));
+            p.Start();
+
+            p.BeginErrorReadLine();
+            p.BeginOutputReadLine();
+
+            p.WaitForExit();
+            return p.ExitCode;
         }
 
         int IBuildActions.RunProcess(string cmd, string args, string? workingDirectory, IDictionary<string, string>? environment)
         {
-            var pi = GetProcessStartInfo(cmd, args, workingDirectory, environment);
-            return pi.ReadOutput(out _, onOut: Console.WriteLine, onError: null);
+            var pi = GetProcessStartInfo(cmd, args, workingDirectory, environment, false);
+            using var p = Process.Start(pi);
+            if (p is null)
+            {
+                return -1;
+            }
+            p.WaitForExit();
+            return p.ExitCode;
         }
 
         int IBuildActions.RunProcess(string cmd, string args, string? workingDirectory, IDictionary<string, string>? environment, out IList<string> stdOut)
         {
-            var pi = GetProcessStartInfo(cmd, args, workingDirectory, environment);
-            return pi.ReadOutput(out stdOut, onOut: null, onError: null);
+            var pi = GetProcessStartInfo(cmd, args, workingDirectory, environment, true);
+            return pi.ReadOutput(out stdOut);
         }
 
         void IBuildActions.DirectoryDelete(string dir, bool recursive) => Directory.Delete(dir, recursive);
@@ -241,25 +264,9 @@ namespace Semmle.Autobuild.Shared
 
         bool IBuildActions.IsMacOs() => RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
-        bool IBuildActions.IsRunningOnAppleSilicon()
-        {
-            var thisBuildActions = (IBuildActions)this;
-
-            if (!thisBuildActions.IsMacOs())
-            {
-                return false;
-            }
-
-            try
-            {
-                thisBuildActions.RunProcess("sysctl", "machdep.cpu.brand_string", workingDirectory: null, env: null, out var stdOut);
-                return stdOut?.Any(s => s?.ToLowerInvariant().Contains("apple") == true) ?? false;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
+        bool IBuildActions.IsArm() =>
+            RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ||
+            RuntimeInformation.ProcessArchitecture == Architecture.Arm;
 
         string IBuildActions.PathCombine(params string[] parts) => Path.Combine(parts);
 
@@ -280,8 +287,17 @@ namespace Semmle.Autobuild.Shared
 
         public string EnvironmentExpandEnvironmentVariables(string s) => Environment.ExpandEnvironmentVariables(s);
 
+        private static async Task DownloadFileAsync(string address, string filename)
+        {
+            using var httpClient = new HttpClient();
+            using var request = new HttpRequestMessage(HttpMethod.Get, address);
+            using var contentStream = await (await httpClient.SendAsync(request)).Content.ReadAsStreamAsync();
+            using var stream = new FileStream(filename, FileMode.Create, FileAccess.Write, FileShare.None, 4096, true);
+            await contentStream.CopyToAsync(stream);
+        }
+
         public void DownloadFile(string address, string fileName) =>
-            FileUtils.DownloadFile(address, fileName);
+            DownloadFileAsync(address, fileName).Wait();
 
         public IDiagnosticsWriter CreateDiagnosticsWriter(string filename) => new DiagnosticsStream(filename);
 

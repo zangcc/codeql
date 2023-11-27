@@ -18,20 +18,21 @@ import csharp
 import ParallelSink
 import ICryptoTransform
 
-module NotThreadSafeCryptoUsageIntoParallelInvokeConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
+class NotThreadSafeCryptoUsageIntoParallelInvokeConfig extends TaintTracking::Configuration {
+  NotThreadSafeCryptoUsageIntoParallelInvokeConfig() {
+    this = "NotThreadSafeCryptoUsageIntoParallelInvokeConfig"
+  }
+
+  override predicate isSource(DataFlow::Node source) {
     source instanceof LambdaCapturingICryptoTransformSource
   }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof ParallelSink }
+  override predicate isSink(DataFlow::Node sink) { sink instanceof ParallelSink }
 }
 
-module NotThreadSafeCryptoUsageIntoParallelInvoke =
-  TaintTracking::Global<NotThreadSafeCryptoUsageIntoParallelInvokeConfig>;
-
-from Expr e, string m, LambdaExpr l
+from Expr e, string m, LambdaExpr l, NotThreadSafeCryptoUsageIntoParallelInvokeConfig config
 where
-  NotThreadSafeCryptoUsageIntoParallelInvoke::flow(DataFlow::exprNode(l), DataFlow::exprNode(e)) and
+  config.hasFlow(DataFlow::exprNode(l), DataFlow::exprNode(e)) and
   m =
     "A $@ seems to be used to start a new thread is capturing a local variable that either implements 'System.Security.Cryptography.ICryptoTransform' or has a field of this type."
 select e, m, l, "lambda expression"

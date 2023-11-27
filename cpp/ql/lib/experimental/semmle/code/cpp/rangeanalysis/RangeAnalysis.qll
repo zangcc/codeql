@@ -238,7 +238,7 @@ class NoReason extends Reason, TNoReason {
 class CondReason extends Reason, TCondReason {
   IRGuardCondition getCond() { this = TCondReason(result) }
 
-  override string toString() { result = this.getCond().toString() }
+  override string toString() { result = getCond().toString() }
 }
 
 /**
@@ -260,14 +260,14 @@ private predicate typeBound(IRIntegerType typ, int lowerbound, int upperbound) {
 private class NarrowingCastInstruction extends ConvertInstruction {
   NarrowingCastInstruction() {
     not this instanceof SafeCastInstruction and
-    typeBound(this.getResultIRType(), _, _)
+    typeBound(getResultIRType(), _, _)
   }
 
   /** Gets the lower bound of the resulting type. */
-  int getLowerBound() { typeBound(this.getResultIRType(), result, _) }
+  int getLowerBound() { typeBound(getResultIRType(), result, _) }
 
   /** Gets the upper bound of the resulting type. */
-  int getUpperBound() { typeBound(this.getResultIRType(), _, result) }
+  int getUpperBound() { typeBound(getResultIRType(), _, result) }
 }
 
 /**

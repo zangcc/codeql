@@ -1,16 +1,18 @@
 import cpp
-import semmle.code.cpp.rangeanalysis.new.internal.semantic.analysis.RangeAnalysis
-import semmle.code.cpp.rangeanalysis.new.internal.semantic.Semantic
-import semmle.code.cpp.rangeanalysis.new.internal.semantic.SemanticExprSpecific
+import experimental.semmle.code.cpp.semantic.analysis.RangeAnalysis
+import experimental.semmle.code.cpp.semantic.Semantic
+import experimental.semmle.code.cpp.semantic.SemanticExprSpecific
 import semmle.code.cpp.ir.IR as IR
 import TestUtilities.InlineExpectationsTest
 
-module RangeAnalysisTest implements TestSig {
-  string getARelevantTag() { result = "range" }
+class RangeAnalysisTest extends InlineExpectationsTest {
+  RangeAnalysisTest() { this = "RangeAnalysisTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "range" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(SemExpr e, IR::CallInstruction call |
-      getSemanticExpr(call.getArgument(0)) = e and
+      call.getArgument(0) = e and
       call.getStaticCallTarget().hasName("range") and
       tag = "range" and
       element = e.toString() and
@@ -20,8 +22,6 @@ module RangeAnalysisTest implements TestSig {
   }
 }
 
-import MakeTest<RangeAnalysisTest>
-
 private string getDirectionString(boolean d) {
   result = "<=" and d = true
   or
@@ -29,7 +29,7 @@ private string getDirectionString(boolean d) {
 }
 
 bindingset[value]
-private string getOffsetString(float value) {
+private string getOffsetString(int value) {
   if value >= 0 then result = "+" + value.toString() else result = value.toString()
 }
 
@@ -37,14 +37,21 @@ bindingset[s]
 string quote(string s) { if s.matches("% %") then result = "\"" + s + "\"" else result = s }
 
 bindingset[delta]
-private string getBoundString(SemBound b, float delta) {
+private string getBoundString(SemBound b, int delta) {
   b instanceof SemZeroBound and result = delta.toString()
   or
-  result = strictconcat(b.(SemSsaBound).getAVariable().toString(), " | ") + getOffsetString(delta)
+  result =
+    strictconcat(b.(SemSsaBound)
+              .getAVariable()
+              .(SemanticExprConfig::SsaVariable)
+              .asInstruction()
+              .getAst()
+              .toString(), ":"
+      ) + getOffsetString(delta)
 }
 
 private string getARangeString(SemExpr e) {
-  exists(SemBound b, float delta, boolean upper |
+  exists(SemBound b, int delta, boolean upper |
     semBounded(e, b, delta, upper, _) and
     if semBounded(e, b, delta, upper.booleanNot(), _)
     then delta != 0 and result = "==" + getBoundString(b, delta)

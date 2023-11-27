@@ -29,8 +29,8 @@ private import semmle.javascript.dataflow.InferredTypes
  */
 class SplitCall extends StringSplitCall {
   SplitCall() {
-    this.getSeparator() = "." and
-    this.getBaseString().getALocalSource() instanceof ParameterNode
+    getSeparator() = "." and
+    getBaseString().getALocalSource() instanceof ParameterNode
   }
 }
 
@@ -93,7 +93,7 @@ class SplitPropName extends SourceNode {
   SourceNode getArray() { result = array }
 
   /** Gets an element accessed on the same underlying array. */
-  SplitPropName getAnAlias() { result.getArray() = this.getArray() }
+  SplitPropName getAnAlias() { result.getArray() = getArray() }
 }
 
 /**
@@ -434,13 +434,13 @@ class DenyListInclusionGuard extends DataFlow::LabeledBarrierGuardNode, Inclusio
   DenyListInclusionGuard() {
     exists(DataFlow::ArrayCreationNode array |
       array.getAnElement().getStringValue() = label and
-      array.flowsTo(this.getContainerNode())
+      array.flowsTo(getContainerNode())
     )
   }
 
   override predicate blocks(boolean outcome, Expr e, DataFlow::FlowLabel lbl) {
-    outcome = this.getPolarity().booleanNot() and
-    e = this.getContainedNode().asExpr() and
+    outcome = getPolarity().booleanNot() and
+    e = getContainedNode().asExpr() and
     label = lbl
   }
 }
@@ -475,7 +475,7 @@ class IsPlainObjectGuard extends DataFlow::LabeledBarrierGuardNode, DataFlow::Ca
   }
 
   override predicate blocks(boolean outcome, Expr e, DataFlow::FlowLabel lbl) {
-    e = this.getArgument(0).asExpr() and
+    e = getArgument(0).asExpr() and
     outcome = true and
     lbl = "constructor"
   }
@@ -561,7 +561,7 @@ DataFlow::SourceNode getANodeLeadingToBaseBase(Node base) {
 class ObjectCreateNullCall extends CallNode {
   ObjectCreateNullCall() {
     this = globalVarRef("Object").getAMemberCall("create") and
-    this.getArgument(0).asExpr() instanceof NullLiteral
+    getArgument(0).asExpr() instanceof NullLiteral
   }
 }
 

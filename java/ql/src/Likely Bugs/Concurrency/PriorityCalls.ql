@@ -20,10 +20,10 @@ class PriorityMethod extends Method {
   }
 }
 
-class PriorityMethodCall extends MethodCall {
-  PriorityMethodCall() { this.getMethod() instanceof PriorityMethod }
+class PriorityMethodAccess extends MethodAccess {
+  PriorityMethodAccess() { this.getMethod() instanceof PriorityMethod }
 }
 
-from PriorityMethodCall ma
+from PriorityMethodAccess ma
 where ma.getCompilationUnit().fromSource()
 select ma, "Avoid using thread priorities. The effect is unpredictable and not portable."

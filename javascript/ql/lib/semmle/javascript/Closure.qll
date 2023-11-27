@@ -48,11 +48,10 @@ module Closure {
    * A call to a method on the `goog.` namespace, as a closure reference.
    */
   abstract private class DefaultNamespaceRef extends DataFlow::MethodCallNode,
-    ClosureNamespaceRef::Range
-  {
+    ClosureNamespaceRef::Range {
     DefaultNamespaceRef() { this = DataFlow::globalVarRef("goog").getAMethodCall() }
 
-    override string getClosureNamespace() { result = this.getArgument(0).getStringValue() }
+    override string getClosureNamespace() { result = getArgument(0).getStringValue() }
   }
 
   /**
@@ -68,7 +67,7 @@ module Closure {
    */
   private class DefaultClosureProvideCall extends DefaultNamespaceRef {
     DefaultClosureProvideCall() {
-      this.getMethodName() = "provide" and
+      getMethodName() = "provide" and
       isTopLevelExpr(this)
     }
   }
@@ -76,29 +75,28 @@ module Closure {
   /**
    * A top-level call to `goog.provide`.
    */
-  class ClosureProvideCall extends ClosureNamespaceRef, DataFlow::MethodCallNode instanceof DefaultClosureProvideCall
-  { }
-
-  /**
-   * A call to `goog.require`.
-   */
-  private class DefaultClosureRequireCall extends DefaultNamespaceRef, ClosureNamespaceAccess::Range
-  {
-    DefaultClosureRequireCall() { this.getMethodName() = "require" }
+  class ClosureProvideCall extends ClosureNamespaceRef, DataFlow::MethodCallNode instanceof DefaultClosureProvideCall {
   }
 
   /**
    * A call to `goog.require`.
    */
-  class ClosureRequireCall extends ClosureNamespaceAccess, DataFlow::MethodCallNode instanceof DefaultClosureRequireCall
-  { }
+  private class DefaultClosureRequireCall extends DefaultNamespaceRef, ClosureNamespaceAccess::Range {
+    DefaultClosureRequireCall() { getMethodName() = "require" }
+  }
+
+  /**
+   * A call to `goog.require`.
+   */
+  class ClosureRequireCall extends ClosureNamespaceAccess, DataFlow::MethodCallNode instanceof DefaultClosureRequireCall {
+  }
 
   /**
    * A top-level call to `goog.module` or `goog.declareModuleId`.
    */
   private class DefaultClosureModuleDeclaration extends DefaultNamespaceRef {
     DefaultClosureModuleDeclaration() {
-      (this.getMethodName() = "module" or this.getMethodName() = "declareModuleId") and
+      (getMethodName() = "module" or getMethodName() = "declareModuleId") and
       isTopLevelExpr(this)
     }
   }
@@ -106,8 +104,8 @@ module Closure {
   /**
    * A top-level call to `goog.module` or `goog.declareModuleId`.
    */
-  class ClosureModuleDeclaration extends ClosureNamespaceRef, DataFlow::MethodCallNode instanceof DefaultClosureModuleDeclaration
-  { }
+  class ClosureModuleDeclaration extends ClosureNamespaceRef, DataFlow::MethodCallNode instanceof DefaultClosureModuleDeclaration {
+  }
 
   private GlobalVariable googVariable() { variables(result, "goog", any(GlobalScope sc)) }
 
@@ -140,7 +138,7 @@ module Closure {
     /**
      * Gets the namespace of this module.
      */
-    string getClosureNamespace() { result = this.getModuleDeclaration().getClosureNamespace() }
+    string getClosureNamespace() { result = getModuleDeclaration().getClosureNamespace() }
 
     override Module getAnImportedModule() {
       result.(ClosureModule).getClosureNamespace() =
@@ -156,8 +154,8 @@ module Closure {
      * Has no result for ES6 modules using `goog.declareModuleId`.
      */
     Variable getExportsVariable() {
-      this.getModuleDeclaration().getMethodName() = "module" and
-      result = this.getScope().getVariable("exports")
+      getModuleDeclaration().getMethodName() = "module" and
+      result = getScope().getVariable("exports")
     }
 
     override DataFlow::Node getAnExportedValue(string name) {
@@ -165,15 +163,15 @@ module Closure {
         result = write.getRhs() and
         write.writes(base.flow(), name, _) and
         (
-          base = this.getExportsVariable().getAReference()
+          base = getExportsVariable().getAReference()
           or
-          base = this.getExportsVariable().getAnAssignedExpr()
+          base = getExportsVariable().getAnAssignedExpr()
         )
       )
     }
 
     override DataFlow::Node getABulkExportedNode() {
-      result = this.getExportsVariable().getAnAssignedExpr().flow()
+      result = getExportsVariable().getAnAssignedExpr().flow()
     }
   }
 
@@ -263,19 +261,19 @@ module Closure {
 
     override predicate isPartialArgument(DataFlow::Node callback, DataFlow::Node argument, int index) {
       index >= 0 and
-      callback = this.getArgument(0) and
-      argument = this.getArgument(index + 2)
+      callback = getArgument(0) and
+      argument = getArgument(index + 2)
     }
 
     override DataFlow::SourceNode getBoundFunction(DataFlow::Node callback, int boundArgs) {
-      boundArgs = this.getNumArgument() - 2 and
-      callback = this.getArgument(0) and
+      boundArgs = getNumArgument() - 2 and
+      callback = getArgument(0) and
       result = this
     }
 
     override DataFlow::Node getBoundReceiver(DataFlow::Node callback) {
-      callback = this.getArgument(0) and
-      result = this.getArgument(1)
+      callback = getArgument(0) and
+      result = getArgument(1)
     }
   }
 }

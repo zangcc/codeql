@@ -23,8 +23,7 @@ class DomBasedXssAtmConfig extends AtmConfig {
 
   override predicate isSanitizer(DataFlow::Node node) {
     super.isSanitizer(node) or
-    node instanceof DomBasedXss::Sanitizer or
-    DomBasedXss::isOptionallySanitizedNode(node)
+    node instanceof DomBasedXss::Sanitizer
   }
 
   override predicate isSanitizerGuard(TaintTracking::SanitizerGuardNode guard) {
@@ -32,13 +31,16 @@ class DomBasedXssAtmConfig extends AtmConfig {
     guard instanceof QuoteGuard or
     guard instanceof ContainsHtmlGuard
   }
+
+  override predicate isSanitizerEdge(DataFlow::Node pred, DataFlow::Node succ) {
+    DomBasedXss::isOptionallySanitizedEdge(pred, succ)
+  }
 }
 
 private import semmle.javascript.security.dataflow.Xss::Shared as Shared
 
 private class PrefixStringSanitizerActivated extends TaintTracking::SanitizerGuardNode,
-  DomBasedXss::PrefixStringSanitizer
-{
+  DomBasedXss::PrefixStringSanitizer {
   PrefixStringSanitizerActivated() { this = this }
 }
 
@@ -50,7 +52,6 @@ private class QuoteGuard extends TaintTracking::SanitizerGuardNode, Shared::Quot
   QuoteGuard() { this = this }
 }
 
-private class ContainsHtmlGuard extends TaintTracking::SanitizerGuardNode, Shared::ContainsHtmlGuard
-{
+private class ContainsHtmlGuard extends TaintTracking::SanitizerGuardNode, Shared::ContainsHtmlGuard {
   ContainsHtmlGuard() { this = this }
 }

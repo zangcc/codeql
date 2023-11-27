@@ -183,8 +183,7 @@ module CleartextLogging {
     override string describe() { result = "HTTP request headers" }
   }
 
-  private class KubernetesSecretInterfaceSource extends Source, K8sIoClientGo::SecretInterfaceSource
-  {
+  private class KubernetesSecretInterfaceSource extends Source, K8sIoClientGo::SecretInterfaceSource {
     override string describe() { result = "Kubernetes Secret" }
   }
 

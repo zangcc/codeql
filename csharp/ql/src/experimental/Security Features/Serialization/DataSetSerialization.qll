@@ -16,8 +16,8 @@ abstract class DataSetOrTableRelatedClass extends Class { }
  */
 class DataSetOrTable extends DataSetOrTableRelatedClass {
   DataSetOrTable() {
-    this.getABaseType*().hasFullyQualifiedName("System.Data", "DataTable") or
-    this.getABaseType*().hasFullyQualifiedName("System.Data", "DataSet")
+    this.getABaseType*().hasQualifiedName("System.Data", "DataTable") or
+    this.getABaseType*().hasQualifiedName("System.Data", "DataSet")
   }
 }
 
@@ -42,9 +42,9 @@ class SerializableClass extends Class {
   SerializableClass() {
     (
       this.getABaseType*()
-          .hasFullyQualifiedName("System.Xml.Serialization", ["XmlSerializer", "IXmlSerializable"]) or
+          .hasQualifiedName("System.Xml.Serialization", ["XmlSerializer", "IXmlSerializable"]) or
       this.getABaseType*()
-          .hasFullyQualifiedName("System.Runtime.Serialization",
+          .hasQualifiedName("System.Runtime.Serialization",
             [
               "ISerializable", "XmlObjectSerializer", "ISerializationSurrogateProvider",
               "XmlSerializableServices"
@@ -52,7 +52,7 @@ class SerializableClass extends Class {
     )
     or
     exists(Attribute a | a = this.getAnAttribute() |
-      a.getType().hasFullyQualifiedName("System", "SerializableAttribute")
+      a.getType().hasQualifiedName("System", "SerializableAttribute")
     )
   }
 }
@@ -77,7 +77,7 @@ class UnsafeXmlSerializerImplementation extends SerializableClass {
  */
 class UnsafeXmlReadMethod extends Method {
   UnsafeXmlReadMethod() {
-    this.hasFullyQualifiedName("System.Data", ["DataTable", "DataSet"], ["ReadXml", "ReadXmlSchema"])
+    this.hasQualifiedName("System.Data", ["DataTable", "DataSet"], ["ReadXml", "ReadXmlSchema"])
     or
     this.getName().matches("ReadXml%") and
     exists(Class c | c.getAMethod() = this |

@@ -15,6 +15,6 @@ import DataFlow::PathGraph
 
 from Configuration config, DataFlow::PathNode source, DataFlow::PathNode sink
 where config.hasFlowPath(source, sink)
-select sink, source, sink,
+select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), source, sink,
   "Call to " + sink.getNode().(Sink).getApiName() + " with untrusted data from $@.", source,
   source.toString()

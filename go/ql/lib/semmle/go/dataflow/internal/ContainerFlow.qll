@@ -10,7 +10,7 @@ private import semmle.go.dataflow.ExternalFlow
  * Holds if the step from `node1` to `node2` stores a value in an array, a
  * slice, a collection or a map. Thus, `node2` references an object with a
  * content `c` that contains the value of `node1`. This covers array
- * assignments and initializers as well as implicit slice creations for
+ * assignments and initializers as well as implicit array creations for
  * varargs.
  */
 predicate containerStoreStep(Node node1, Node node2, Content c) {
@@ -20,18 +20,7 @@ predicate containerStoreStep(Node node1, Node node2, Content c) {
       node2.getType() instanceof ArrayType or
       node2.getType() instanceof SliceType
     ) and
-    (
-      exists(Write w | w.writesElement(node2.(PostUpdateNode).getPreUpdateNode(), _, node1))
-      or
-      node1 = node2.(ImplicitVarargsSlice).getCallNode().getAnImplicitVarargsArgument()
-      or
-      // To model data flow from array elements of the base of a `SliceNode` to
-      // the `SliceNode` itself, we consider there to be a read step with array
-      // content from the base to the corresponding `SliceElementNode` and then
-      // a store step with array content from the `SliceelementNode` to the
-      // `SliceNode` itself.
-      node2 = node1.(SliceElementNode).getSliceNode()
-    )
+    exists(Write w | w.writesElement(node2, _, node1))
   )
   or
   c instanceof CollectionContent and
@@ -64,13 +53,6 @@ predicate containerReadStep(Node node1, Node node2, Content c) {
     )
     or
     node2.(RangeElementNode).getBase() = node1
-    or
-    // To model data flow from array elements of the base of a `SliceNode` to
-    // the `SliceNode` itself, we consider there to be a read step with array
-    // content from the base to the corresponding `SliceElementNode` and then
-    // a store step with array content from the `SliceelementNode` to the
-    // `SliceNode` itself.
-    node2.(SliceElementNode).getSliceNode().getBase() = node1
   )
   or
   c instanceof CollectionContent and

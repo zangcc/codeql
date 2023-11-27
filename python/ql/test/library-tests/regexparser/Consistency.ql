@@ -3,7 +3,7 @@
  */
 
 import python
-import semmle.python.regexp.RegexTreeView
+import semmle.python.RegexTreeView
 
 from string str, int counter, Location loc
 where

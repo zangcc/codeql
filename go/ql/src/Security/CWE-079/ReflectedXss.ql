@@ -13,14 +13,14 @@
  */
 
 import go
-import semmle.go.security.ReflectedXss
-import ReflectedXss::Flow::PathGraph
+import semmle.go.security.ReflectedXss::ReflectedXss
+import DataFlow::PathGraph
 
 from
-  ReflectedXss::Flow::PathNode source, ReflectedXss::Flow::PathNode sink, string msg, string part,
+  Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink, string msg, string part,
   Locatable partloc
 where
-  ReflectedXss::Flow::flowPath(source, sink) and
+  cfg.hasFlowPath(source, sink) and
   (
     exists(string kind | kind = sink.getNode().(SharedXss::Sink).getSinkKind() |
       kind = "rawtemplate" and

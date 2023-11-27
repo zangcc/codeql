@@ -13,19 +13,18 @@ private import codeql.swift.security.PathInjectionExtensions
 /**
  * A taint-tracking configuration for path injection vulnerabilities.
  */
-module PathInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
+class PathInjectionConfiguration extends TaintTracking::Configuration {
+  PathInjectionConfiguration() { this = "PathInjectionConfiguration" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof PathInjectionSink }
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
 
-  predicate isBarrier(DataFlow::Node barrier) { barrier instanceof PathInjectionBarrier }
+  override predicate isSink(DataFlow::Node sink) { sink instanceof PathInjectionSink }
 
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
-    any(PathInjectionAdditionalFlowStep s).step(node1, node2)
+  override predicate isSanitizer(DataFlow::Node sanitizer) {
+    sanitizer instanceof PathInjectionSanitizer
+  }
+
+  override predicate isAdditionalTaintStep(DataFlow::Node node1, DataFlow::Node node2) {
+    any(PathInjectionAdditionalTaintStep s).step(node1, node2)
   }
 }
-
-/**
- * Detect taint flow of path injection vulnerabilities.
- */
-module PathInjectionFlow = TaintTracking::Global<PathInjectionConfig>;

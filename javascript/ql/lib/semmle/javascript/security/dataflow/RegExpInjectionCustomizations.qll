@@ -72,12 +72,12 @@ module RegExpInjection {
    */
   class MetacharEscapeSanitizer extends Sanitizer, StringReplaceCall {
     MetacharEscapeSanitizer() {
-      this.isGlobal() and
+      isGlobal() and
       (
-        RegExp::alwaysMatchesMetaCharacter(this.getRegExp().getRoot(), ["{", "[", "+"])
+        RegExp::alwaysMatchesMetaCharacter(getRegExp().getRoot(), ["{", "[", "+"])
         or
         // or it's like a wild-card.
-        RegExp::isWildcardLike(this.getRegExp().getRoot())
+        RegExp::isWildcardLike(getRegExp().getRoot())
       )
     }
   }

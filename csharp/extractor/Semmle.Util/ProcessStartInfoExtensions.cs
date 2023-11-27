@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Semmle.Util
@@ -10,54 +9,25 @@ namespace Semmle.Util
         /// Runs this process, and returns the exit code, as well as the contents
         /// of stdout in <paramref name="stdout"/>.
         /// </summary>
-        public static int ReadOutput(this ProcessStartInfo pi, out IList<string> stdout, Action<string>? onOut, Action<string>? onError)
+        public static int ReadOutput(this ProcessStartInfo pi, out IList<string> stdout)
         {
-            var @out = new List<string>();
-            using var process = new Process
-            {
-                StartInfo = pi
-            };
+            stdout = new List<string>();
+            using var process = Process.Start(pi);
 
-            if (process.StartInfo.RedirectStandardOutput && !pi.UseShellExecute)
+            if (process is null)
             {
-                process.OutputDataReceived += new DataReceivedEventHandler((sender, e) =>
-                {
-                    if (e.Data == null)
-                    {
-                        return;
-                    }
-
-                    onOut?.Invoke(e.Data);
-                    @out.Add(e.Data);
-                });
-            }
-            if (process.StartInfo.RedirectStandardError && !pi.UseShellExecute)
-            {
-                process.ErrorDataReceived += new DataReceivedEventHandler((sender, e) =>
-                {
-                    if (e.Data == null)
-                    {
-                        return;
-                    }
-
-                    onError?.Invoke(e.Data);
-                });
+                return -1;
             }
 
-            process.Start();
-
-            if (process.StartInfo.RedirectStandardError)
+            string? s;
+            do
             {
-                process.BeginErrorReadLine();
+                s = process.StandardOutput.ReadLine();
+                if (s is not null)
+                    stdout.Add(s);
             }
-
-            if (process.StartInfo.RedirectStandardOutput)
-            {
-                process.BeginOutputReadLine();
-            }
-
+            while (s is not null);
             process.WaitForExit();
-            stdout = @out;
             return process.ExitCode;
         }
     }

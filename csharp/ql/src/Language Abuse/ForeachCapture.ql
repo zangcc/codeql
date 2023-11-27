@@ -37,19 +37,19 @@ predicate inForeachStmtBody(ForeachStmt loop, Element e) {
   )
 }
 
-module LambdaDataFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { lambdaCapturesLoopVariable(source.asExpr(), _, _) }
+class LambdaDataFlowConfiguration extends DataFlow::Configuration {
+  LambdaDataFlowConfiguration() { this = "LambdaDataFlowConfiguration" }
 
-  predicate isSink(DataFlow::Node sink) { exists(getAssignmentTarget(sink.asExpr())) }
-}
+  override predicate isSource(DataFlow::Node source) {
+    lambdaCapturesLoopVariable(source.asExpr(), _, _)
+  }
 
-module LambdaDataFlow {
-  private import DataFlow::Global<LambdaDataFlowConfig>
+  override predicate isSink(DataFlow::Node sink) { exists(getAssignmentTarget(sink.asExpr())) }
 
   predicate capturesLoopVarAndIsStoredIn(
     AnonymousFunctionExpr lambda, Variable loopVar, Element storage
   ) {
-    exists(DataFlow::Node sink | flow(DataFlow::exprNode(lambda), sink) |
+    exists(DataFlow::Node sink | this.hasFlow(DataFlow::exprNode(lambda), sink) |
       storage = getAssignmentTarget(sink.asExpr())
     ) and
     exists(ForeachStmt loop | lambdaCapturesLoopVariable(lambda, loop, loopVar) |
@@ -109,7 +109,7 @@ predicate declaredInsideLoop(ForeachStmt loop, LocalVariable v) {
   )
 }
 
-from AnonymousFunctionExpr lambda, Variable loopVar, Element storage
-where LambdaDataFlow::capturesLoopVarAndIsStoredIn(lambda, loopVar, storage)
+from LambdaDataFlowConfiguration c, AnonymousFunctionExpr lambda, Variable loopVar, Element storage
+where c.capturesLoopVarAndIsStoredIn(lambda, loopVar, storage)
 select lambda, "Function which may be stored in $@ captures variable $@.", storage,
   storage.toString(), loopVar, loopVar.getName()

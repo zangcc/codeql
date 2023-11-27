@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Reflection.Metadata;
+using System.Linq;
+using System.Collections.Generic;
+using System.Reflection;
+using System.IO;
 
 namespace Semmle.Extraction.CIL.Entities
 {

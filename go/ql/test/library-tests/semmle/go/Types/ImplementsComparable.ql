@@ -1,10 +1,12 @@
 import go
 import TestUtilities.InlineExpectationsTest
 
-module ImplementsComparableTest implements TestSig {
-  string getARelevantTag() { result = "implementsComparable" }
+class ImplementsComparableTest extends InlineExpectationsTest {
+  ImplementsComparableTest() { this = "ImplementsComparableTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "implementsComparable" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     // file = "interface.go" and
     tag = "implementsComparable" and
     exists(TypeSpec ts |
@@ -18,5 +20,3 @@ module ImplementsComparableTest implements TestSig {
     )
   }
 }
-
-import MakeTest<ImplementsComparableTest>

@@ -1,9 +1,5 @@
 import javascript
 
-class TestAmdModuleRange extends AmdModuleDefinition::Range {
-  TestAmdModuleRange() { this.getCallee().(PropAccess).getQualifiedName() = "test.amd.range" }
-}
-
 query predicate amoModule_exports(Module m, string name, DataFlow::Node exportValue) {
   exportValue = m.getAnExportedValue(name)
 }

@@ -45,10 +45,10 @@ private string genericCollectionNamespaceName() {
 private string genericCollectionTypeName() {
   result =
     [
-      "Dictionary`2", "HashSet`1", "ICollection`1", "IDictionary`2", "IList`1", "ISet`1",
-      "LinkedList`1", "List`1", "Queue`1", "SortedDictionary`2", "SortedList`2", "SortedSet`1",
-      "Stack`1", "SynchronizedCollection`1", "SynchronizedKeyedCollection`1",
-      "SynchronizedReadOnlyCollection`1"
+      "Dictionary<,>", "HashSet<>", "ICollection<>", "IDictionary<,>", "IList<>", "ISet<>",
+      "LinkedList<>", "List<>", "Queue<>", "SortedDictionary<,>", "SortedList<,>", "SortedSet<>",
+      "Stack<>", "SynchronizedCollection<>", "SynchronizedKeyedCollection<>",
+      "SynchronizedReadOnlyCollection<>"
     ]
 }
 
@@ -56,11 +56,11 @@ private string genericCollectionTypeName() {
 class CollectionType extends RefType {
   CollectionType() {
     exists(RefType base | base = this.getABaseType*() |
-      base.hasFullyQualifiedName(collectionNamespaceName(), collectionTypeName())
+      base.hasQualifiedName(collectionNamespaceName(), collectionTypeName())
       or
       base.(ConstructedType)
           .getUnboundGeneric()
-          .hasFullyQualifiedName(genericCollectionNamespaceName(), genericCollectionTypeName())
+          .hasQualifiedName(genericCollectionNamespaceName(), genericCollectionTypeName())
     )
     or
     this instanceof ArrayType

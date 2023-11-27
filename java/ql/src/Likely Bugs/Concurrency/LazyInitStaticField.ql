@@ -61,12 +61,12 @@ class ValidSynchStmt extends Stmt {
     exists(TryStmt try, LockObjectField lockField |
       this = try.getBlock() and
       lockField.getType().(RefType).hasQualifiedName("java.util.concurrent.locks", "ReentrantLock") and
-      exists(MethodCall lockAction |
+      exists(MethodAccess lockAction |
         lockAction.getQualifier() = lockField.getAnAccess() and
         lockAction.getMethod().getName() = "lock" and
         dominates(lockAction, this)
       ) and
-      exists(MethodCall unlockAction |
+      exists(MethodAccess unlockAction |
         unlockAction.getQualifier() = lockField.getAnAccess() and
         unlockAction.getMethod().getName() = "unlock" and
         postDominates(unlockAction, this)

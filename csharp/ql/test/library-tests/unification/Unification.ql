@@ -7,9 +7,9 @@ class InterestingType extends @type {
   }
 
   string toString() {
-    result = this.(Type).getFullyQualifiedNameWithTypes()
+    result = this.(Type).getQualifiedNameWithTypes()
     or
-    not exists(this.(Type).getFullyQualifiedNameWithTypes()) and
+    not exists(this.(Type).getQualifiedNameWithTypes()) and
     result = this.(Type).toStringWithTypes()
   }
 

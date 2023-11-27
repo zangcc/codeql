@@ -15,11 +15,9 @@
 
 import java
 import NonConstantTimeCheckOnSignatureQuery
-import NonConstantTimeCryptoComparisonFlow::PathGraph
+import DataFlow::PathGraph
 
-from
-  NonConstantTimeCryptoComparisonFlow::PathNode source,
-  NonConstantTimeCryptoComparisonFlow::PathNode sink
-where NonConstantTimeCryptoComparisonFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, NonConstantTimeCryptoComparisonConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "Possible timing attack against $@ validation.", source,
   source.getNode().(CryptoOperationSource).getCall().getResultType()

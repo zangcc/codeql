@@ -2,17 +2,17 @@ import java
 import semmle.code.java.security.TemplateInjectionQuery
 import TestUtilities.InlineExpectationsTest
 
-module TemplateInjectionTest implements TestSig {
-  string getARelevantTag() { result = "hasTemplateInjection" }
+class TemplateInjectionTest extends InlineExpectationsTest {
+  TemplateInjectionTest() { this = "TemplateInjectionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasTemplateInjection" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasTemplateInjection" and
-    exists(DataFlow::Node sink | TemplateInjectionFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, TemplateInjectionFlowConfig conf | conf.hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<TemplateInjectionTest>

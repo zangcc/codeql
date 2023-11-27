@@ -151,19 +151,3 @@ void test5(int x) {
 void test6(int x, int y) {
   return x && y;
 }
-
-int ptr_test(int *x, int *y) {
-    if (x == y + 42) {
-    }
-
-    if (x == y - 42) {
-    }
-
-    if (x < y + 42) {
-    }
-
-    if (x < y - 42) {
-    }
-
-    return 0;
-}

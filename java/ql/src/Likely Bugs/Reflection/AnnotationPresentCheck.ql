@@ -12,7 +12,7 @@
 
 import java
 
-from MethodCall c, Method m, ParameterizedClass p, AnnotationType t
+from MethodAccess c, Method m, ParameterizedClass p, AnnotationType t
 where
   c.getMethod() = m and
   m.hasName("isAnnotationPresent") and

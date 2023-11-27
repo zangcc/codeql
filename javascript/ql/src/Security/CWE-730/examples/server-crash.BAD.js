@@ -7,13 +7,10 @@ function save(rootDir, path, content) {
   }
   // write content to disk
 }
-
 express().post("/save", (req, res) => {
-  fs.access(rootDir, (err) => {
-    if (err) {
-      console.error(
-        `Server setup is corrupted, ${rootDir} cannot be accessed!`
-      );
+  fs.exists(rootDir, (exists) => {
+    if (!exists) {
+      console.error(`Server setup is corrupted, ${rootDir} does not exist!`);
       res.status(500);
       res.end();
       return;

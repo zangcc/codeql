@@ -115,7 +115,7 @@ module FileSystemAccess {
 /** A function that escapes meta-characters to prevent injection attacks. */
 class EscapeFunction extends Function instanceof EscapeFunction::Range {
   /**
-   * Gets the context that this function escapes for.
+   * The context that this function escapes for.
    *
    * Currently, this can be "js", "html", or "url".
    */
@@ -132,7 +132,7 @@ module EscapeFunction {
    */
   abstract class Range extends Function {
     /**
-     * Gets the context that this function escapes for.
+     * The context that this function escapes for.
      *
      * Currently, this can be `js', `html', or `url'.
      */

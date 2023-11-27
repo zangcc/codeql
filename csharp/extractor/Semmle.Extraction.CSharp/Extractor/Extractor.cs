@@ -1,18 +1,18 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Semmle.Util;
+using System.Text;
+using System.Diagnostics;
+using System.Threading.Tasks;
 using Semmle.Util.Logging;
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Threading;
 
 namespace Semmle.Extraction.CSharp
 {
@@ -71,9 +71,9 @@ namespace Semmle.Extraction.CSharp
 
         public static ILogger MakeLogger(Verbosity verbosity, bool includeConsole)
         {
-            var fileLogger = new FileLogger(verbosity, GetCSharpLogPath(), logThreadId: true);
+            var fileLogger = new FileLogger(verbosity, GetCSharpLogPath());
             return includeConsole
-                ? new CombinedLogger(new ConsoleLogger(verbosity, logThreadId: true), fileLogger)
+                ? new CombinedLogger(new ConsoleLogger(verbosity), fileLogger)
                 : (ILogger)fileLogger;
         }
 
@@ -302,6 +302,7 @@ namespace Semmle.Extraction.CSharp
             Func<Analyser, List<SyntaxTree>, IEnumerable<Action>> getSyntaxTreeTasks,
             Func<IEnumerable<SyntaxTree>, IEnumerable<MetadataReference>, CSharpCompilation> getCompilation,
             Action<CSharpCompilation, CommonOptions> initializeAnalyser,
+            Action analyseCompilation,
             Action<Entities.PerformanceMetrics> logPerformance,
             Action postProcess)
         {
@@ -331,7 +332,7 @@ namespace Semmle.Extraction.CSharp
             var compilation = getCompilation(syntaxTrees, references);
 
             initializeAnalyser(compilation, options);
-            analyser.AnalyseCompilation();
+            analyseCompilation();
             analyser.AnalyseReferences();
 
             foreach (var tree in compilation.SyntaxTrees)
@@ -380,17 +381,8 @@ namespace Semmle.Extraction.CSharp
                 references => ResolveReferences(compilerArguments, analyser, canonicalPathCache, references),
                 (analyser, syntaxTrees) =>
                 {
-                    var paths = compilerArguments.SourceFiles
-                        .Select(src => src.Path)
-                        .ToList();
-
-                    if (compilerArguments.GeneratedFilesOutputDirectory is not null)
-                    {
-                        paths.AddRange(Directory.GetFiles(compilerArguments.GeneratedFilesOutputDirectory, "*.cs", SearchOption.AllDirectories));
-                    }
-
                     return ReadSyntaxTrees(
-                        paths.Select(canonicalPathCache.GetCanonicalPath),
+                        compilerArguments.SourceFiles.Select(src => canonicalPathCache.GetCanonicalPath(src.Path)),
                         analyser,
                         compilerArguments.ParseOptions,
                         compilerArguments.Encoding,
@@ -415,6 +407,7 @@ namespace Semmle.Extraction.CSharp
                         );
                 },
                 (compilation, options) => analyser.EndInitialize(compilerArguments, options, compilation),
+                () => analyser.AnalyseCompilation(),
                 performance => analyser.LogPerformance(performance),
                 () => { });
         }

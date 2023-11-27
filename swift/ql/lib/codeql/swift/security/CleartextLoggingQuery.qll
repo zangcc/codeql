@@ -12,22 +12,21 @@ private import codeql.swift.security.SensitiveExprs
 /**
  * A taint-tracking configuration for cleartext logging of sensitive data vulnerabilities.
  */
-module CleartextLoggingConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source.asExpr() instanceof SensitiveExpr }
+class CleartextLoggingConfiguration extends TaintTracking::Configuration {
+  CleartextLoggingConfiguration() { this = "CleartextLoggingConfiguration" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof CleartextLoggingSink }
+  override predicate isSource(DataFlow::Node source) { source.asExpr() instanceof SensitiveExpr }
 
-  predicate isBarrier(DataFlow::Node barrier) { barrier instanceof CleartextLoggingBarrier }
+  override predicate isSink(DataFlow::Node sink) { sink instanceof CleartextLoggingSink }
+
+  override predicate isSanitizer(DataFlow::Node sanitizer) {
+    sanitizer instanceof CleartextLoggingSanitizer
+  }
 
   // Disregard paths that contain other paths. This helps with performance.
-  predicate isBarrierIn(DataFlow::Node node) { isSource(node) }
+  override predicate isSanitizerIn(DataFlow::Node node) { this.isSource(node) }
 
-  predicate isAdditionalFlowStep(DataFlow::Node n1, DataFlow::Node n2) {
-    any(CleartextLoggingAdditionalFlowStep s).step(n1, n2)
+  override predicate isAdditionalTaintStep(DataFlow::Node n1, DataFlow::Node n2) {
+    any(CleartextLoggingAdditionalTaintStep s).step(n1, n2)
   }
 }
-
-/**
- * Detect taint flow of cleartext logging of sensitive data vulnerabilities.
- */
-module CleartextLoggingFlow = TaintTracking::Global<CleartextLoggingConfig>;

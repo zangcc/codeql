@@ -22,7 +22,7 @@ private newtype TAllocation =
 abstract class Allocation extends TAllocation {
   abstract string toString();
 
-  final string getAllocationString() { result = this.toString() }
+  final string getAllocationString() { result = toString() }
 
   abstract Instruction getABaseInstruction();
 

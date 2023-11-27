@@ -1,10 +1,18 @@
 import go
-import TestUtilities.InlineFlowTest
+import DataFlow::PathGraph
 
-module Flow = DataFlow::Global<DefaultFlowConfig>;
+class TestConfig extends DataFlow::Configuration {
+  TestConfig() { this = "test config" }
 
-import Flow::PathGraph
+  override predicate isSource(DataFlow::Node source) {
+    source.(DataFlow::CallNode).getTarget().getName() = "source"
+  }
 
-from Flow::PathNode source, Flow::PathNode sink
-where Flow::flowPath(source, sink)
+  override predicate isSink(DataFlow::Node sink) {
+    sink = any(DataFlow::CallNode c | c.getTarget().getName() = "sink").getAnArgument()
+  }
+}
+
+from DataFlow::PathNode source, DataFlow::PathNode sink, TestConfig c
+where c.hasFlowPath(source, sink)
 select source, source, sink, "path"

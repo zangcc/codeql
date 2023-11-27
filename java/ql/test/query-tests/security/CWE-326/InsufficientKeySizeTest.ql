@@ -2,17 +2,17 @@ import java
 import TestUtilities.InlineExpectationsTest
 import semmle.code.java.security.InsufficientKeySizeQuery
 
-module InsufficientKeySizeTest implements TestSig {
-  string getARelevantTag() { result = "hasInsufficientKeySize" }
+class InsufficientKeySizeTest extends InlineExpectationsTest {
+  InsufficientKeySizeTest() { this = "InsufficientKeySize" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasInsufficientKeySize" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasInsufficientKeySize" and
-    exists(KeySizeFlow::PathNode sink | KeySizeFlow::flowPath(_, sink) |
+    exists(DataFlow::PathNode sink | exists(KeySizeConfiguration cfg | cfg.hasFlowPath(_, sink)) |
       sink.getNode().getLocation() = location and
       element = sink.getNode().toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<InsufficientKeySizeTest>

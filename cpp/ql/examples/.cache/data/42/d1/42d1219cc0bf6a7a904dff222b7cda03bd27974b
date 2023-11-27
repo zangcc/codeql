@@ -1,0 +1,24 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "02-logical-prameter.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "71aeec42ce2f60e7e2d20ea62cb6c1e212e14394"
+  debugInfo: "92a40e13f27b1969e78aca11e3f33a49f0b62281"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "40600c5bc1bc1b7a6e625480a7278551f1340366"
+- cached: "6c8b3996f913a2c301248eb9686264937fe1493c"
+  debugInfo: "d9c4202665f6ab49c1194a1d6054f6fe37237446"
+- cached: "5a7f9fbc1550c93084b1c41446939bca46efe511"
+  debugInfo: "50c321ac5966322fccaedd251f509f1e264272f7"
+- cached: "2407ffc6dc5373c4974dadf0af691749a6e8ee39"
+  debugInfo: "948d16d9f624a185c82f8a4f039f3192ee8231be"
+- cached: "bc259694e176576a05161408925878eb94d9d333"
+  debugInfo: "40d039f0d9865bf7a05abf704840b3e1b0c72b47"
+results:
+  '#select':
+    resultArranger: "2\"v\"ei120s"
+inputsDigest: "42d1219cc0bf6a7a904dff222b7cda03bd27974b"

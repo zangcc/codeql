@@ -37,13 +37,7 @@ module Raw {
   predicate functionHasIR(Function func) { exists(getTranslatedFunction(func)) }
 
   cached
-  predicate varHasIRFunc(Variable var) {
-    (
-      var instanceof GlobalOrNamespaceVariable
-      or
-      not var.isFromUninstantiatedTemplate(_) and
-      var instanceof StaticInitializedStaticLocalVariable
-    ) and
+  predicate varHasIRFunc(GlobalOrNamespaceVariable var) {
     var.hasInitializer() and
     (
       not var.getType().isDeeplyConst()
@@ -81,10 +75,9 @@ module Raw {
   }
 
   cached
-  predicate hasDynamicInitializationFlag(
-    Function func, RuntimeInitializedStaticLocalVariable var, CppType type
-  ) {
+  predicate hasDynamicInitializationFlag(Function func, StaticLocalVariable var, CppType type) {
     var.getFunction() = func and
+    var.hasDynamicInitialization() and
     type = getBoolType()
   }
 
@@ -178,9 +171,9 @@ module Raw {
   }
 }
 
-class TStageInstruction = TRawInstruction or TRawUnreachedInstruction;
+class TStageInstruction = TRawInstruction;
 
-predicate hasInstruction(TStageInstruction instr) { any() }
+predicate hasInstruction(TRawInstruction instr) { any() }
 
 predicate hasModeledMemoryResult(Instruction instruction) { none() }
 
@@ -368,44 +361,29 @@ private predicate isStrictlyForwardGoto(GotoStmt goto) {
 
 Locatable getInstructionAst(TStageInstruction instr) {
   result = getInstructionTranslatedElement(instr).getAst()
-  or
-  exists(IRFunction irFunc |
-    instr = TRawUnreachedInstruction(irFunc) and
-    result = irFunc.getFunction()
-  )
+}
+
+/** DEPRECATED: Alias for getInstructionAst */
+deprecated Locatable getInstructionAST(TStageInstruction instr) {
+  result = getInstructionAst(instr)
 }
 
 CppType getInstructionResultType(TStageInstruction instr) {
   getInstructionTranslatedElement(instr).hasInstruction(_, getInstructionTag(instr), result)
-  or
-  instr instanceof TRawUnreachedInstruction and
-  result = getVoidType()
 }
 
 predicate getInstructionOpcode(Opcode opcode, TStageInstruction instr) {
   getInstructionTranslatedElement(instr).hasInstruction(opcode, getInstructionTag(instr), _)
-  or
-  instr instanceof TRawUnreachedInstruction and
-  opcode instanceof Opcode::Unreached
 }
 
 IRFunctionBase getInstructionEnclosingIRFunction(TStageInstruction instr) {
   result.getFunction() = getInstructionTranslatedElement(instr).getFunction()
-  or
-  instr = TRawUnreachedInstruction(result)
 }
 
 Instruction getPrimaryInstructionForSideEffect(SideEffectInstruction instruction) {
   result =
     getInstructionTranslatedElement(instruction)
         .getPrimaryInstructionForSideEffect(getInstructionTag(instruction))
-}
-
-predicate hasUnreachedInstruction(IRFunction func) {
-  exists(Call c |
-    c.getEnclosingFunction() = func.getFunction() and
-    any(Options opt).exits(c.getTarget())
-  )
 }
 
 import CachedForDebugging
@@ -423,12 +401,7 @@ private module CachedForDebugging {
   cached
   predicate instructionHasSortKeys(Instruction instruction, int key1, int key2) {
     key1 = getInstructionTranslatedElement(instruction).getId() and
-    getInstructionTag(instruction) = tagByRank(key2)
-  }
-
-  pragma[nomagic]
-  private InstructionTag tagByRank(int key2) {
-    result =
+    getInstructionTag(instruction) =
       rank[key2](InstructionTag tag, string tagId |
         tagId = getInstructionTagId(tag)
       |

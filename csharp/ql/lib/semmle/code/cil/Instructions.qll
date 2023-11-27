@@ -529,7 +529,7 @@ module Opcodes {
     /** Gets the type that is being tested against. */
     Type getTestedType() { result = this.getAccess() }
 
-    override string getExtra() { result = this.getTestedType().getFullyQualifiedName() }
+    override string getExtra() { result = this.getTestedType().getQualifiedName() }
   }
 
   /** A `castclass` instruction. */
@@ -541,7 +541,7 @@ module Opcodes {
     /** Gets the type that is being cast to. */
     Type getTestedType() { result = this.getAccess() }
 
-    override string getExtra() { result = this.getTestedType().getFullyQualifiedName() }
+    override string getExtra() { result = this.getTestedType().getQualifiedName() }
   }
 
   /** An `stloc.0` instruction. */
@@ -879,7 +879,7 @@ module Opcodes {
       result = this.getAccess()
     }
 
-    override string getExtra() { result = this.getType().getFullyQualifiedName() }
+    override string getExtra() { result = this.getType().getQualifiedName() }
   }
 
   /** An `ldelem` instruction. */

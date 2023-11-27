@@ -50,7 +50,7 @@ abstract class LossOfPrecision extends Expr {
   Type convertedType;
 
   LossOfPrecision() {
-    this.getType() instanceof IntegralType and
+    getType() instanceof IntegralType and
     convertedToFloatOrDecimal(this, convertedType)
   }
 

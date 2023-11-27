@@ -57,7 +57,7 @@ abstract class FormattingFunction extends ArrayFunction, TaintFunction {
    */
   Type getFormatCharType() {
     result =
-      stripTopLevelSpecifiersOnly(stripTopLevelSpecifiersOnly(this.getParameter(this.getFormatParameterIndex())
+      stripTopLevelSpecifiersOnly(stripTopLevelSpecifiersOnly(getParameter(getFormatParameterIndex())
               .getType()
               .getUnderlyingType()).(PointerType).getBaseType())
   }
@@ -67,10 +67,10 @@ abstract class FormattingFunction extends ArrayFunction, TaintFunction {
    * `char` or `wchar_t`.
    */
   Type getDefaultCharType() {
-    this.isMicrosoft() and
-    result = this.getFormatCharType()
+    isMicrosoft() and
+    result = getFormatCharType()
     or
-    not this.isMicrosoft() and
+    not isMicrosoft() and
     result instanceof PlainCharType
   }
 
@@ -80,10 +80,10 @@ abstract class FormattingFunction extends ArrayFunction, TaintFunction {
    * which is correct for a particular function.
    */
   Type getNonDefaultCharType() {
-    this.getDefaultCharType().getSize() = 1 and
-    result = this.getWideCharType()
+    getDefaultCharType().getSize() = 1 and
+    result = getWideCharType()
     or
-    not this.getDefaultCharType().getSize() = 1 and
+    not getDefaultCharType().getSize() = 1 and
     result instanceof PlainCharType
   }
 
@@ -94,10 +94,10 @@ abstract class FormattingFunction extends ArrayFunction, TaintFunction {
    */
   pragma[nomagic]
   Type getWideCharType() {
-    result = this.getFormatCharType() and
+    result = getFormatCharType() and
     result.getSize() > 1
     or
-    not this.getFormatCharType().getSize() > 1 and
+    not getFormatCharType().getSize() > 1 and
     result = getAFormatterWideTypeOrDefault() // may have more than one result
   }
 
@@ -120,14 +120,14 @@ abstract class FormattingFunction extends ArrayFunction, TaintFunction {
    * the first format specifier in the format string.
    */
   int getFirstFormatArgumentIndex() {
-    result = this.getNumberOfParameters() and
+    result = getNumberOfParameters() and
     // the formatting function either has a definition in the snapshot, or all
     // `DeclarationEntry`s agree on the number of parameters (otherwise we don't
     // really know the correct number)
     (
-      this.hasDefinition()
+      hasDefinition()
       or
-      forall(FunctionDeclarationEntry fde | fde = this.getADeclarationEntry() |
+      forall(FunctionDeclarationEntry fde | fde = getADeclarationEntry() |
         result = fde.getNumberOfParameters()
       )
     )
@@ -139,30 +139,30 @@ abstract class FormattingFunction extends ArrayFunction, TaintFunction {
   int getSizeParameterIndex() { none() }
 
   override predicate hasArrayWithNullTerminator(int bufParam) {
-    bufParam = this.getFormatParameterIndex()
+    bufParam = getFormatParameterIndex()
   }
 
   override predicate hasArrayWithVariableSize(int bufParam, int countParam) {
-    bufParam = this.getOutputParameterIndex(false) and
-    countParam = this.getSizeParameterIndex()
+    bufParam = getOutputParameterIndex(false) and
+    countParam = getSizeParameterIndex()
   }
 
   override predicate hasArrayWithUnknownSize(int bufParam) {
-    bufParam = this.getOutputParameterIndex(false) and
-    not exists(this.getSizeParameterIndex())
+    bufParam = getOutputParameterIndex(false) and
+    not exists(getSizeParameterIndex())
   }
 
-  override predicate hasArrayInput(int bufParam) { bufParam = this.getFormatParameterIndex() }
+  override predicate hasArrayInput(int bufParam) { bufParam = getFormatParameterIndex() }
 
-  override predicate hasArrayOutput(int bufParam) { bufParam = this.getOutputParameterIndex(false) }
+  override predicate hasArrayOutput(int bufParam) { bufParam = getOutputParameterIndex(false) }
 
   override predicate hasTaintFlow(FunctionInput input, FunctionOutput output) {
     exists(int arg |
-      arg = this.getFormatParameterIndex() or
-      arg >= this.getFirstFormatArgumentIndex()
+      arg = getFormatParameterIndex() or
+      arg >= getFirstFormatArgumentIndex()
     |
       (input.isParameterDeref(arg) or input.isParameter(arg)) and
-      output.isParameterDeref(this.getOutputParameterIndex(_))
+      output.isParameterDeref(getOutputParameterIndex(_))
     )
   }
 }

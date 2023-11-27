@@ -4,10 +4,12 @@
 import python
 import TestUtilities.InlineExpectationsTest
 
-module MissingRelevantTag implements TestSig {
-  string getARelevantTag() { none() }
+class MissingRelevantTag extends InlineExpectationsTest {
+  MissingRelevantTag() { this = "MissingRelevantTag" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { none() }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(Name name | name.getId() = "foo" |
       location = name.getLocation() and
       element = name.toString() and
@@ -16,5 +18,3 @@ module MissingRelevantTag implements TestSig {
     )
   }
 }
-
-import MakeTest<MissingRelevantTag>

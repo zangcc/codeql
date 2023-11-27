@@ -2,13 +2,15 @@ import go
 import TestUtilities.InlineExpectationsTest
 import semmle.go.security.IncorrectIntegerConversionLib
 
-module TestIncorrectIntegerConversion implements TestSig {
-  string getARelevantTag() { result = "hasValueFlow" }
+class TestIncorrectIntegerConversion extends InlineExpectationsTest {
+  TestIncorrectIntegerConversion() { this = "TestIncorrectIntegerConversion" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasValueFlow" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasValueFlow" and
     exists(DataFlow::Node sink, DataFlow::Node sinkConverted |
-      Flow::flowTo(sink) and
+      any(ConversionWithoutBoundsCheckConfig config).hasFlowTo(sink) and
       sinkConverted = sink.getASuccessor()
     |
       sinkConverted
@@ -19,5 +21,3 @@ module TestIncorrectIntegerConversion implements TestSig {
     )
   }
 }
-
-import MakeTest<TestIncorrectIntegerConversion>

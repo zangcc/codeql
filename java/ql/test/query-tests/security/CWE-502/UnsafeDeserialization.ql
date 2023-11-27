@@ -2,17 +2,17 @@ import java
 import semmle.code.java.security.UnsafeDeserializationQuery
 import TestUtilities.InlineExpectationsTest
 
-module UnsafeDeserializationTest implements TestSig {
-  string getARelevantTag() { result = "unsafeDeserialization" }
+class UnsafeDeserializationTest extends InlineExpectationsTest {
+  UnsafeDeserializationTest() { this = "UnsafeDeserializationTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "unsafeDeserialization" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "unsafeDeserialization" and
-    exists(DataFlow::Node sink | UnsafeDeserializationFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, UnsafeDeserializationConfig conf | conf.hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<UnsafeDeserializationTest>

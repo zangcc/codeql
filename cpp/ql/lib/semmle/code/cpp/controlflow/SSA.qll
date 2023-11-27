@@ -10,9 +10,12 @@ import SSAUtils
  * The SSA logic comes in two versions: the standard SSA and range-analysis RangeSSA.
  * This class provides the standard SSA logic.
  */
-class StandardSsa extends SsaHelper {
+library class StandardSsa extends SsaHelper {
   StandardSsa() { this = 0 }
 }
+
+/** DEPRECATED: Alias for StandardSsa */
+deprecated class StandardSSA = StandardSsa;
 
 /**
  * A definition of one or more SSA variables, including phi node definitions.

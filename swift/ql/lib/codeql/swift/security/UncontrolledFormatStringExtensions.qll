@@ -15,18 +15,14 @@ private import codeql.swift.dataflow.ExternalFlow
 abstract class UncontrolledFormatStringSink extends DataFlow::Node { }
 
 /**
- * A barrier for uncontrolled format string vulnerabilities.
+ * A sanitizer for uncontrolled format string vulnerabilities.
  */
-abstract class UncontrolledFormatStringBarrier extends DataFlow::Node { }
+abstract class UncontrolledFormatStringSanitizer extends DataFlow::Node { }
 
 /**
- * A unit class for adding additional flow steps.
+ * A unit class for adding additional taint steps.
  */
-class UncontrolledFormatStringAdditionalFlowStep extends Unit {
-  /**
-   * Holds if the step from `node1` to `node2` should be considered a flow
-   * step for paths related to uncontrolled format string vulnerabilities.
-   */
+class UncontrolledFormatStringAdditionalTaintStep extends Unit {
   abstract predicate step(DataFlow::Node nodeFrom, DataFlow::Node nodeTo);
 }
 
@@ -39,16 +35,6 @@ private class DefaultUncontrolledFormatStringSink extends UncontrolledFormatStri
     this.asExpr() = any(FormattingFunctionCall fc).getFormat()
     or
     // a sink defined in a CSV model.
-    sinkNode(this, "format-string")
-  }
-}
-
-/**
- * A barrier for uncontrolled format string vulnerabilities.
- */
-private class UncontrolledFormatStringDefaultBarrier extends UncontrolledFormatStringBarrier {
-  UncontrolledFormatStringDefaultBarrier() {
-    // any numeric type
-    this.asExpr().getType().getUnderlyingType().getABaseType*().getName() = "Numeric"
+    sinkNode(this, "uncontrolled-format-string")
   }
 }

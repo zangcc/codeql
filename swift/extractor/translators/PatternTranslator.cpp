@@ -4,7 +4,13 @@ namespace codeql {
 
 codeql::NamedPattern PatternTranslator::translateNamedPattern(const swift::NamedPattern& pattern) {
   auto entry = dispatcher.createEntry(pattern);
-  entry.var_decl = dispatcher.fetchLabel(pattern.getDecl());
+  // TODO: in some (but not all) cases, this seems to introduce a duplicate entry
+  // for example the vars listed in a case stmt have a different pointer than then ones in
+  // patterns.
+  //  assert(pattern.getDecl() && "expect NamedPattern to have Decl");
+  //  dispatcher.emit(NamedPatternsTrap{label, pattern.getNameStr().str(),
+  //                                       dispatcher.fetchLabel(pattern.getDecl())});
+  entry.name = pattern.getNameStr().str();
   return entry;
 }
 
@@ -59,11 +65,7 @@ codeql::IsPattern PatternTranslator::translateIsPattern(const swift::IsPattern& 
 
 codeql::ExprPattern PatternTranslator::translateExprPattern(const swift::ExprPattern& pattern) {
   auto entry = dispatcher.createEntry(pattern);
-  if (auto match = pattern.getMatchExpr()) {
-    entry.sub_expr = dispatcher.fetchLabel(match);
-  } else {
-    entry.sub_expr = dispatcher.fetchLabel(pattern.getSubExpr());
-  }
+  entry.sub_expr = dispatcher.fetchLabel(pattern.getSubExpr());
   return entry;
 }
 

@@ -56,7 +56,7 @@ class ImproperNullTerminationReachability extends StackVariableReachabilityWithR
 
   override predicate isBarrier(ControlFlowNode node, StackVariable v) {
     exprDefinition(v, node, _) or
-    this.isSinkActual(node, v) // only report first use
+    isSinkActual(node, v) // only report first use
   }
 }
 

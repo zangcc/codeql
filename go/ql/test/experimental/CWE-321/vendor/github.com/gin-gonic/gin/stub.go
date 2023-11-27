@@ -14,7 +14,6 @@ import (
 	multipart "mime/multipart"
 	net "net"
 	http "net/http"
-	template0 "text/template"
 	time "time"
 )
 
@@ -389,7 +388,7 @@ type Engine struct {
 	TrustedPlatform        string
 	MaxMultipartMemory     int64
 	HTMLRender             interface{}
-	FuncMap                template0.FuncMap
+	FuncMap                template.FuncMap
 }
 
 func (_ *Engine) Any(_ string, _ ...HandlerFunc) IRoutes {
@@ -480,7 +479,7 @@ func (_ *Engine) SecureJsonPrefix(_ string) *Engine {
 
 func (_ *Engine) ServeHTTP(_ http.ResponseWriter, _ *http.Request) {}
 
-func (_ *Engine) SetFuncMap(_ template0.FuncMap) {}
+func (_ *Engine) SetFuncMap(_ template.FuncMap) {}
 
 func (_ *Engine) SetHTMLTemplate(_ *template.Template) {}
 

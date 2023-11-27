@@ -11,8 +11,12 @@ module MimeQuotedprintable {
     FunctionOutput outp;
 
     FunctionModels() {
+      // signature: func NewReader(r io.Reader) *Reader
+      hasQualifiedName("mime/quotedprintable", "NewReader") and
+      (inp.isParameter(0) and outp.isResult())
+      or
       // signature: func NewWriter(w io.Writer) *Writer
-      this.hasQualifiedName("mime/quotedprintable", "NewWriter") and
+      hasQualifiedName("mime/quotedprintable", "NewWriter") and
       (inp.isResult() and outp.isParameter(0))
     }
 

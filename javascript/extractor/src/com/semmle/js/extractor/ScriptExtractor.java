@@ -39,7 +39,7 @@ public class ScriptExtractor implements IExtractor {
   }
 
   @Override
-  public ParseResultInfo extract(TextualExtractor textualExtractor) {
+  public LoCInfo extract(TextualExtractor textualExtractor) {
     LocationManager locationManager = textualExtractor.getLocationManager();
     String source = textualExtractor.getSource();
     String shebangLine = null, shebangLineTerm = null;
@@ -79,9 +79,9 @@ public class ScriptExtractor implements IExtractor {
     ScopeManager scopeManager =
         new ScopeManager(textualExtractor.getTrapwriter(), config.getEcmaVersion(), ScopeManager.FileKind.PLAIN);
     Label toplevelLabel = null;
-    ParseResultInfo loc;
+    LoCInfo loc;
     try {
-      Pair<Label, ParseResultInfo> res =
+      Pair<Label, LoCInfo> res =
           new JSExtractor(config).extract(textualExtractor, source, TopLevelKind.SCRIPT, scopeManager);
       toplevelLabel = res.fst();
       loc = res.snd();

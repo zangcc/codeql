@@ -54,9 +54,6 @@ android {
         versionName = "1.0"
     }
 
-    lintOptions {
-        disable("Instantiatable")
-    }
 }
 
 androidComponents {

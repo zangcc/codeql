@@ -33,7 +33,7 @@ class NosqlInjectionAtmConfig extends AtmConfig {
     sink.(NosqlInjection::Sink).getAFlowLabel() = label
     or
     // Allow effective sinks to have any taint label
-    this.isEffectiveSink(sink)
+    isEffectiveSink(sink)
   }
 
   override predicate isSanitizer(DataFlow::Node node) {
@@ -49,11 +49,11 @@ class NosqlInjectionAtmConfig extends AtmConfig {
     DataFlow::Node src, DataFlow::Node trg, DataFlow::FlowLabel inlbl, DataFlow::FlowLabel outlbl
   ) {
     // additional flow steps from the base (non-boosted) security query
-    this.isBaseAdditionalFlowStep(src, trg, inlbl, outlbl)
+    isBaseAdditionalFlowStep(src, trg, inlbl, outlbl)
     or
     // relaxed version of previous step to track taint through unmodeled NoSQL query objects
-    this.isEffectiveSink(trg) and
-    src = this.getASubexpressionWithinQuery(trg)
+    isEffectiveSink(trg) and
+    src = getASubexpressionWithinQuery(trg)
   }
 
   /** Holds if src -> trg is an additional flow step in the non-boosted NoSql injection security query. */
@@ -80,9 +80,9 @@ class NosqlInjectionAtmConfig extends AtmConfig {
    * involving more complex queries.
    */
   private DataFlow::Node getASubexpressionWithinQuery(DataFlow::Node query) {
-    this.isEffectiveSink(query) and
+    isEffectiveSink(query) and
     exists(DataFlow::SourceNode receiver |
-      receiver = [this.getASubexpressionWithinQuery(query), query].getALocalSource()
+      receiver = [getASubexpressionWithinQuery(query), query].getALocalSource()
     |
       result =
         [

@@ -16,9 +16,9 @@
 
 import csharp
 import TaintedWebClientLib
-import TaintedWebClient::PathGraph
+import semmle.code.csharp.dataflow.DataFlow::DataFlow::PathGraph
 
-from TaintedWebClient::PathNode source, TaintedWebClient::PathNode sink
-where TaintedWebClient::flowPath(source, sink)
+from TaintTrackingConfiguration c, DataFlow::PathNode source, DataFlow::PathNode sink
+where c.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "A method of WebClient depepends on a $@.", source.getNode(),
   "user-provided value"

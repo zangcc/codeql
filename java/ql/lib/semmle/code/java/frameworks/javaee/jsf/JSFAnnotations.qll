@@ -6,14 +6,12 @@ import default
  * A Java Server Faces `ManagedBean` annotation on a class.
  */
 class FacesManagedBeanAnnotation extends Annotation {
-  FacesManagedBeanAnnotation() {
-    this.getType().hasQualifiedName("javax.faces.bean", "ManagedBean")
-  }
+  FacesManagedBeanAnnotation() { getType().hasQualifiedName("javax.faces.bean", "ManagedBean") }
 
   /**
    * Gets the `Class` of the managed bean.
    */
-  Class getManagedBeanClass() { result = this.getAnnotatedElement() }
+  Class getManagedBeanClass() { result = getAnnotatedElement() }
 }
 
 /**
@@ -23,11 +21,11 @@ class FacesManagedBeanAnnotation extends Annotation {
  */
 class FacesComponentAnnotation extends Annotation {
   FacesComponentAnnotation() {
-    this.getType().hasQualifiedName("javax.faces.component", "FacesComponent")
+    getType().hasQualifiedName("javax.faces.component", "FacesComponent")
   }
 
   /**
    * Gets the `Class` of the FacesComponent, if this annotation is valid.
    */
-  Class getFacesComponentClass() { result = this.getAnnotatedElement() }
+  Class getFacesComponentClass() { result = getAnnotatedElement() }
 }

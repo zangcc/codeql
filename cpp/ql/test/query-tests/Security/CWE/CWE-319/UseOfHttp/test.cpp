@@ -21,7 +21,7 @@ void doNothing(char *url)
 {
 }
 
-const char *url_g = "http://example.com"; // BAD
+const char *url_g = "http://example.com"; // BAD [NOT DETECTED]
 
 void test()
 {

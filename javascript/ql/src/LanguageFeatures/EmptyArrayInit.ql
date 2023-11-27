@@ -22,7 +22,7 @@ import javascript
 class OmittedArrayElement extends ArrayExpr {
   int idx;
 
-  OmittedArrayElement() { idx = min(int i | this.elementIsOmitted(i)) }
+  OmittedArrayElement() { idx = min(int i | elementIsOmitted(i)) }
 
   /**
    * Holds if this element is at the specified location.
@@ -35,9 +35,9 @@ class OmittedArrayElement extends ArrayExpr {
     string filepath, int startline, int startcolumn, int endline, int endcolumn
   ) {
     exists(Token pre, Location before, Location after |
-      idx = 0 and pre = this.getFirstToken()
+      idx = 0 and pre = getFirstToken()
       or
-      pre = this.getElement(idx - 1).getLastToken().getNextToken()
+      pre = getElement(idx - 1).getLastToken().getNextToken()
     |
       before = pre.getLocation() and
       after = pre.getNextToken().getLocation() and

@@ -1,5 +1,5 @@
 import cpp
-import semmle.code.cpp.ir.dataflow.DataFlow
+import semmle.code.cpp.dataflow.DataFlow
 import semmle.code.cpp.controlflow.Guards
 import semmle.code.cpp.valuenumbering.GlobalValueNumbering
 
@@ -129,7 +129,7 @@ class NetworkFunctionCall extends FunctionCall {
   NetworkFunctionCall() { this.getTarget().hasName(["ntohd", "ntohf", "ntohl", "ntohll", "ntohs"]) }
 }
 
-deprecated class NetworkToBufferSizeConfiguration extends DataFlow::Configuration {
+class NetworkToBufferSizeConfiguration extends DataFlow::Configuration {
   NetworkToBufferSizeConfiguration() { this = "NetworkToBufferSizeConfiguration" }
 
   override predicate isSource(DataFlow::Node node) { node.asExpr() instanceof NetworkFunctionCall }
@@ -146,19 +146,3 @@ deprecated class NetworkToBufferSizeConfiguration extends DataFlow::Configuratio
     )
   }
 }
-
-private module NetworkToBufferSizeConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) { node.asExpr() instanceof NetworkFunctionCall }
-
-  predicate isSink(DataFlow::Node node) { node.asExpr() = any(BufferAccess ba).getAccessedLength() }
-
-  predicate isBarrier(DataFlow::Node node) {
-    exists(GuardCondition gc, GVN gvn |
-      gc.getAChild*() = gvn.getAnExpr() and
-      globalValueNumber(node.asExpr()) = gvn and
-      gc.controls(node.asExpr().getBasicBlock(), _)
-    )
-  }
-}
-
-module NetworkToBufferSizeFlow = DataFlow::Global<NetworkToBufferSizeConfig>;

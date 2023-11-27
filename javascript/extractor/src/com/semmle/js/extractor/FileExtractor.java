@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.LinkedHashSet;
@@ -103,7 +104,7 @@ public class FileExtractor {
 
   /** Information about supported file types. */
   public static enum FileType {
-    HTML(".htm", ".html", ".xhtm", ".xhtml", ".vue", ".hbs", ".ejs", ".njk", ".erb", ".jsp") {
+    HTML(".htm", ".html", ".xhtm", ".xhtml", ".vue", ".hbs", ".ejs", ".njk", ".erb") {
       @Override
       public IExtractor mkExtractor(ExtractorConfig config, ExtractorState state) {
         return new HTMLExtractor(config, state);
@@ -433,7 +434,7 @@ public class FileExtractor {
   }
 
   /** @return the number of lines of code extracted, or {@code null} if the file was cached */
-  public ParseResultInfo extract(File f, ExtractorState state) throws IOException {
+  public Integer extract(File f, ExtractorState state) throws IOException {
     FileSnippet snippet = state.getSnippets().get(f.toPath());
     if (snippet != null) {
       return this.extractSnippet(f.toPath(), snippet, state);
@@ -460,7 +461,7 @@ public class FileExtractor {
    * <p>A trap file will be derived from the snippet file, but its file label, source locations, and
    * source archive entry are based on the original file.
    */
-  private ParseResultInfo extractSnippet(Path file, FileSnippet origin, ExtractorState state) throws IOException {
+  private Integer extractSnippet(Path file, FileSnippet origin, ExtractorState state) throws IOException {
     TrapWriter trapwriter = outputConfig.getTrapWriterFactory().mkTrapWriter(file.toFile());
 
     File originalFile = origin.getOriginalFile().toFile();
@@ -494,7 +495,7 @@ public class FileExtractor {
    * <p>Also note that we support extraction with TRAP writer factories that are not file-backed;
    * obviously, no caching is done in that scenario.
    */
-  private ParseResultInfo extractContents(
+  private Integer extractContents(
       File extractedFile, Label fileLabel, String source, LocationManager locationManager, ExtractorState state)
       throws IOException {
     ExtractionMetrics metrics = new ExtractionMetrics();
@@ -544,7 +545,7 @@ public class FileExtractor {
       TextualExtractor textualExtractor =
           new TextualExtractor(
               trapwriter, locationManager, source, config.getExtractLines(), metrics, extractedFile);
-      ParseResultInfo loc = extractor.extract(textualExtractor);
+      LoCInfo loc = extractor.extract(textualExtractor);
       int numLines = textualExtractor.isSnippet() ? 0 : textualExtractor.getNumLines();
       int linesOfCode = loc.getLinesOfCode(), linesOfComments = loc.getLinesOfComments();
       trapwriter.addTuple("numlines", fileLabel, numLines, linesOfCode, linesOfComments);
@@ -552,7 +553,7 @@ public class FileExtractor {
       metrics.stopPhase(ExtractionPhase.FileExtractor_extractContents);
       metrics.writeTimingsToTrap(trapwriter);
       successful = true;
-      return loc;
+      return linesOfCode;
     } finally {
       if (!successful && trapwriter instanceof CachingTrapWriter)
         ((CachingTrapWriter) trapwriter).discard();

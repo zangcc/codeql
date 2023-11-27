@@ -5,28 +5,28 @@ import csharp
 /** A `ServiceContract` attribute. */
 class ServiceContractAttribute extends Attribute {
   ServiceContractAttribute() {
-    this.getType().hasFullyQualifiedName("System.ServiceModel", "ServiceContractAttribute")
+    this.getType().hasQualifiedName("System.ServiceModel", "ServiceContractAttribute")
   }
 }
 
 /** An `OperationContract` attribute. */
 class OperationContractAttribute extends Attribute {
   OperationContractAttribute() {
-    this.getType().hasFullyQualifiedName("System.ServiceModel", "OperationContractAttribute")
+    this.getType().hasQualifiedName("System.ServiceModel", "OperationContractAttribute")
   }
 }
 
 /** A `DataContract` attribute. */
 class DataContractAttribute extends Attribute {
   DataContractAttribute() {
-    this.getType().hasFullyQualifiedName("System.Runtime.Serialization", "DataContractAttribute")
+    this.getType().hasQualifiedName("System.Runtime.Serialization", "DataContractAttribute")
   }
 }
 
 /** A `DataMember` attribute. */
 class DataMemberAttribute extends Attribute {
   DataMemberAttribute() {
-    this.getType().hasFullyQualifiedName("System.Runtime.Serialization", "DataMemberAttribute")
+    this.getType().hasQualifiedName("System.Runtime.Serialization", "DataMemberAttribute")
   }
 }
 

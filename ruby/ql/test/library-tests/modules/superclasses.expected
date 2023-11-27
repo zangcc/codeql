@@ -36,12 +36,6 @@
 #-----| TrueClass
 #-----|  -> Object
 
-#-----| UnresolvedNamespace::X1
-
-#-----| UnresolvedNamespace::X1::X2
-
-#-----| UnresolvedNamespace::X1::X2::X3
-
 calls.rb:
 #   21| M
 
@@ -90,62 +84,62 @@ calls.rb:
 #  325| C1
 #-----|  -> Object
 
-#  335| C2
+#  331| C2
 #-----|  -> C1
 
-#  341| C3
+#  337| C3
 #-----|  -> C2
 
-#  385| SingletonOverride1
+#  377| SingletonOverride1
 #-----|  -> Object
 
-#  420| SingletonOverride2
+#  412| SingletonOverride2
 #-----|  -> SingletonOverride1
 
-#  441| ConditionalInstanceMethods
+#  433| ConditionalInstanceMethods
 #-----|  -> Object
 
-#  504| ExtendSingletonMethod
+#  496| ExtendSingletonMethod
 
-#  514| ExtendSingletonMethod2
+#  506| ExtendSingletonMethod2
 
-#  520| ExtendSingletonMethod3
+#  512| ExtendSingletonMethod3
 
-#  533| ProtectedMethodInModule
+#  525| ProtectedMethodInModule
 
-#  539| ProtectedMethods
+#  531| ProtectedMethods
 #-----|  -> Object
 
-#  558| ProtectedMethodsSub
+#  550| ProtectedMethodsSub
 #-----|  -> ProtectedMethods
 
-#  572| SingletonUpCall_Base
+#  564| SingletonUpCall_Base
 #-----|  -> Object
 
-#  576| SingletonUpCall_Sub
+#  568| SingletonUpCall_Sub
 #-----|  -> SingletonUpCall_Base
 
-#  584| SingletonUpCall_SubSub
+#  576| SingletonUpCall_SubSub
 #-----|  -> SingletonUpCall_Sub
 
-#  591| SingletonA
+#  583| SingletonA
 #-----|  -> Object
 
-#  604| SingletonB
+#  596| SingletonB
 #-----|  -> SingletonA
 
-#  613| SingletonC
+#  605| SingletonC
 #-----|  -> SingletonA
 
-#  626| Included
+#  618| Included
 
-#  634| IncludesIncluded
+#  626| IncludesIncluded
 #-----|  -> Object
 
-#  641| CustomNew1
+#  633| CustomNew1
 #-----|  -> Object
 
-#  649| CustomNew2
+#  641| CustomNew2
 #-----|  -> Object
 
 hello.rb:
@@ -267,13 +261,4 @@ unresolved_subclass.rb:
 #-----|  -> UnresolvedNamespace::Subclass1
 
 #   11| UnresolvedNamespace::A
-#-----|  -> Object
-
-#   14| UnresolvedNamespace::X1::X2::X3::Subclass1
-#-----|  -> ResolvableBaseClass
-
-#   17| UnresolvedNamespace::X1::X2::X3::Subclass2
-#-----|  -> UnresolvedNamespace::X1::X2::X3::Subclass1
-
-#   21| UnresolvedNamespace::X1::X2::X3::A
 #-----|  -> Object

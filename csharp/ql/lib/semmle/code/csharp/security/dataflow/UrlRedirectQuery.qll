@@ -9,7 +9,6 @@ private import semmle.code.csharp.frameworks.system.Web
 private import semmle.code.csharp.frameworks.system.web.Mvc
 private import semmle.code.csharp.security.Sanitizers
 private import semmle.code.csharp.frameworks.microsoft.AspNetCore
-private import semmle.code.csharp.dataflow.internal.ExternalFlow
 
 /**
  * A data flow source for unvalidated URL redirect vulnerabilities.
@@ -27,11 +26,16 @@ abstract class Sink extends DataFlow::ExprNode { }
 abstract class Sanitizer extends DataFlow::ExprNode { }
 
 /**
- * DEPRECATED: Use `UrlRedirect` instead.
+ * DEPRECATED: Use `Sanitizer` instead.
  *
+ * A guard for unvalidated URL redirect vulnerabilities.
+ */
+abstract deprecated class SanitizerGuard extends DataFlow::BarrierGuard { }
+
+/**
  * A taint-tracking configuration for reasoning about unvalidated URL redirect vulnerabilities.
  */
-deprecated class TaintTrackingConfiguration extends TaintTracking::Configuration {
+class TaintTrackingConfiguration extends TaintTracking::Configuration {
   TaintTrackingConfiguration() { this = "UrlRedirect" }
 
   override predicate isSource(DataFlow::Node source) { source instanceof Source }
@@ -39,31 +43,14 @@ deprecated class TaintTrackingConfiguration extends TaintTracking::Configuration
   override predicate isSink(DataFlow::Node sink) { sink instanceof Sink }
 
   override predicate isSanitizer(DataFlow::Node node) { node instanceof Sanitizer }
+
+  deprecated override predicate isSanitizerGuard(DataFlow::BarrierGuard guard) {
+    guard instanceof SanitizerGuard
+  }
 }
-
-/**
- * A taint-tracking configuration for reasoning about unvalidated URL redirect vulnerabilities.
- */
-private module UrlRedirectConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof Source }
-
-  predicate isSink(DataFlow::Node sink) { sink instanceof Sink }
-
-  predicate isBarrier(DataFlow::Node node) { node instanceof Sanitizer }
-}
-
-/**
- * A taint-tracking module for reasoning about unvalidated URL redirect vulnerabilities.
- */
-module UrlRedirect = TaintTracking::Global<UrlRedirectConfig>;
 
 /** A source of remote user input. */
 class RemoteSource extends Source instanceof RemoteFlowSource { }
-
-/** URL Redirection sinks defined through Models as Data. */
-private class ExternalUrlRedirectExprSink extends Sink {
-  ExternalUrlRedirectExprSink() { sinkNode(this, "url-redirection") }
-}
 
 /**
  * A URL argument to a call to `HttpResponse.Redirect()` or `Controller.Redirect()`, that is a

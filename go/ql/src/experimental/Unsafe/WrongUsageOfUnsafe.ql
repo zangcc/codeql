@@ -12,6 +12,7 @@
  */
 
 import go
+import DataFlow::PathGraph
 
 /*
  * Returns the type after all aliases, named types, and pointer
@@ -34,29 +35,26 @@ Type getBaseType(Type typ) {
 
 /* A conversion to a `unsafe.Pointer` */
 class ConversionToUnsafePointer extends DataFlow::TypeCastNode {
-  ConversionToUnsafePointer() { getFinalType(this.getResultType()) instanceof UnsafePointerType }
+  ConversionToUnsafePointer() { getFinalType(getResultType()) instanceof UnsafePointerType }
 }
 
 /* Type casting from a `unsafe.Pointer`.*/
-module UnsafeTypeCastingConfig implements DataFlow::ConfigSig {
-  additional predicate conversionIsSource(DataFlow::Node source, ConversionToUnsafePointer conv) {
+class UnsafeTypeCastingConf extends TaintTracking::Configuration {
+  UnsafeTypeCastingConf() { this = "UnsafeTypeCastingConf" }
+
+  predicate conversionIsSource(DataFlow::Node source, ConversionToUnsafePointer conv) {
     source = conv
   }
 
-  additional predicate typeCastNodeIsSink(DataFlow::Node sink, DataFlow::TypeCastNode ca) {
+  predicate typeCastNodeIsSink(DataFlow::Node sink, DataFlow::TypeCastNode ca) {
     ca.getOperand().getType() instanceof UnsafePointerType and
     sink = ca
   }
 
-  predicate isSource(DataFlow::Node source) { conversionIsSource(source, _) }
+  override predicate isSource(DataFlow::Node source) { conversionIsSource(source, _) }
 
-  predicate isSink(DataFlow::Node sink) { typeCastNodeIsSink(sink, _) }
+  override predicate isSink(DataFlow::Node sink) { typeCastNodeIsSink(sink, _) }
 }
-
-/** Tracks taint flow for reasoning about type casting from a `unsafe.Pointer`. */
-module UnsafeTypeCastingFlow = TaintTracking::Global<UnsafeTypeCastingConfig>;
-
-import UnsafeTypeCastingFlow::PathGraph
 
 /*
  * Type casting from a shorter array to a longer array
@@ -64,15 +62,15 @@ import UnsafeTypeCastingFlow::PathGraph
  */
 
 predicate castShortArrayToLongerArray(
-  UnsafeTypeCastingFlow::PathNode source, UnsafeTypeCastingFlow::PathNode sink, string message
+  DataFlow::PathNode source, DataFlow::PathNode sink, string message
 ) {
   exists(
-    DataFlow::TypeCastNode castBig, ConversionToUnsafePointer castLittle, ArrayType arrTo,
-    ArrayType arrFrom, int arrFromSize
+    UnsafeTypeCastingConf cfg, DataFlow::TypeCastNode castBig, ConversionToUnsafePointer castLittle,
+    ArrayType arrTo, ArrayType arrFrom, int arrFromSize
   |
-    UnsafeTypeCastingFlow::flowPath(source, sink) and
-    UnsafeTypeCastingConfig::conversionIsSource(source.getNode(), castLittle) and
-    UnsafeTypeCastingConfig::typeCastNodeIsSink(sink.getNode(), castBig) and
+    cfg.hasFlowPath(source, sink) and
+    cfg.conversionIsSource(source.getNode(), castLittle) and
+    cfg.typeCastNodeIsSink(sink.getNode(), castBig) and
     arrTo = getFinalType(castBig.getResultType()) and
     (
       // Array (whole) to array:
@@ -110,16 +108,14 @@ predicate castShortArrayToLongerArray(
  * through the use of unsafe pointers.
  */
 
-predicate castTypeToArray(
-  UnsafeTypeCastingFlow::PathNode source, UnsafeTypeCastingFlow::PathNode sink, string message
-) {
+predicate castTypeToArray(DataFlow::PathNode source, DataFlow::PathNode sink, string message) {
   exists(
-    DataFlow::TypeCastNode castBig, ConversionToUnsafePointer castLittle, ArrayType arrTo,
-    Type typeFrom
+    UnsafeTypeCastingConf cfg, DataFlow::TypeCastNode castBig, ConversionToUnsafePointer castLittle,
+    ArrayType arrTo, Type typeFrom
   |
-    UnsafeTypeCastingFlow::flowPath(source, sink) and
-    UnsafeTypeCastingConfig::conversionIsSource(source.getNode(), castLittle) and
-    UnsafeTypeCastingConfig::typeCastNodeIsSink(sink.getNode(), castBig) and
+    cfg.hasFlowPath(source, sink) and
+    cfg.conversionIsSource(source.getNode(), castLittle) and
+    cfg.typeCastNodeIsSink(sink.getNode(), castBig) and
     arrTo = getFinalType(castBig.getResultType()) and
     not typeFrom.getUnderlyingType() instanceof ArrayType and
     not typeFrom instanceof PointerType and
@@ -141,15 +137,15 @@ predicate castTypeToArray(
  */
 
 predicate castDifferentBitSizeNumbers(
-  UnsafeTypeCastingFlow::PathNode source, UnsafeTypeCastingFlow::PathNode sink, string message
+  DataFlow::PathNode source, DataFlow::PathNode sink, string message
 ) {
   exists(
-    DataFlow::TypeCastNode castBig, ConversionToUnsafePointer castLittle, NumericType numTo,
-    NumericType numFrom
+    UnsafeTypeCastingConf cfg, DataFlow::TypeCastNode castBig, ConversionToUnsafePointer castLittle,
+    NumericType numTo, NumericType numFrom
   |
-    UnsafeTypeCastingFlow::flowPath(source, sink) and
-    UnsafeTypeCastingConfig::conversionIsSource(source.getNode(), castLittle) and
-    UnsafeTypeCastingConfig::typeCastNodeIsSink(sink.getNode(), castBig) and
+    cfg.hasFlowPath(source, sink) and
+    cfg.conversionIsSource(source.getNode(), castLittle) and
+    cfg.typeCastNodeIsSink(sink.getNode(), castBig) and
     numTo = getFinalType(castBig.getResultType()) and
     numFrom = getFinalType(castLittle.getOperand().getType()) and
     // TODO: also consider cast from uint to int?
@@ -175,7 +171,7 @@ int getNumericTypeSize(NumericType typ) {
   result = typ.getSize()
 }
 
-from UnsafeTypeCastingFlow::PathNode source, UnsafeTypeCastingFlow::PathNode sink, string message
+from DataFlow::PathNode source, DataFlow::PathNode sink, string message
 where
   castShortArrayToLongerArray(source, sink, message) or
   castTypeToArray(source, sink, message) or

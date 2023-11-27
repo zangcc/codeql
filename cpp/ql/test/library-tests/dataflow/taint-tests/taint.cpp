@@ -87,11 +87,11 @@ void class_field_test() {
 
 	sink(mc1.a);
 	sink(mc1.b); // $ ast,ir
-	sink(mc1.c); // $ ast,ir
+	sink(mc1.c); // $ ast MISSING: ir
 	sink(mc1.d); // $ ast,ir
 	sink(mc2.a);
 	sink(mc2.b); // $ ast,ir
-	sink(mc2.c); // $ ast,ir
+	sink(mc2.c); // $ ast MISSING: ir
 	sink(mc2.d);
 }
 
@@ -134,7 +134,7 @@ void pointer_test() {
 	sink(*p3); // $ ast,ir
 
 	*p3 = 0;
-	sink(*p3); // $ SPURIOUS: ast
+	sink(*p3); // $ SPURIOUS: ast,ir
 }
 
 // --- return values ---
@@ -448,9 +448,9 @@ void test_qualifiers()
 	sink(b);
 	sink(b.getMember());
 	b.member = source();
-	sink(b); // $ ir MISSING: ast
+	sink(b); // $ MISSING: ast,ir
 	sink(b.member); // $ ast,ir
-	sink(b.getMember()); // $ ir MISSING: ast
+	sink(b.getMember()); // $ MISSING: ast,ir
 
 	c = new MyClass2(0);
 
@@ -677,7 +677,7 @@ public:
 void test_with_const_member(char* source) {
   C_const_member_function c;
   memcpy(c.data(), source, 16);
-  sink(c.data()); // $ ast,ir
+  sink(c.data()); // $ ast MISSING: ir
 }
 
 void argument_source(void*);
@@ -690,58 +690,7 @@ void test_argument_source_field_to_obj() {
 	two_members s;
 	argument_source(s.x);
 
-	sink(s); // $ SPURIOUS: ast,ir
+	sink(s); // $ SPURIOUS: ast
 	sink(s.x); // $ ast,ir
 	sink(s.y); // clean
-}
-
-namespace strings {
-	void test_write_to_read_then_incr_then_deref() {
-		char* s = source();
-		char* p;
-		*p++ = *s;
-		sink(p); // $ ast ir
-	}
-}
-
-char * strncpy (char *, const char *, unsigned long);
-
-void test_strncpy(char* d, char* s) {
-	argument_source(s);
-	strncpy(d, s, 16);
-	sink(d); // $ ast ir
-}
-
-char* indirect_source();
-
-void test_strtok_indirect() {
-	char *source = indirect_source();
-	const char* delim = ",.-;:_";
-	char* tokenized = strtok(source, delim);
-	sink(*tokenized); // $ ir MISSING: ast
-	sink(*delim);
-}
-
-long int strtol(const char*, char**, int);
-
-void test_strtol(char *source) {
-	char* endptr = nullptr;
-	long l = strtol(source, &endptr, 10);
-	sink(l); // $ ast,ir
-	sink(endptr); // $ ast,ir
-	sink(*endptr); // $ ast,ir
-}
-
-void *realloc(void *, size_t);
-
-void test_realloc() {
-	char *source = indirect_source();
-	char *dest = (char*)realloc(source, 16);
-	sink(dest); // $ ir MISSING: ast
-}
-
-void test_realloc_2_indirections(int **buffer) {
-  **buffer = source();
-  buffer = (int**)realloc(buffer, 16);
-  sink(**buffer); // $ ir MISSING: ast
 }

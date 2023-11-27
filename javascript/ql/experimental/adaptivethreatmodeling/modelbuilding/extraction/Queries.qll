@@ -15,7 +15,7 @@ newtype TQuery =
 abstract class Query extends TQuery {
   abstract string getName();
 
-  string toString() { result = this.getName() }
+  string toString() { result = getName() }
 }
 
 class NosqlInjectionQuery extends Query, TNosqlInjectionQuery {
@@ -39,7 +39,6 @@ class XssThroughDomQuery extends Query, TXssThroughDomQuery {
 }
 
 class ShellCommandInjectionFromEnvironmentQuery extends Query,
-  TShellCommandInjectionFromEnvironmentQuery
-{
+  TShellCommandInjectionFromEnvironmentQuery {
   override string getName() { result = "ShellCommandInjectionFromEnvironment" }
 }

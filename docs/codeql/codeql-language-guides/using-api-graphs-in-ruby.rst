@@ -161,20 +161,20 @@ is read flows into a call to ``File.write``.
     import codeql.ruby.DataFlow
     import codeql.ruby.ApiGraphs
 
-    module Configuration implements DataFlow::ConfigSig {
-      predicate isSource(DataFlow::Node source) {
+    class Configuration extends DataFlow::Configuration {
+      Configuration() { this = "File read/write Configuration" }
+
+      override predicate isSource(DataFlow::Node source) {
         source = API::getTopLevelMember("File").getMethod("read").getReturn().asSource()
       }
 
-      predicate isSink(DataFlow::Node sink) {
+      override predicate isSink(DataFlow::Node sink) {
         sink = API::getTopLevelMember("File").getMethod("write").getParameter(1).asSink()
       }
     }
 
-    module Flow = DataFlow::Global<Configuration>;
-
-    from DataFlow::Node src, DataFlow::Node sink
-    where Flow::flow(src, sink)
+    from DataFlow::Node src, DataFlow::Node sink, Configuration config
+    where config.hasFlow(src, sink)
     select src, "The data read here flows into a $@ call.", sink, "File.write"
 
 Further reading

@@ -12,9 +12,9 @@
 
 import java
 import semmle.code.java.security.HttpsUrlsQuery
-import HttpStringToUrlOpenMethodFlow::PathGraph
+import DataFlow::PathGraph
 
-from HttpStringToUrlOpenMethodFlow::PathNode source, HttpStringToUrlOpenMethodFlow::PathNode sink
-where HttpStringToUrlOpenMethodFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink
+where any(HttpStringToUrlOpenMethodFlowConfig c).hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "URL may have been constructed with HTTP protocol, using $@.",
   source.getNode(), "this HTTP URL"

@@ -144,7 +144,7 @@ private module Asymmetric {
    * A call to the `initialize` method declared in `java.security.KeyPairGenerator`
    * or to the `init` method declared in `java.security.AlgorithmParameterGenerator`.
    */
-  private class KeyPairGenInit extends MethodCall {
+  private class KeyPairGenInit extends MethodAccess {
     KeyPairGenInit() {
       this.getMethod() instanceof KeyPairGeneratorInitMethod or
       this.getMethod() instanceof AlgoParamGeneratorInitMethod
@@ -200,7 +200,7 @@ private module Symmetric {
   private int getMinKeySize() { result = minSecureKeySizeAes() }
 
   /** A call to the `init` method declared in `javax.crypto.KeyGenerator`. */
-  private class KeyGenInit extends MethodCall {
+  private class KeyGenInit extends MethodAccess {
     KeyGenInit() { this.getMethod() instanceof KeyGeneratorInitMethod }
 
     /** Gets the `keysize` argument of this call. */

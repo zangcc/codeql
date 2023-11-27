@@ -6,4 +6,3 @@ dependencies:
   codeql/cpp-queries: ${workspace}
 extractor: cpp
 tests: .
-warnOnImplicitThis: true

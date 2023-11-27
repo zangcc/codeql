@@ -4,7 +4,7 @@
 
 import csharp
 private import semmle.code.csharp.frameworks.system.windows.Forms
-private import semmle.code.csharp.dataflow.internal.ExternalFlow
+private import semmle.code.csharp.dataflow.ExternalFlow
 
 /** A data flow source of local data. */
 abstract class LocalFlowSource extends DataFlow::Node {

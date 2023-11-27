@@ -15,7 +15,7 @@ private import semmle.code.java.dataflow.FlowSteps
  */
 private class AsyncTaskExecuteAdditionalValueStep extends AdditionalTaintStep {
   override predicate step(DataFlow::Node node1, DataFlow::Node node2) {
-    exists(ExecuteAsyncTaskMethodCall ma, AsyncTaskRunInBackgroundMethod m |
+    exists(ExecuteAsyncTaskMethodAccess ma, AsyncTaskRunInBackgroundMethod m |
       DataFlow::getInstanceArgument(ma).getType() = m.getDeclaringType()
     |
       node1.asExpr() = ma.getParamsArgument() and
@@ -76,8 +76,8 @@ private class AsyncTaskInit extends Callable {
 }
 
 /** A call to the `execute` or `executeOnExecutor` methods of the `android.os.AsyncTask` class. */
-private class ExecuteAsyncTaskMethodCall extends MethodCall {
-  ExecuteAsyncTaskMethodCall() {
+private class ExecuteAsyncTaskMethodAccess extends MethodAccess {
+  ExecuteAsyncTaskMethodAccess() {
     this.getMethod().hasName(["execute", "executeOnExecutor"]) and
     this.getMethod().getDeclaringType().getSourceDeclaration().getASourceSupertype*() instanceof
       AsyncTask

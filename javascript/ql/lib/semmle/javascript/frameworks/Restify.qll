@@ -73,10 +73,26 @@ module Restify {
   }
 
   /**
+   * DEPRECATED: Use `ResponseNode` instead.
+   * A Node.js HTTP response provided by Restify.
+   */
+  deprecated class ResponseExpr extends NodeJSLib::ResponseExpr {
+    ResponseExpr() { src instanceof ResponseSource }
+  }
+
+  /**
    * A Node.js HTTP response provided by Restify.
    */
   class ResponseNode extends NodeJSLib::ResponseNode {
     ResponseNode() { src instanceof ResponseSource or src instanceof FormatterResponseSource }
+  }
+
+  /**
+   * DEPRECATED: Use `RequestNode` instead.
+   * A Node.js HTTP request provided by Restify.
+   */
+  deprecated class RequestExpr extends NodeJSLib::RequestExpr {
+    RequestExpr() { src instanceof RequestSource }
   }
 
   /**
@@ -122,8 +138,7 @@ module Restify {
   /**
    * An access to a header on a Restify request.
    */
-  private class RequestHeaderAccess extends Http::RequestHeaderAccess instanceof DataFlow::MethodCallNode
-  {
+  private class RequestHeaderAccess extends Http::RequestHeaderAccess instanceof DataFlow::MethodCallNode {
     RouteHandler rh;
 
     RequestHeaderAccess() {
@@ -160,8 +175,7 @@ module Restify {
    * An invocation that sets any number of headers of the HTTP response.
    */
   private class MultipleHeaderDefinitions extends Http::ExplicitHeaderDefinition,
-    DataFlow::MethodCallNode
-  {
+    DataFlow::MethodCallNode {
     MultipleHeaderDefinitions() {
       // res.set({'Cache-Control': 'no-cache'})
       this.getReceiver() instanceof ResponseNode and
@@ -402,8 +416,7 @@ module Restify {
    * A header produced by a formatter
    */
   private class FormatterContentTypeHeader extends Http::ImplicitHeaderDefinition,
-    DataFlow::FunctionNode instanceof FormatterHandler
-  {
+    DataFlow::FunctionNode instanceof FormatterHandler {
     string contentType;
 
     FormatterContentTypeHeader() {
@@ -424,8 +437,7 @@ module Restify {
    * A header produced by a route handler with no explicit declaration of a Content-Type.
    */
   private class ContentTypeRouteHandlerHeader extends Http::ImplicitHeaderDefinition,
-    DataFlow::FunctionNode instanceof RouteHandler
-  {
+    DataFlow::FunctionNode instanceof RouteHandler {
     override predicate defines(string headerName, string headerValue) {
       headerName = "content-type" and headerValue = "application/json"
     }

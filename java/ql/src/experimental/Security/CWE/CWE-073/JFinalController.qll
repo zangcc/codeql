@@ -44,7 +44,7 @@ class SetRequestAttributeMethod extends Method {
  */
 private class SetToGetAttributeStep extends AdditionalValueStep {
   override predicate step(DataFlow::Node pred, DataFlow::Node succ) {
-    exists(MethodCall gma, MethodCall sma |
+    exists(MethodAccess gma, MethodAccess sma |
       (
         gma.getMethod() instanceof GetSessionAttributeMethod and
         sma.getMethod() instanceof SetSessionAttributeMethod

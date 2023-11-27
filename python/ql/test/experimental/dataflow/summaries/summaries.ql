@@ -4,7 +4,7 @@
 
 import python
 import semmle.python.dataflow.new.FlowSummary
-import TestFlow::PathGraph
+import DataFlow::PathGraph
 import semmle.python.dataflow.new.TaintTracking
 import semmle.python.dataflow.new.internal.FlowSummaryImpl
 import semmle.python.ApiGraphs
@@ -16,6 +16,6 @@ query predicate invalidSpecComponent(SummarizedCallable sc, string s, string c) 
   Private::External::invalidSpecComponent(s, c)
 }
 
-from TestFlow::PathNode source, TestFlow::PathNode sink
-where TestFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, TestConfiguration conf
+where conf.hasFlowPath(source, sink)
 select sink, source, sink, "$@", source, source.toString()

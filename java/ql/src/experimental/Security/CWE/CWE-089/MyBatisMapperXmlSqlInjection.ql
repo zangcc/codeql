@@ -13,25 +13,29 @@
  */
 
 import java
+import DataFlow::PathGraph
 import MyBatisCommonLib
 import MyBatisMapperXmlSqlInjectionLib
 import semmle.code.xml.MyBatisMapperXML
 import semmle.code.java.dataflow.FlowSources
-import MyBatisMapperXmlSqlInjectionFlow::PathGraph
 
-private module MyBatisMapperXmlSqlInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+private class MyBatisMapperXmlSqlInjectionConfiguration extends TaintTracking::Configuration {
+  MyBatisMapperXmlSqlInjectionConfiguration() { this = "MyBatis mapper xml sql injection" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof MyBatisMapperMethodCallAnArgument }
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
 
-  predicate isBarrier(DataFlow::Node node) {
+  override predicate isSink(DataFlow::Node sink) {
+    sink instanceof MyBatisMapperMethodCallAnArgument
+  }
+
+  override predicate isSanitizer(DataFlow::Node node) {
     node.getType() instanceof PrimitiveType or
     node.getType() instanceof BoxedType or
     node.getType() instanceof NumberType
   }
 
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
-    exists(MethodCall ma |
+  override predicate isAdditionalTaintStep(DataFlow::Node node1, DataFlow::Node node2) {
+    exists(MethodAccess ma |
       ma.getMethod().getDeclaringType() instanceof TypeObject and
       ma.getMethod().getName() = "toString" and
       ma.getQualifier() = node1.asExpr() and
@@ -40,15 +44,11 @@ private module MyBatisMapperXmlSqlInjectionConfig implements DataFlow::ConfigSig
   }
 }
 
-private module MyBatisMapperXmlSqlInjectionFlow =
-  TaintTracking::Global<MyBatisMapperXmlSqlInjectionConfig>;
-
 from
-  MyBatisMapperXmlSqlInjectionFlow::PathNode source,
-  MyBatisMapperXmlSqlInjectionFlow::PathNode sink, MyBatisMapperXmlElement mmxe, MethodCall ma,
-  string unsafeExpression
+  MyBatisMapperXmlSqlInjectionConfiguration cfg, DataFlow::PathNode source, DataFlow::PathNode sink,
+  MyBatisMapperXmlElement mmxe, MethodAccess ma, string unsafeExpression
 where
-  MyBatisMapperXmlSqlInjectionFlow::flowPath(source, sink) and
+  cfg.hasFlowPath(source, sink) and
   ma.getAnArgument() = sink.getNode().asExpr() and
   myBatisMapperXmlElementFromMethod(ma.getMethod(), mmxe) and
   unsafeExpression = getAMybatisXmlSetValue(mmxe) and

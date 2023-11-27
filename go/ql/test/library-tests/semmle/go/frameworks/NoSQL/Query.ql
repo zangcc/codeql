@@ -1,10 +1,12 @@
 import go
 import TestUtilities.InlineExpectationsTest
 
-module NoSqlQueryTest implements TestSig {
-  string getARelevantTag() { result = "nosqlquery" }
+class NoSqlQueryTest extends InlineExpectationsTest {
+  NoSqlQueryTest() { this = "NoSQLQueryTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "nosqlquery" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(NoSql::Query q |
       q.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
         location.getStartColumn(), location.getEndLine(), location.getEndColumn()) and
@@ -14,5 +16,3 @@ module NoSqlQueryTest implements TestSig {
     )
   }
 }
-
-import MakeTest<NoSqlQueryTest>

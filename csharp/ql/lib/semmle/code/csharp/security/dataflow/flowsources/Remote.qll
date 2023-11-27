@@ -12,7 +12,7 @@ private import semmle.code.csharp.frameworks.system.web.ui.WebControls
 private import semmle.code.csharp.frameworks.WCF
 private import semmle.code.csharp.frameworks.microsoft.Owin
 private import semmle.code.csharp.frameworks.microsoft.AspNetCore
-private import semmle.code.csharp.dataflow.internal.ExternalFlow
+private import semmle.code.csharp.dataflow.ExternalFlow
 
 /** A data flow source of remote user input. */
 abstract class RemoteFlowSource extends DataFlow::Node {
@@ -75,8 +75,7 @@ class AspNetQueryStringRemoteFlowSource extends AspNetRemoteFlowSource, DataFlow
 
 /** A data flow source of remote user input (ASP.NET unvalidated request data). */
 class AspNetUnvalidatedQueryStringRemoteFlowSource extends AspNetRemoteFlowSource,
-  DataFlow::ExprNode
-{
+  DataFlow::ExprNode {
   AspNetUnvalidatedQueryStringRemoteFlowSource() {
     this.getExpr() = any(SystemWebUnvalidatedRequestValues c).getAProperty().getGetter().getACall() or
     this.getExpr() =
@@ -241,7 +240,7 @@ class AspNetCoreQueryRemoteFlowSource extends AspNetCoreRemoteFlowSource, DataFl
     exists(Call c |
       c.getTarget()
           .getDeclaringType()
-          .hasFullyQualifiedName("Microsoft.AspNetCore.Http", "IQueryCollection") and
+          .hasQualifiedName("Microsoft.AspNetCore.Http", "IQueryCollection") and
       c.getTarget().getName() = "TryGetValue" and
       this.asExpr() = c.getArgumentForName("value")
     )

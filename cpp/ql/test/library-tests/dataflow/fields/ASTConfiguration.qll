@@ -1,8 +1,10 @@
 private import semmle.code.cpp.dataflow.DataFlow
 private import DataFlow
 
-module AstConfig implements ConfigSig {
-  predicate isSource(Node src) {
+class AstConf extends Configuration {
+  AstConf() { this = "ASTFieldFlowConf" }
+
+  override predicate isSource(Node src) {
     src.asExpr() instanceof NewExpr
     or
     src.asExpr().(Call).getTarget().hasName("user_input")
@@ -13,14 +15,14 @@ module AstConfig implements ConfigSig {
     )
   }
 
-  predicate isSink(Node sink) {
+  override predicate isSink(Node sink) {
     exists(Call c |
       c.getTarget().hasName("sink") and
       c.getAnArgument() = sink.asExpr()
     )
   }
 
-  predicate isAdditionalFlowStep(Node a, Node b) {
+  override predicate isAdditionalFlowStep(Node a, Node b) {
     b.asPartialDefinition() =
       any(Call c | c.getTarget().hasName("insert") and c.getAnArgument() = a.asExpr())
           .getQualifier()
@@ -29,4 +31,5 @@ module AstConfig implements ConfigSig {
   }
 }
 
-module AstFlow = Global<AstConfig>;
+/** DEPRECATED: Alias for AstConf */
+deprecated class ASTConf = AstConf;

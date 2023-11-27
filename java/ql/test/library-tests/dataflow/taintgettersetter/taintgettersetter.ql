@@ -1,22 +1,25 @@
 import java
 import semmle.code.java.dataflow.DataFlow
+import DataFlow
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node n) { n.asExpr().(MethodCall).getMethod().hasName("taint") }
+class Conf extends Configuration {
+  Conf() { this = "taintgettersetter" }
 
-  predicate isSink(DataFlow::Node n) {
-    exists(MethodCall sink | sink.getAnArgument() = n.asExpr() and sink.getMethod().hasName("sink"))
+  override predicate isSource(Node n) { n.asExpr().(MethodAccess).getMethod().hasName("taint") }
+
+  override predicate isSink(Node n) {
+    exists(MethodAccess sink |
+      sink.getAnArgument() = n.asExpr() and sink.getMethod().hasName("sink")
+    )
   }
 
-  predicate isAdditionalFlowStep(DataFlow::Node n1, DataFlow::Node n2) {
+  override predicate isAdditionalFlowStep(Node n1, Node n2) {
     exists(AddExpr add |
       add.getType() instanceof TypeString and add.getAnOperand() = n1.asExpr() and n2.asExpr() = add
     )
   }
 }
 
-module Flow = DataFlow::Global<Config>;
-
-from DataFlow::Node src, DataFlow::Node sink
-where Flow::flow(src, sink)
+from Node src, Node sink, Conf conf
+where conf.hasFlow(src, sink)
 select src, sink

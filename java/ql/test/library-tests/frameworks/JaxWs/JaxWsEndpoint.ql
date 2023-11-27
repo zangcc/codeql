@@ -2,10 +2,12 @@ import java
 import semmle.code.java.frameworks.JaxWS
 import TestUtilities.InlineExpectationsTest
 
-module JaxWsEndpointTest implements TestSig {
-  string getARelevantTag() { result = ["JaxWsEndpoint", "JaxWsEndpointRemoteMethod"] }
+class JaxWsEndpointTest extends InlineExpectationsTest {
+  JaxWsEndpointTest() { this = "JaxWsEndpointTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = ["JaxWsEndpoint", "JaxWsEndpointRemoteMethod"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "JaxWsEndpoint" and
     exists(JaxWsEndpoint jaxWsEndpoint |
       jaxWsEndpoint.getLocation() = location and
@@ -23,5 +25,3 @@ module JaxWsEndpointTest implements TestSig {
     )
   }
 }
-
-import MakeTest<JaxWsEndpointTest>

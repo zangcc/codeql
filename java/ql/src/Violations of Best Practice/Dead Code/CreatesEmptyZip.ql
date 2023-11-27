@@ -42,15 +42,15 @@ class ZipOutputStream extends Class {
 }
 
 from
-  ZipOutputStream jos, MethodCall putNextEntry, MethodCall closeEntry, VarRead putNextQualifier,
-  VarRead closeQualifier
+  ZipOutputStream jos, MethodAccess putNextEntry, MethodAccess closeEntry, RValue putNextQualifier,
+  RValue closeQualifier
 where
   putNextEntry.getMethod() = jos.putNextEntry() and
   closeEntry.getMethod() = jos.closeEntry() and
   putNextQualifier = putNextEntry.getQualifier() and
   closeQualifier = closeEntry.getQualifier() and
   adjacentUseUseSameVar(putNextQualifier, closeQualifier) and
-  not exists(VarRead other |
+  not exists(RValue other |
     adjacentUseUseSameVar(other, closeQualifier) and
     other != putNextQualifier
   )

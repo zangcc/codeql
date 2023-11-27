@@ -38,10 +38,12 @@ predicate irTaint(Element source, TaintedWithPath::PathNode predNode, string tag
   )
 }
 
-module IRDefaultTaintTrackingTest implements TestSig {
-  string getARelevantTag() { result = ["ir-path", "ir-sink"] }
+class IRDefaultTaintTrackingTest extends InlineExpectationsTest {
+  IRDefaultTaintTrackingTest() { this = "IRDefaultTaintTrackingTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = ["ir-path", "ir-sink"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(Element elem, TaintedWithPath::PathNode node, int n |
       irTaint(_, node, tag) and
       elem = getElementFromPathNode(node) and
@@ -65,10 +67,12 @@ module IRDefaultTaintTrackingTest implements TestSig {
   }
 }
 
-module AstTaintTrackingTest implements TestSig {
-  string getARelevantTag() { result = "ast" }
+class AstTaintTrackingTest extends InlineExpectationsTest {
+  AstTaintTrackingTest() { this = "ASTTaintTrackingTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "ast" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(Expr source, Element tainted, int n |
       tag = "ast" and
       astTaint(source, tainted) and
@@ -96,5 +100,3 @@ module AstTaintTrackingTest implements TestSig {
     )
   }
 }
-
-import MakeTest<MergeTests<IRDefaultTaintTrackingTest, AstTaintTrackingTest>>

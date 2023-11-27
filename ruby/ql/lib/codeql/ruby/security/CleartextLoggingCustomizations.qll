@@ -26,7 +26,7 @@ module CleartextLogging {
   class Sanitizer = CleartextSources::Sanitizer;
 
   /** Holds if `nodeFrom` taints `nodeTo`. */
-  predicate isAdditionalTaintStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) { none() }
+  predicate isAdditionalTaintStep = CleartextSources::isAdditionalTaintStep/2;
 
   /**
    * A data flow sink for cleartext logging of sensitive information.

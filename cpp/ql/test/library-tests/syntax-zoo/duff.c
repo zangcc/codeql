@@ -1,5 +1,5 @@
 
-static void f(int i) {
+void f(int i) {
     int n = (i + 7) / 8;
     switch (i % 8) {
     case 0: do { 10;

@@ -1,6 +1,5 @@
 private import cpp
 import semmle.code.cpp.ir.implementation.raw.IR
-private import semmle.code.cpp.internal.ExtractorVersion
 private import semmle.code.cpp.ir.IRConfiguration
 private import semmle.code.cpp.ir.implementation.Opcode
 private import semmle.code.cpp.ir.implementation.internal.OperandTag
@@ -63,6 +62,15 @@ private predicate ignoreExprAndDescendants(Expr expr) {
   // constant value.
   isIRConstant(getRealParent(expr))
   or
+  // Only translate the initializer of a static local if it uses run-time data.
+  // Otherwise the initializer does not run in function scope.
+  exists(Initializer init, StaticStorageDurationVariable var |
+    init = var.getInitializer() and
+    not var.hasDynamicInitialization() and
+    expr = init.getExpr().getFullyConverted() and
+    not var instanceof GlobalOrNamespaceVariable
+  )
+  or
   // Ignore descendants of `__assume` expressions, since we translated these to `NoOp`.
   getRealParent(expr) instanceof AssumeExpr
   or
@@ -78,17 +86,17 @@ private predicate ignoreExprAndDescendants(Expr expr) {
     newExpr.getInitializer().getFullyConverted() = expr
   )
   or
-  exists(DeleteOrDeleteArrayExpr deleteExpr |
-    // Ignore the deallocator call, because we always synthesize it.
-    deleteExpr.getDeallocatorCall() = expr
-  )
-  or
   // Do not translate input/output variables in GNU asm statements
   //  getRealParent(expr) instanceof AsmStmt
   //  or
   ignoreExprAndDescendants(getRealParent(expr)) // recursive case
   or
-  // va_start doesn't evaluate its argument, so we don't need to translate it.
+  // We do not yet translate destructors properly, so for now we ignore any
+  // custom deallocator call, if present.
+  exists(DeleteExpr deleteExpr | deleteExpr.getAllocatorCall() = expr)
+  or
+  exists(DeleteArrayExpr deleteArrayExpr | deleteArrayExpr.getAllocatorCall() = expr)
+  or
   exists(BuiltInVarArgsStart vaStartExpr |
     vaStartExpr.getLastNamedParameter().getFullyConverted() = expr
   )
@@ -105,19 +113,20 @@ private predicate ignoreExprOnly(Expr expr) {
     newExpr.getAllocatorCall() = expr
   )
   or
-  exists(DeleteOrDeleteArrayExpr deleteExpr |
-    // Ignore the destructor call as we don't model it yet. Don't ignore
-    // its arguments, though, as they are the arguments to the deallocator.
-    deleteExpr.getDestructorCall() = expr
-  )
-  or
   // The extractor deliberately emits an `ErrorExpr` as the first argument to
   // the allocator call, if any, of a `NewOrNewArrayExpr`. That `ErrorExpr`
   // should not be translated.
   exists(NewOrNewArrayExpr new | expr = new.getAllocatorCall().getArgument(0))
   or
-  not translateFunction(getEnclosingFunction(expr)) and
-  not Raw::varHasIRFunc(getEnclosingVariable(expr))
+  not translateFunction(expr.getEnclosingFunction()) and
+  not Raw::varHasIRFunc(expr.getEnclosingVariable())
+  or
+  // We do not yet translate destructors properly, so for now we ignore the
+  // destructor call. We do, however, translate the expression being
+  // destructed, and that expression can be a child of the destructor call.
+  exists(DeleteExpr deleteExpr | deleteExpr.getDestructorCall() = expr)
+  or
+  exists(DeleteArrayExpr deleteArrayExpr | deleteArrayExpr.getDestructorCall() = expr)
 }
 
 /**
@@ -190,7 +199,10 @@ private predicate isNativeCondition(Expr expr) {
  * depending on context.
  */
 private predicate isFlexibleCondition(Expr expr) {
-  expr instanceof ParenthesisExpr and
+  (
+    expr instanceof ParenthesisExpr or
+    expr instanceof NotExpr
+  ) and
   usedAsCondition(expr) and
   not isIRConstant(expr)
 }
@@ -213,6 +225,11 @@ private predicate usedAsCondition(Expr expr) {
     // The two-operand form of `ConditionalExpr` treats its condition as a value, since it needs to
     // be reused as a value if the condition is true.
     condExpr.getCondition().getFullyConverted() = expr and not condExpr.isTwoOperand()
+  )
+  or
+  exists(NotExpr notExpr |
+    notExpr.getOperand().getFullyConverted() = expr and
+    usedAsCondition(notExpr)
   )
   or
   exists(ParenthesisExpr paren |
@@ -354,12 +371,6 @@ predicate ignoreLoad(Expr expr) {
     or
     expr instanceof FunctionAccess
     or
-    // The load is duplicated from the operand.
-    isExtractorFrontendVersion65OrHigher() and expr instanceof ParenthesisExpr
-    or
-    // The load is duplicated from the right operand.
-    isExtractorFrontendVersion65OrHigher() and expr instanceof CommaExpr
-    or
     expr.(PointerDereferenceExpr).getOperand().getFullyConverted().getType().getUnspecifiedType()
       instanceof FunctionPointerType
     or
@@ -414,9 +425,7 @@ predicate hasTranslatedLoad(Expr expr) {
   not ignoreExpr(expr) and
   not isNativeCondition(expr) and
   not isFlexibleCondition(expr) and
-  not ignoreLoad(expr) and
-  // don't insert a load since we'll just substitute the constant value.
-  not isIRConstant(expr)
+  not ignoreLoad(expr)
 }
 
 /**
@@ -427,17 +436,6 @@ predicate hasTranslatedSyntheticTemporaryObject(Expr expr) {
   mustTransformToGLValue(expr) and
   // If it's a load, we'll just ignore the load in `ignoreLoad()`.
   not expr.hasLValueToRValueConversion()
-}
-
-class StaticInitializedStaticLocalVariable extends StaticLocalVariable {
-  StaticInitializedStaticLocalVariable() {
-    this.hasInitializer() and
-    not this.hasDynamicInitialization()
-  }
-}
-
-class RuntimeInitializedStaticLocalVariable extends StaticLocalVariable {
-  RuntimeInitializedStaticLocalVariable() { this.hasDynamicInitialization() }
 }
 
 /**
@@ -455,7 +453,7 @@ private predicate translateDeclarationEntry(IRDeclarationEntry entry) {
       not var.isStatic()
       or
       // Ignore static variables unless they have a dynamic initializer.
-      var instanceof RuntimeInitializedStaticLocalVariable
+      var.(StaticLocalVariable).hasDynamicInitialization()
     )
   )
 }
@@ -608,9 +606,9 @@ newtype TTranslatedElement =
     not ignoreExpr(expr) and
     (
       exists(Initializer init | init.getExpr().getFullyConverted() = expr) or
-      exists(ClassAggregateLiteral initList | initList.getAFieldExpr(_).getFullyConverted() = expr) or
+      exists(ClassAggregateLiteral initList | initList.getFieldExpr(_).getFullyConverted() = expr) or
       exists(ArrayOrVectorAggregateLiteral initList |
-        initList.getAnElementExpr(_).getFullyConverted() = expr
+        initList.getElementExpr(_).getFullyConverted() = expr
       ) or
       exists(ReturnStmt returnStmt | returnStmt.getExpr().getFullyConverted() = expr) or
       exists(ConstructorFieldInit fieldInit | fieldInit.getExpr().getFullyConverted() = expr) or
@@ -621,19 +619,18 @@ newtype TTranslatedElement =
     )
   } or
   // The initialization of a field via a member of an initializer list.
-  TTranslatedExplicitFieldInitialization(Expr ast, Field field, Expr expr, int position) {
+  TTranslatedExplicitFieldInitialization(Expr ast, Field field, Expr expr) {
     exists(ClassAggregateLiteral initList |
       not ignoreExpr(initList) and
       ast = initList and
-      expr = initList.getFieldExpr(field, position).getFullyConverted()
+      expr = initList.getFieldExpr(field).getFullyConverted()
     )
     or
     exists(ConstructorFieldInit init |
       not ignoreExpr(init) and
       ast = init and
       field = init.getTarget() and
-      expr = init.getExpr().getFullyConverted() and
-      position = -1
+      expr = init.getExpr().getFullyConverted()
     )
   } or
   // The value initialization of a field due to an omitted member of an
@@ -646,11 +643,9 @@ newtype TTranslatedElement =
     )
   } or
   // The initialization of an array element via a member of an initializer list.
-  TTranslatedExplicitElementInitialization(
-    ArrayOrVectorAggregateLiteral initList, int elementIndex, int position
-  ) {
+  TTranslatedExplicitElementInitialization(ArrayOrVectorAggregateLiteral initList, int elementIndex) {
     not ignoreExpr(initList) and
-    exists(initList.getElementExpr(elementIndex, position))
+    exists(initList.getElementExpr(elementIndex))
   } or
   // The value initialization of a range of array elements that were omitted
   // from an initializer list.
@@ -757,7 +752,7 @@ newtype TTranslatedElement =
   } or
   // The side effect that initializes newly-allocated memory.
   TTranslatedAllocationSideEffect(AllocationExpr expr) { not ignoreSideEffects(expr) } or
-  TTranslatedStaticStorageDurationVarInit(Variable var) { Raw::varHasIRFunc(var) }
+  TTranslatedGlobalOrNamespaceVarInit(GlobalOrNamespaceVariable var) { Raw::varHasIRFunc(var) }
 
 /**
  * Gets the index of the first explicitly initialized element in `initList`
@@ -787,7 +782,7 @@ private int getNextExplicitlyInitializedElementAfter(
   ArrayOrVectorAggregateLiteral initList, int afterElementIndex
 ) {
   isFirstValueInitializedElementInRange(initList, afterElementIndex) and
-  result = min(int i | exists(initList.getAnElementExpr(i)) and i > afterElementIndex)
+  result = min(int i | exists(initList.getElementExpr(i)) and i > afterElementIndex)
 }
 
 /**
@@ -800,7 +795,7 @@ private predicate isFirstValueInitializedElementInRange(
   initList.isValueInitialized(elementIndex) and
   (
     elementIndex = 0 or
-    exists(initList.getAnElementExpr(elementIndex - 1))
+    exists(initList.getElementExpr(elementIndex - 1))
   )
 }
 
@@ -821,10 +816,7 @@ abstract class TranslatedElement extends TTranslatedElement {
   abstract Locatable getAst();
 
   /** DEPRECATED: Alias for getAst */
-  deprecated Locatable getAST() { result = this.getAst() }
-
-  /** Gets the location of this element. */
-  Location getLocation() { result = this.getAst().getLocation() }
+  deprecated Locatable getAST() { result = getAst() }
 
   /**
    * Get the first instruction to be executed in the evaluation of this element.
@@ -834,7 +826,7 @@ abstract class TranslatedElement extends TTranslatedElement {
   /**
    * Get the immediate child elements of this element.
    */
-  final TranslatedElement getAChild() { result = this.getChild(_) }
+  final TranslatedElement getAChild() { result = getChild(_) }
 
   /**
    * Gets the immediate child element of this element. The `id` is unique
@@ -847,29 +839,25 @@ abstract class TranslatedElement extends TTranslatedElement {
    * Gets the an identifier string for the element. This id is unique within
    * the scope of the element's function.
    */
-  final int getId() { result = this.getUniqueId() }
+  final int getId() { result = getUniqueId() }
 
   private TranslatedElement getChildByRank(int rankIndex) {
     result =
-      rank[rankIndex + 1](TranslatedElement child, int id |
-        child = this.getChild(id)
-      |
-        child order by id
-      )
+      rank[rankIndex + 1](TranslatedElement child, int id | child = getChild(id) | child order by id)
   }
 
   language[monotonicAggregates]
   private int getDescendantCount() {
     result =
-      1 + sum(TranslatedElement child | child = this.getChildByRank(_) | child.getDescendantCount())
+      1 + sum(TranslatedElement child | child = getChildByRank(_) | child.getDescendantCount())
   }
 
   private int getUniqueId() {
-    if not exists(this.getParent())
+    if not exists(getParent())
     then result = 0
     else
       exists(TranslatedElement parent |
-        parent = this.getParent() and
+        parent = getParent() and
         if this = parent.getChildByRank(0)
         then result = 1 + parent.getUniqueId()
         else
@@ -915,7 +903,7 @@ abstract class TranslatedElement extends TTranslatedElement {
    * there is no enclosing `try`.
    */
   Instruction getExceptionSuccessorInstruction() {
-    result = this.getParent().getExceptionSuccessorInstruction()
+    result = getParent().getExceptionSuccessorInstruction()
   }
 
   /**
@@ -1029,14 +1017,14 @@ abstract class TranslatedElement extends TTranslatedElement {
     exists(Locatable ast |
       result.getAst() = ast and
       result.getTag() = tag and
-      this.hasTempVariableAndAst(tag, ast)
+      hasTempVariableAndAst(tag, ast)
     )
   }
 
   pragma[noinline]
   private predicate hasTempVariableAndAst(TempVariableTag tag, Locatable ast) {
-    this.hasTempVariable(tag, _) and
-    ast = this.getAst()
+    hasTempVariable(tag, _) and
+    ast = getAst()
   }
 
   /**
@@ -1052,6 +1040,6 @@ abstract class TranslatedRootElement extends TranslatedElement {
   TranslatedRootElement() {
     this instanceof TTranslatedFunction
     or
-    this instanceof TTranslatedStaticStorageDurationVarInit
+    this instanceof TTranslatedGlobalOrNamespaceVarInit
   }
 }

@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using Semmle.Util;
+﻿using Semmle.Extraction.CSharp;
 using Semmle.Util.Logging;
 using Semmle.Autobuild.Shared;
-using Semmle.Extraction.CSharp;
+using Semmle.Util;
+using System.Linq;
 
 namespace Semmle.Autobuild.CSharp
 {
@@ -48,11 +48,8 @@ namespace Semmle.Autobuild.CSharp
                     attempt = new BuildCommandRule(DotNetRule.WithDotNet).Analyse(this, false) & CheckExtractorRun(true);
                     break;
                 case CSharpBuildStrategy.Buildless:
-                    attempt = DotNetRule.WithDotNet(this, (dotNetPath, env) =>
-                        {
-                            // No need to check that the extractor has been executed in buildless mode
-                            return new StandaloneBuildRule(dotNetPath).Analyse(this, false);
-                        });
+                    // No need to check that the extractor has been executed in buildless mode
+                    attempt = new StandaloneBuildRule().Analyse(this, false);
                     break;
                 case CSharpBuildStrategy.MSBuild:
                     attempt = new MsBuildRule().Analyse(this, false) & CheckExtractorRun(true);
@@ -107,7 +104,7 @@ namespace Semmle.Autobuild.CSharp
                         markdownMessage:
                             "CodeQL found multiple potential build scripts for your project and " +
                             $"attempted to run `{relScriptPath}`, which failed. " +
-                            "This may not be the right build script for your project.\n\n" +
+                            "This may not be the right build script for your project. " +
                             $"Set up a [manual build command]({buildCommandDocsUrl})."
                     ) :
                     new(
@@ -116,7 +113,7 @@ namespace Semmle.Autobuild.CSharp
                         "Unable to build project using build script",
                         markdownMessage:
                             "CodeQL attempted to build your project using a script located at " +
-                            $"`{relScriptPath}`, which failed.\n\n" +
+                            $"`{relScriptPath}`, which failed. " +
                             $"Set up a [manual build command]({buildCommandDocsUrl})."
                     );
 
@@ -138,7 +135,7 @@ namespace Semmle.Autobuild.CSharp
                     "no-projects-or-solutions",
                     "No project or solutions files found",
                     markdownMessage:
-                        "CodeQL could not find any project or solution files in your repository.\n\n" +
+                        "CodeQL could not find any project or solution files in your repository. " +
                         $"Set up a [manual build command]({buildCommandDocsUrl})."
                 ));
             }

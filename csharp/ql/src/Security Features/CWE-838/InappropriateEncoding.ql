@@ -20,46 +20,57 @@ import semmle.code.csharp.security.dataflow.SqlInjectionQuery as SqlInjection
 import semmle.code.csharp.security.dataflow.flowsinks.Html
 import semmle.code.csharp.security.dataflow.UrlRedirectQuery as UrlRedirect
 import semmle.code.csharp.security.Sanitizers
-import EncodingConfigurations::Flow::PathGraph
-
-signature module EncodingConfigSig {
-  /** Holds if `n` is a node whose value must be encoded. */
-  predicate requiresEncoding(DataFlow::Node n);
-
-  /** Holds if `e` is a possible valid encoded value. */
-  predicate isPossibleEncodedValue(Expr e);
-}
+import semmle.code.csharp.dataflow.DataFlow2::DataFlow2
+import semmle.code.csharp.dataflow.DataFlow2::DataFlow2::PathGraph
+import semmle.code.csharp.dataflow.TaintTracking2
 
 /**
- * A configuration for specifying expressions that must be encoded.
+ * A configuration for specifying expressions that must be
+ * encoded, along with a set of potential valid encoded values.
  */
-module RequiresEncodingConfig<EncodingConfigSig EncodingConfig> implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
+abstract class RequiresEncodingConfiguration extends TaintTracking2::Configuration {
+  bindingset[this]
+  RequiresEncodingConfiguration() { any() }
+
+  /** Gets a textual representation of this kind of encoding requirement. */
+  abstract string getKind();
+
+  /** Holds if `e` is an expression whose value must be encoded. */
+  abstract predicate requiresEncoding(Node n);
+
+  /** Holds if `e` is a possible valid encoded value. */
+  predicate isPossibleEncodedValue(Expr e) { none() }
+
+  /**
+   * Holds if `encodedValue` is a possibly ill-encoded value that reaches
+   * `sink`, where `sink` is an expression of kind `kind` that is required
+   * to be encoded.
+   */
+  predicate hasWrongEncoding(PathNode encodedValue, PathNode sink, string kind) {
+    this.hasFlowPath(encodedValue, sink) and
+    kind = this.getKind()
+  }
+
+  override predicate isSource(Node source) {
     // all encoded values that do not match this configuration are
     // considered sources
     exists(Expr e | e = source.asExpr() |
       e instanceof EncodedValue and
-      not EncodingConfig::isPossibleEncodedValue(e)
+      not this.isPossibleEncodedValue(e)
     )
   }
 
-  predicate isSink(DataFlow::Node sink) { EncodingConfig::requiresEncoding(sink) }
+  override predicate isSink(Node sink) { this.requiresEncoding(sink) }
 
-  predicate isBarrier(DataFlow::Node sanitizer) {
-    EncodingConfig::isPossibleEncodedValue(sanitizer.asExpr())
-  }
+  override predicate isSanitizer(Node sanitizer) { this.isPossibleEncodedValue(sanitizer.asExpr()) }
 
-  int fieldFlowBranchLimit() { result = 0 }
+  override int fieldFlowBranchLimit() { result = 0 }
 }
 
-/** An encoded value, for example through a call to `HttpServerUtility.HtmlEncode`. */
+/** An encoded value, for example a call to `HttpServerUtility.HtmlEncode`. */
 class EncodedValue extends Expr {
   EncodedValue() {
-    EncodingConfigurations::SqlExprEncodingConfig::isPossibleEncodedValue(this)
-    or
-    EncodingConfigurations::HtmlExprEncodingConfig::isPossibleEncodedValue(this)
-    or
-    EncodingConfigurations::UrlExprEncodingConfig::isPossibleEncodedValue(this)
+    any(RequiresEncodingConfiguration c).isPossibleEncodedValue(this)
     or
     this = any(SystemWebHttpUtility c).getAJavaScriptStringEncodeMethod().getACall()
     or
@@ -75,20 +86,18 @@ class EncodedValue extends Expr {
 }
 
 module EncodingConfigurations {
-  module SqlExprEncodingConfig implements EncodingConfigSig {
-    predicate requiresEncoding(DataFlow::Node n) { n instanceof SqlInjection::Sink }
-
-    predicate isPossibleEncodedValue(Expr e) { none() }
-  }
-
   /** An encoding configuration for SQL expressions. */
-  module SqlExprConfig implements DataFlow::ConfigSig {
-    import RequiresEncodingConfig<SqlExprEncodingConfig> as Super
+  class SqlExpr extends RequiresEncodingConfiguration {
+    SqlExpr() { this = "SqlExpr" }
+
+    override string getKind() { result = "SQL expression" }
+
+    override predicate requiresEncoding(Node n) { n instanceof SqlInjection::Sink }
 
     // no override for `isPossibleEncodedValue` as SQL parameters should
     // be used instead of explicit encoding
-    predicate isSource(DataFlow::Node source) {
-      Super::isSource(source)
+    override predicate isSource(Node source) {
+      super.isSource(source)
       or
       // consider quote-replacing calls as additional sources for
       // SQL expressions (e.g., `s.Replace("\"", "\"\"")`)
@@ -98,62 +107,32 @@ module EncodingConfigurations {
           mc.getArgument(0).getValue().regexpMatch("\"|'|`")
         )
     }
-
-    predicate isSink = Super::isSink/1;
-
-    predicate isBarrier = Super::isBarrier/1;
-
-    int fieldFlowBranchLimit() { result = Super::fieldFlowBranchLimit() }
-  }
-
-  module SqlExpr = TaintTracking::Global<SqlExprConfig>;
-
-  module HtmlExprEncodingConfig implements EncodingConfigSig {
-    predicate requiresEncoding(DataFlow::Node n) { n instanceof HtmlSink }
-
-    predicate isPossibleEncodedValue(Expr e) { e instanceof HtmlSanitizedExpr }
   }
 
   /** An encoding configuration for HTML expressions. */
-  module HtmlExprConfig = RequiresEncodingConfig<HtmlExprEncodingConfig>;
+  class HtmlExpr extends RequiresEncodingConfiguration {
+    HtmlExpr() { this = "HtmlExpr" }
 
-  module HtmlExpr = TaintTracking::Global<HtmlExprConfig>;
+    override string getKind() { result = "HTML expression" }
 
-  module UrlExprEncodingConfig implements EncodingConfigSig {
-    predicate requiresEncoding(DataFlow::Node n) { n instanceof UrlRedirect::Sink }
+    override predicate requiresEncoding(Node n) { n instanceof HtmlSink }
 
-    predicate isPossibleEncodedValue(Expr e) { e instanceof UrlSanitizedExpr }
+    override predicate isPossibleEncodedValue(Expr e) { e instanceof HtmlSanitizedExpr }
   }
 
   /** An encoding configuration for URL expressions. */
-  module UrlExprConfig = RequiresEncodingConfig<UrlExprEncodingConfig>;
+  class UrlExpr extends RequiresEncodingConfiguration {
+    UrlExpr() { this = "UrlExpr" }
 
-  module UrlExpr = TaintTracking::Global<UrlExprConfig>;
+    override string getKind() { result = "URL expression" }
 
-  module Flow =
-    DataFlow::MergePathGraph3<SqlExpr::PathNode, HtmlExpr::PathNode, UrlExpr::PathNode,
-      SqlExpr::PathGraph, HtmlExpr::PathGraph, UrlExpr::PathGraph>;
+    override predicate requiresEncoding(Node n) { n instanceof UrlRedirect::Sink }
 
-  /**
-   * Holds if `encodedValue` is a possibly ill-encoded value that reaches
-   * `sink`, where `sink` is an expression of kind `kind` that is required
-   * to be encoded.
-   */
-  predicate hasWrongEncoding(Flow::PathNode encodedValue, Flow::PathNode sink, string kind) {
-    SqlExpr::flowPath(encodedValue.asPathNode1(), sink.asPathNode1()) and
-    kind = "SQL expression"
-    or
-    HtmlExpr::flowPath(encodedValue.asPathNode2(), sink.asPathNode2()) and
-    kind = "HTML expression"
-    or
-    UrlExpr::flowPath(encodedValue.asPathNode3(), sink.asPathNode3()) and
-    kind = "URL expression"
+    override predicate isPossibleEncodedValue(Expr e) { e instanceof UrlSanitizedExpr }
   }
 }
 
-from
-  EncodingConfigurations::Flow::PathNode encodedValue, EncodingConfigurations::Flow::PathNode sink,
-  string kind
-where EncodingConfigurations::hasWrongEncoding(encodedValue, sink, kind)
+from RequiresEncodingConfiguration c, PathNode encodedValue, PathNode sink, string kind
+where c.hasWrongEncoding(encodedValue, sink, kind)
 select sink.getNode(), encodedValue, sink, "This " + kind + " may include data from a $@.",
   encodedValue.getNode(), "possibly inappropriately encoded value"

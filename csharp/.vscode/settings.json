@@ -7,8 +7,5 @@
         "editor.defaultFormatter": "ms-dotnettools.csharp"
     },
     "omnisharp.enableEditorConfigSupport": true,
-    "omnisharp.enableRoslynAnalyzers": true,
-    "csharpFormatUsings.splitGroups": false,
-    "csharpFormatUsings.sortOrder": "Xunit System Microsoft Semmle.Util Semmle",
-    "dotnet.defaultSolution": "CSharp.sln"
+    "omnisharp.enableRoslynAnalyzers": true
 }

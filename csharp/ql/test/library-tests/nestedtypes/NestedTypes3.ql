@@ -6,8 +6,8 @@ import csharp
 
 from Class c, DelegateType d
 where
-  c.hasFullyQualifiedName("NestedTypes", "Base") and
-  d.hasFullyQualifiedName("NestedTypes", "Base+MyDelegate") and
+  c.hasQualifiedName("NestedTypes", "Base") and
+  d.hasQualifiedName("NestedTypes", "Base+MyDelegate") and
   d.(NestedType).isPrivate() and
   d = c.getANestedType()
 select c, d

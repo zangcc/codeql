@@ -15,13 +15,13 @@
 import cpp
 import semmle.code.cpp.ir.dataflow.TaintTracking
 import semmle.code.cpp.security.FlowSources
-import WordexpTaint::PathGraph
+import DataFlow::PathGraph
 
 /**
  * The `wordexp` function, which can perform command substitution.
  */
 private class WordexpFunction extends Function {
-  WordexpFunction() { this.hasGlobalName("wordexp") }
+  WordexpFunction() { hasGlobalName("wordexp") }
 }
 
 /**
@@ -35,24 +35,24 @@ private predicate isCommandSubstitutionDisabled(FunctionCall fc) {
 /**
  * A configuration to track user-supplied data to the `wordexp` function.
  */
-module WordexpTaintConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof FlowSource }
+class WordexpTaintConfiguration extends TaintTracking::Configuration {
+  WordexpTaintConfiguration() { this = "WordexpTaintConfiguration" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node source) { source instanceof FlowSource }
+
+  override predicate isSink(DataFlow::Node sink) {
     exists(FunctionCall fc | fc.getTarget() instanceof WordexpFunction |
-      fc.getArgument(0) = sink.asIndirectArgument(1) and
+      fc.getArgument(0) = sink.asExpr() and
       not isCommandSubstitutionDisabled(fc)
     )
   }
 
-  predicate isBarrier(DataFlow::Node node) {
+  override predicate isSanitizer(DataFlow::Node node) {
     node.asExpr().getUnspecifiedType() instanceof IntegralType
   }
 }
 
-module WordexpTaint = TaintTracking::Global<WordexpTaintConfig>;
-
-from WordexpTaint::PathNode sourceNode, WordexpTaint::PathNode sinkNode
-where WordexpTaint::flowPath(sourceNode, sinkNode)
+from WordexpTaintConfiguration conf, DataFlow::PathNode sourceNode, DataFlow::PathNode sinkNode
+where conf.hasFlowPath(sourceNode, sinkNode)
 select sinkNode.getNode(), sourceNode, sinkNode,
   "Using user-supplied data in a `wordexp` command, without disabling command substitution, can make code vulnerable to command injection."

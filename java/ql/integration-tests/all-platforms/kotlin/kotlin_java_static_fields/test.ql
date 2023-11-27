@@ -1,17 +1,17 @@
 import java
 import semmle.code.java.dataflow.DataFlow
-import Flow::PathGraph
+import DataFlow::PathGraph
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node n) { n.asExpr().(StringLiteral).getValue() = "taint" }
+class Config extends DataFlow::Configuration {
+  Config() { this = "Config" }
 
-  predicate isSink(DataFlow::Node n) {
+  override predicate isSource(DataFlow::Node n) { n.asExpr().(StringLiteral).getValue() = "taint" }
+
+  override predicate isSink(DataFlow::Node n) {
     n.asExpr().(Argument).getCall().getCallee().getName() = "sink"
   }
 }
 
-module Flow = DataFlow::Global<Config>;
-
-from Flow::PathNode source, Flow::PathNode sink
-where Flow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, Config c
+where c.hasFlowPath(source, sink)
 select source, source, sink, "flow path"

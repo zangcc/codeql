@@ -2,13 +2,22 @@
 
 import files.FileSystem
 
+bindingset[loc]
+pragma[inline_late]
+private string locationToString(Location loc) {
+  exists(string filepath, int startline, int startcolumn, int endline, int endcolumn |
+    loc.hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn) and
+    result = filepath + "@" + startline + ":" + startcolumn + ":" + endline + ":" + endcolumn
+  )
+}
+
 /**
  * A location as given by a file, a start line, a start column,
  * an end line, and an end column.
  *
  * For more information about locations see [Locations](https://codeql.github.com/docs/writing-codeql-queries/providing-locations-in-codeql-queries/).
  */
-class Location extends @location_default {
+class Location extends @location {
   /** Gets the file for this location. */
   File getFile() { locations_default(this, result, _, _, _, _) }
 
@@ -28,14 +37,8 @@ class Location extends @location_default {
   int getNumLines() { result = this.getEndLine() - this.getStartLine() + 1 }
 
   /** Gets a textual representation of this element. */
-  bindingset[this]
-  pragma[inline_late]
-  string toString() {
-    exists(string filepath, int startline, int startcolumn, int endline, int endcolumn |
-      this.hasLocationInfo(filepath, startline, startcolumn, endline, endcolumn) and
-      result = filepath + "@" + startline + ":" + startcolumn + ":" + endline + ":" + endcolumn
-    )
-  }
+  pragma[inline]
+  string toString() { result = locationToString(this) }
 
   /**
    * Holds if this element is at the specified location.

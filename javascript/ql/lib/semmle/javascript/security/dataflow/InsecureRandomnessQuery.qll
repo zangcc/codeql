@@ -27,9 +27,11 @@ class Configuration extends TaintTracking::Configuration {
     node instanceof Sanitizer
   }
 
-  override predicate isSanitizerOut(DataFlow::Node node) {
+  override predicate isSanitizerEdge(DataFlow::Node pred, DataFlow::Node succ) {
     // stop propagation at the sinks to avoid double reporting
-    this.isSink(node)
+    pred instanceof Sink and
+    // constrain succ
+    pred = succ.getAPredecessor()
   }
 
   override predicate isAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {

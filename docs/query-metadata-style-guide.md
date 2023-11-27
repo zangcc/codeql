@@ -70,7 +70,7 @@ You must specify an `@id` property for your query. It must be unique and should 
 * C and C++: `cpp`
 * C#: `cs`
 * Go: `go`
-* Java and Kotlin: `java`
+* Java: `java`
 * JavaScript and TypeScript: `js`
 * Python: `py`
 

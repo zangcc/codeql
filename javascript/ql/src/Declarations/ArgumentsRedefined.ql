@@ -12,6 +12,7 @@
  */
 
 import javascript
+import Definitions
 
 from VarRef d
 where

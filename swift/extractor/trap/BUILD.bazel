@@ -23,10 +23,7 @@ genrule(
         "--schema=$(location //swift:schema)",
         "--script-name=codegen/codegen.py",
     ]),
-    exec_tools = [
-        "//misc/codegen",
-        "//swift:schema",
-    ],
+    exec_tools = ["//misc/codegen", "//swift:schema"],
 )
 
 filegroup(
@@ -52,6 +49,5 @@ swift_cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//swift/extractor/infra/file",
-        "//swift/logging",
     ],
 )

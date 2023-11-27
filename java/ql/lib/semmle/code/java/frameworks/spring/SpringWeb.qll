@@ -31,7 +31,7 @@ class ModelAndView extends Class {
 }
 
 /** A call to the Spring `ModelAndView.setViewName` method. */
-class SpringModelAndViewSetViewNameCall extends MethodCall {
+class SpringModelAndViewSetViewNameCall extends MethodAccess {
   SpringModelAndViewSetViewNameCall() {
     this.getMethod().getDeclaringType() instanceof ModelAndView and
     this.getMethod().hasName("setViewName")

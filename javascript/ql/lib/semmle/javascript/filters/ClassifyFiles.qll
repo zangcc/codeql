@@ -75,6 +75,9 @@ predicate isExternsFile(File f) {
  */
 predicate isLibraryFile(File f) { f.getATopLevel() instanceof FrameworkLibraryInstance }
 
+/** DEPRECATED: Alias for isLibraryFile */
+deprecated predicate isLibaryFile = isLibraryFile/1;
+
 /**
  * Holds if `f` contains template code.
  */

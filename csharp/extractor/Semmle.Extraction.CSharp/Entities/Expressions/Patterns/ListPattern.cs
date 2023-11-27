@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Semmle.Util;
 using Semmle.Extraction.Kinds;
+using Semmle.Util;
 
 namespace Semmle.Extraction.CSharp.Entities.Expressions
 {

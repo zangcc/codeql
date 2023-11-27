@@ -2,18 +2,17 @@ import java
 import semmle.code.java.security.RequestForgeryConfig
 import TestUtilities.InlineExpectationsTest
 
-module HasFlowTest implements TestSig {
-  string getARelevantTag() { result = "SSRF" }
+class HasFlowTest extends InlineExpectationsTest {
+  HasFlowTest() { this = "HasFlowTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "SSRF" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "SSRF" and
-    exists(DataFlow::Node sink |
-      RequestForgeryFlow::flowTo(sink) and
+    exists(RequestForgeryConfiguration conf, DataFlow::Node sink | conf.hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<HasFlowTest>

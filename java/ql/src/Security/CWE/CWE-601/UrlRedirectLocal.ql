@@ -12,10 +12,19 @@
  */
 
 import java
-import semmle.code.java.security.UrlRedirectLocalQuery
-import UrlRedirectLocalFlow::PathGraph
+import semmle.code.java.dataflow.FlowSources
+import semmle.code.java.security.UrlRedirect
+import DataFlow::PathGraph
 
-from UrlRedirectLocalFlow::PathNode source, UrlRedirectLocalFlow::PathNode sink
-where UrlRedirectLocalFlow::flowPath(source, sink)
+class UrlRedirectLocalConfig extends TaintTracking::Configuration {
+  UrlRedirectLocalConfig() { this = "UrlRedirectLocalConfig" }
+
+  override predicate isSource(DataFlow::Node source) { source instanceof LocalUserInput }
+
+  override predicate isSink(DataFlow::Node sink) { sink instanceof UrlRedirectSink }
+}
+
+from DataFlow::PathNode source, DataFlow::PathNode sink, UrlRedirectLocalConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "Untrusted URL redirection depends on a $@.", source.getNode(),
   "user-provided value"

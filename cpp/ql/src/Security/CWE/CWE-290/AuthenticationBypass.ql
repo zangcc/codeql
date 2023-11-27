@@ -12,10 +12,8 @@
  *       external/cwe/cwe-290
  */
 
-import cpp
-import semmle.code.cpp.dataflow.new.TaintTracking
-import semmle.code.cpp.security.FlowSources as FS
-import Flow::PathGraph
+import semmle.code.cpp.ir.dataflow.internal.DefaultTaintTrackingImpl
+import TaintedWithPath
 
 string getATopLevelDomain() {
   result =
@@ -62,26 +60,13 @@ predicate hardCodedAddressInCondition(Expr subexpression, Expr condition) {
   condition = any(IfStmt ifStmt).getCondition()
 }
 
-predicate isSource(FS::FlowSource source, string sourceType) { source.getSourceType() = sourceType }
-
-predicate isSink(DataFlow::Node sink, Expr condition) {
-  hardCodedAddressInCondition([sink.asExpr(), sink.asIndirectExpr()], condition)
+class Configuration extends TaintTrackingConfiguration {
+  override predicate isSink(Element sink) { hardCodedAddressInCondition(sink, _) }
 }
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { isSource(source, _) }
-
-  predicate isSink(DataFlow::Node sink) { isSink(sink, _) }
-}
-
-module Flow = TaintTracking::Global<Config>;
-
-from
-  Expr subexpression, Expr condition, Flow::PathNode source, Flow::PathNode sink, string sourceType
+from Expr subexpression, Expr source, Expr condition, PathNode sourceNode, PathNode sinkNode
 where
   hardCodedAddressInCondition(subexpression, condition) and
-  isSource(source.getNode(), sourceType) and
-  Flow::flowPath(source, sink) and
-  isSink(sink.getNode(), condition)
-select condition, source, sink, "Untrusted input $@ might be vulnerable to a spoofing attack.",
-  source, sourceType
+  taintedWithPath(source, subexpression, sourceNode, sinkNode)
+select condition, sourceNode, sinkNode,
+  "Untrusted input $@ might be vulnerable to a spoofing attack.", source, source.toString()

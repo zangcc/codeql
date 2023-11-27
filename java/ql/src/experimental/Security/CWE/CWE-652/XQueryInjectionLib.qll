@@ -1,7 +1,7 @@
 import java
 
 /** A call to `XQConnection.prepareExpression`. */
-class XQueryParserCall extends MethodCall {
+class XQueryParserCall extends MethodAccess {
   XQueryParserCall() {
     exists(Method m |
       this.getMethod() = m and
@@ -20,7 +20,7 @@ class XQueryParserCall extends MethodCall {
 }
 
 /** A call to `XQPreparedExpression.executeQuery`. */
-class XQueryPreparedExecuteCall extends MethodCall {
+class XQueryPreparedExecuteCall extends MethodAccess {
   XQueryPreparedExecuteCall() {
     exists(Method m |
       this.getMethod() = m and
@@ -36,7 +36,7 @@ class XQueryPreparedExecuteCall extends MethodCall {
 }
 
 /** A call to `XQExpression.executeQuery`. */
-class XQueryExecuteCall extends MethodCall {
+class XQueryExecuteCall extends MethodAccess {
   XQueryExecuteCall() {
     exists(Method m |
       this.getMethod() = m and
@@ -52,7 +52,7 @@ class XQueryExecuteCall extends MethodCall {
 }
 
 /** A call to `XQExpression.executeCommand`. */
-class XQueryExecuteCommandCall extends MethodCall {
+class XQueryExecuteCommandCall extends MethodAccess {
   XQueryExecuteCommandCall() {
     exists(Method m |
       this.getMethod() = m and

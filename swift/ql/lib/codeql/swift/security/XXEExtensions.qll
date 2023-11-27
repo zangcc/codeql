@@ -2,24 +2,23 @@
 
 import swift
 private import codeql.swift.dataflow.DataFlow
-private import codeql.swift.dataflow.TaintTracking
-private import codeql.swift.frameworks.Xml.Xml
+private import codeql.swift.frameworks.AEXML
+private import codeql.swift.frameworks.Libxml2
 private import codeql.swift.dataflow.ExternalFlow
 
 /** A data flow sink for XML external entities (XXE) vulnerabilities. */
 abstract class XxeSink extends DataFlow::Node { }
 
-/** A barrier for XML external entities (XXE) vulnerabilities. */
-abstract class XxeBarrier extends DataFlow::Node { }
+/** A sanitizer for XML external entities (XXE) vulnerabilities. */
+abstract class XxeSanitizer extends DataFlow::Node { }
 
 /**
- * A unit class for adding additional flow steps.
+ * A unit class for adding additional taint steps.
+ *
+ * Extend this class to add additional taint steps that should apply to paths related to
+ * XML external entities (XXE) vulnerabilities.
  */
-class XxeAdditionalFlowStep extends Unit {
-  /**
-   * Holds if the step from `node1` to `node2` should be considered a flow
-   * step for paths related to XML external entities (XXE) vulnerabilities.
-   */
+class XxeAdditionalTaintStep extends Unit {
   abstract predicate step(DataFlow::Node n1, DataFlow::Node n2);
 }
 
@@ -80,7 +79,7 @@ private class XmlDocumentXxeSink extends XxeSink {
 /** An `XMLDocument` that sets `nodeLoadExternalEntitiesAlways` in its options. */
 private class VulnerableXmlDocument extends ApplyExpr {
   VulnerableXmlDocument() {
-    this.getStaticTarget().(Initializer).getEnclosingDecl().asNominalTypeDecl().getFullName() =
+    this.getStaticTarget().(ConstructorDecl).getEnclosingDecl().(NominalTypeDecl).getFullName() =
       "XMLDocument" and
     this.getArgument(1).getExpr().(ArrayExpr).getAnElement().(MemberRefExpr).getMember() instanceof
       NodeLoadExternalEntitiesAlways
@@ -91,7 +90,7 @@ private class VulnerableXmlDocument extends ApplyExpr {
 private class NodeLoadExternalEntitiesAlways extends VarDecl {
   NodeLoadExternalEntitiesAlways() {
     this.getName() = "nodeLoadExternalEntitiesAlways" and
-    this.getEnclosingDecl().asNominalTypeDecl().(StructDecl).getFullName() = "XMLNode.Options"
+    this.getEnclosingDecl().(StructDecl).getFullName() = "XMLNode.Options"
   }
 }
 
@@ -172,10 +171,36 @@ private class Libxml2XxeSink extends XxeSink {
   Libxml2XxeSink() {
     exists(Libxml2ParseCall c, Libxml2BadOption opt |
       this.asExpr() = c.getXml() and
-      TaintTracking::localTaintStep*(DataFlow::exprNode(opt.getAnAccess()),
+      lib2xmlOptionLocalTaintStep*(DataFlow::exprNode(opt.getAnAccess()),
         DataFlow::exprNode(c.getOptions()))
     )
   }
+}
+
+/**
+ * Holds if taint can flow from `source` to `sink` in one local step,
+ * including bitwise operations, accesses to `.rawValue`, and casts to `Int32`.
+ */
+private predicate lib2xmlOptionLocalTaintStep(DataFlow::Node source, DataFlow::Node sink) {
+  DataFlow::localFlowStep(source, sink)
+  or
+  source.asExpr() = sink.asExpr().(BitwiseOperation).getAnOperand()
+  or
+  exists(MemberRefExpr rawValue | rawValue.getMember().(VarDecl).getName() = "rawValue" |
+    source.asExpr() = rawValue.getBase() and sink.asExpr() = rawValue
+  )
+  or
+  exists(ApplyExpr int32Init |
+    int32Init
+        .getStaticTarget()
+        .(ConstructorDecl)
+        .getEnclosingDecl()
+        .(ExtensionDecl)
+        .getExtendedTypeDecl()
+        .getName() = "SignedInteger"
+  |
+    source.asExpr() = int32Init.getAnArgument().getExpr() and sink.asExpr() = int32Init
+  )
 }
 
 /**

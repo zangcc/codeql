@@ -4,7 +4,7 @@ import TestUtilities.InlineExpectationsTest
 import DataFlow
 
 predicate src(Node n, string s) {
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     n.asExpr() = ma and
     ma.getMethod().hasName("source") and
     ma.getAnArgument().(StringLiteral).getValue() = s
@@ -12,7 +12,7 @@ predicate src(Node n, string s) {
 }
 
 predicate sink(Node n, string s) {
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     ma.getMethod().hasName("sink") and
     n.asExpr() = ma.getArgument(0) and
     ma.getArgument(1).(StringLiteral).getValue() = s
@@ -20,7 +20,7 @@ predicate sink(Node n, string s) {
 }
 
 predicate bar(Node n, string s) {
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     ma.getMethod().hasName("stateBarrier") and
     n.asExpr() = ma.getArgument(0) and
     ma.getArgument(1).(StringLiteral).getValue() = s
@@ -28,7 +28,7 @@ predicate bar(Node n, string s) {
 }
 
 predicate step(Node n1, Node n2, string s1, string s2) {
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     ma.getMethod().hasName("step") and
     n1.asExpr() = ma.getArgument(0) and
     ma.getArgument(1).(StringLiteral).getValue() = s1 and
@@ -39,7 +39,7 @@ predicate step(Node n1, Node n2, string s1, string s2) {
 
 predicate checkNode(Node n) { n.asExpr().(Argument).getCall().getCallee().hasName("check") }
 
-module Config implements DataFlow::StateConfigSig {
+module Conf implements DataFlow::StateConfigSig {
   class FlowState = string;
 
   predicate isSource(Node n, FlowState s) { src(n, s) }
@@ -55,27 +55,27 @@ module Config implements DataFlow::StateConfigSig {
 
 int explorationLimit() { result = 0 }
 
-module Flow = TaintTracking::GlobalWithState<Config>;
+module Flow = TaintTracking::MakeWithState<Conf>;
 
-module PartialFlowFwd = Flow::FlowExplorationFwd<explorationLimit/0>;
+module PartialFlow = Flow::FlowExploration<explorationLimit/0>;
 
-module PartialFlowRev = Flow::FlowExplorationRev<explorationLimit/0>;
+class HasFlowTest extends InlineExpectationsTest {
+  HasFlowTest() { this = "HasFlowTest" }
 
-module HasFlowTest implements TestSig {
-  string getARelevantTag() { result = ["pFwd", "pRev", "flow"] }
+  override string getARelevantTag() { result = ["pFwd", "pRev", "flow"] }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "flow" and
     exists(Flow::PathNode src, Flow::PathNode sink |
-      Flow::flowPath(src, sink) and
+      Flow::hasFlowPath(src, sink) and
       sink.getNode().getLocation() = location and
       element = sink.toString() and
       value = src.getState()
     )
     or
     tag = "pFwd" and
-    exists(PartialFlowFwd::PartialPathNode src, PartialFlowFwd::PartialPathNode node |
-      PartialFlowFwd::partialFlow(src, node, _) and
+    exists(PartialFlow::PartialPathNode src, PartialFlow::PartialPathNode node |
+      PartialFlow::hasPartialFlow(src, node, _) and
       checkNode(node.getNode()) and
       node.getNode().getLocation() = location and
       element = node.toString() and
@@ -83,8 +83,8 @@ module HasFlowTest implements TestSig {
     )
     or
     tag = "pRev" and
-    exists(PartialFlowRev::PartialPathNode node, PartialFlowRev::PartialPathNode sink |
-      PartialFlowRev::partialFlow(node, sink, _) and
+    exists(PartialFlow::PartialPathNode node, PartialFlow::PartialPathNode sink |
+      PartialFlow::hasPartialFlowRev(node, sink, _) and
       checkNode(node.getNode()) and
       node.getNode().getLocation() = location and
       element = node.toString() and
@@ -92,5 +92,3 @@ module HasFlowTest implements TestSig {
     )
   }
 }
-
-import MakeTest<HasFlowTest>

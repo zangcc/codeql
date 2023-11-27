@@ -34,6 +34,13 @@ module UrlRedirect {
   abstract class Sanitizer extends DataFlow::Node { }
 
   /**
+   * DEPRECATED: Use `Sanitizer` instead.
+   *
+   * A sanitizer guard for "URL redirection" vulnerabilities.
+   */
+  abstract deprecated class SanitizerGuard extends DataFlow::BarrierGuard { }
+
+  /**
    * Additional taint steps for "URL redirection" vulnerabilities.
    */
   predicate isAdditionalTaintStep(DataFlow::Node node1, DataFlow::Node node2) {

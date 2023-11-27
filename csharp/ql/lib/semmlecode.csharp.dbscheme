@@ -136,7 +136,7 @@ diagnostics(
     string error_tag: string ref,
     string error_message: string ref,
     string full_error_message: string ref,
-    int location: @location ref
+    int location: @location_default ref
 );
 
 extractor_messages(
@@ -145,7 +145,7 @@ extractor_messages(
     string origin : string ref,
     string text : string ref,
     string entity : string ref,
-    int location: @location ref,
+    int location: @location_default ref,
     string stack_trace : string ref
 );
 
@@ -456,7 +456,7 @@ case @type.kind of
 @unsigned_integral_type = @byte_type  | @ushort_type | @uint_type | @ulong_type;
 @floating_point_type = @float_type | @double_type;
 @value_type = @simple_type | @enum_type | @struct_type | @nullable_type | @int_ptr_type
-            | @uint_ptr_type | @tuple_type | @void_type;
+            | @uint_ptr_type | @tuple_type;
 @ref_type = @class_type | @interface_type | @array_type | @delegate_type | @null_type
           | @dynamic_type;
 @value_or_ref_type = @value_type | @ref_type;
@@ -1292,7 +1292,7 @@ expr_argument_name(
 lambda_expr_return_type(
   unique int id: @lambda_expr ref,
   int type_id: @type_or_ref ref);
-
+  
 /** CONTROL/DATA FLOW **/
 
 @control_flow_element = @stmt | @expr;
@@ -2074,4 +2074,5 @@ cil_attribute_positional_argument(
 @metadata_entity = @cil_method | @cil_type | @cil_field | @cil_property | @field | @property |
     @callable | @value_or_ref_type | @void_type;
 
+#keyset[entity, location]
 metadata_handle(int entity : @metadata_entity ref, int location: @assembly ref, int handle: int ref)

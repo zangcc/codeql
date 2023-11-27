@@ -191,9 +191,9 @@ func main() {
 		// })
 		http.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 			// OK-ish: the input origin header is validated against a whitelist.
-			if origin := req.Header.Get("Origin"); cors_map[origin] {
+			if origin := req.Header.Get("Origin"); cors[origin] {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
-			} else if len(origin) > 0 && cors_map["*"] {
+			} else if len(origin) > 0 && cors["*"] {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
 			}
 
@@ -219,7 +219,7 @@ func main() {
 }
 
 var (
-	cors_map = map[string]bool{"*": true}
+	cors = map[string]bool{"*": true}
 )
 
 func GetAllowOrigin() []string {

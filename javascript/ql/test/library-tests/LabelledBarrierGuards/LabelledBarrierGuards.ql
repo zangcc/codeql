@@ -31,10 +31,10 @@ class Config extends TaintTracking::Configuration {
  * sanitize the value, but later sanitizers only need to handle the relevant case.
  */
 class IsTypeAGuard extends TaintTracking::LabeledSanitizerGuardNode, DataFlow::CallNode {
-  IsTypeAGuard() { this.getCalleeName() = "isTypeA" }
+  IsTypeAGuard() { getCalleeName() = "isTypeA" }
 
   override predicate sanitizes(boolean outcome, Expr e, DataFlow::FlowLabel lbl) {
-    e = this.getArgument(0).asExpr() and
+    e = getArgument(0).asExpr() and
     (
       outcome = true and lbl = "B"
       or
@@ -44,15 +44,15 @@ class IsTypeAGuard extends TaintTracking::LabeledSanitizerGuardNode, DataFlow::C
 }
 
 class IsSanitizedGuard extends TaintTracking::LabeledSanitizerGuardNode, DataFlow::CallNode {
-  IsSanitizedGuard() { this.getCalleeName() = "sanitizeA" or this.getCalleeName() = "sanitizeB" }
+  IsSanitizedGuard() { getCalleeName() = "sanitizeA" or getCalleeName() = "sanitizeB" }
 
   override predicate sanitizes(boolean outcome, Expr e, DataFlow::FlowLabel lbl) {
-    e = this.getArgument(0).asExpr() and
+    e = getArgument(0).asExpr() and
     outcome = true and
     (
-      this.getCalleeName() = "sanitizeA" and lbl = "A"
+      getCalleeName() = "sanitizeA" and lbl = "A"
       or
-      this.getCalleeName() = "sanitizeB" and lbl = "B"
+      getCalleeName() = "sanitizeB" and lbl = "B"
     )
   }
 }

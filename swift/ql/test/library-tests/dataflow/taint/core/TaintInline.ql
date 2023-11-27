@@ -1,6 +1,20 @@
-import TestUtilities.InlineFlowTest
+import swift
 import Taint
+import TestUtilities.InlineExpectationsTest
 
-string customTaintFlowTag() { result = "tainted" }
+class TaintTest extends InlineExpectationsTest {
+  TaintTest() { this = "TaintTest" }
 
-import FlowTest<NoFlowConfig, DefaultFlowConfig, defaultValueFlowTag/0, customTaintFlowTag/0>
+  override string getARelevantTag() { result = "tainted" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
+    exists(TestConfiguration config, Node source, Node sink, Expr sinkExpr |
+      config.hasFlow(source, sink) and
+      sinkExpr = sink.asExpr() and
+      location = sinkExpr.getLocation() and
+      element = sinkExpr.toString() and
+      tag = "tainted" and
+      value = source.asExpr().getLocation().getStartLine().toString()
+    )
+  }
+}

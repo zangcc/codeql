@@ -2,7 +2,7 @@ import java
 import semmle.code.java.dataflow.FlowSources
 
 /** A call to `Interpreter.eval`. */
-class InterpreterEvalCall extends MethodCall {
+class InterpreterEvalCall extends MethodAccess {
   InterpreterEvalCall() {
     this.getMethod().hasName("eval") and
     this.getMethod().getDeclaringType().hasQualifiedName("bsh", "Interpreter")
@@ -10,7 +10,7 @@ class InterpreterEvalCall extends MethodCall {
 }
 
 /** A call to `BshScriptEvaluator.evaluate`. */
-class BshScriptEvaluatorEvaluateCall extends MethodCall {
+class BshScriptEvaluatorEvaluateCall extends MethodAccess {
   BshScriptEvaluatorEvaluateCall() {
     this.getMethod().hasName("evaluate") and
     this.getMethod()

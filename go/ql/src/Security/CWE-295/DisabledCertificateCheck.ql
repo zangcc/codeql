@@ -38,7 +38,7 @@ predicate becomesPartOf(DataFlow::Node part, DataFlow::Node whole) {
 }
 
 /**
- * A flag suggesting a deliberately insecure certificate setup.
+ * Flags suggesting a deliberately insecure certificate setup.
  */
 class InsecureCertificateFlag extends FlagKind {
   InsecureCertificateFlag() { this = "insecureCertificate" }

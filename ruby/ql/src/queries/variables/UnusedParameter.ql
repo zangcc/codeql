@@ -23,6 +23,5 @@ class RelevantParameterVariable extends LocalVariable {
 }
 
 from RelevantParameterVariable v
-where
-  not exists(Ssa::WriteDefinition def | def.getWriteAccess().getAstNode() = v.getDefiningAccess())
+where not exists(Ssa::WriteDefinition def | def.getWriteAccess() = v.getDefiningAccess())
 select v, "The parameter '" + v.getName() + "' is never used."

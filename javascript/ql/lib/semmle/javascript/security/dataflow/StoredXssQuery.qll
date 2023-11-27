@@ -32,7 +32,6 @@ private class QuoteGuard extends TaintTracking::SanitizerGuardNode, Shared::Quot
   QuoteGuard() { this = this }
 }
 
-private class ContainsHtmlGuard extends TaintTracking::SanitizerGuardNode, Shared::ContainsHtmlGuard
-{
+private class ContainsHtmlGuard extends TaintTracking::SanitizerGuardNode, Shared::ContainsHtmlGuard {
   ContainsHtmlGuard() { this = this }
 }

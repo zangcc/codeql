@@ -1,6 +1,4 @@
 private import codeql.swift.generated.File
-private import codeql.swift.elements.Location
-private import codeql.swift.elements.UnknownLocation
 
 class File extends Generated::File {
   /** toString */
@@ -18,18 +16,5 @@ class File extends Generated::File {
   /** Gets the base name of this file. */
   string getBaseName() {
     result = this.getAbsolutePath().regexpCapture(".*/(([^/]*?)(?:\\.([^.]*))?)", 1)
-  }
-
-  /**
-   * Gets the number of lines containing code in this file. This value
-   * is approximate.
-   */
-  int getNumberOfLinesOfCode() {
-    result =
-      count(int line |
-        exists(Location loc |
-          not loc instanceof UnknownLocation and loc.getFile() = this and loc.getStartLine() = line
-        )
-      )
   }
 }

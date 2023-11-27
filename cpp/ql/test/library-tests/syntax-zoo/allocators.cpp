@@ -11,7 +11,7 @@ struct Allocators
   int m_y;
 };
 
-static int f()
+int main()
 {
   auto foo = new(11, 22) Allocators(33, 44);
   delete foo;

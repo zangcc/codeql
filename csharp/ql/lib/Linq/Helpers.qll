@@ -3,9 +3,7 @@
  * Provides helper classes and methods related to LINQ.
  */
 
-private import csharp
-private import semmle.code.csharp.frameworks.system.collections.Generic as GenericCollections
-private import semmle.code.csharp.frameworks.system.Collections as Collections
+import csharp
 
 //#################### PREDICATES ####################
 private Stmt firstStmt(ForeachStmt fes) {
@@ -21,43 +19,14 @@ private int numStmts(ForeachStmt fes) {
 }
 
 /** Holds if the type's qualified name is "System.Linq.Enumerable" */
-predicate isEnumerableType(ValueOrRefType t) {
-  t.hasFullyQualifiedName("System.Linq", "Enumerable")
-}
+predicate isEnumerableType(ValueOrRefType t) { t.hasQualifiedName("System.Linq", "Enumerable") }
 
 /** Holds if the type's qualified name starts with "System.Collections.Generic.IEnumerable" */
 predicate isIEnumerableType(ValueOrRefType t) {
   exists(string type |
-    t.hasFullyQualifiedName("System.Collections.Generic", type) and
+    t.hasQualifiedName("System.Collections.Generic", type) and
     type.matches("IEnumerable%")
   )
-}
-
-/**
- * A class of foreach statements where the iterable expression
- * supports the use of the LINQ extension methods on `IEnumerable<T>`.
- */
-class ForeachStmtGenericEnumerable extends ForeachStmt {
-  ForeachStmtGenericEnumerable() {
-    exists(ValueOrRefType t | t = this.getIterableExpr().getType() |
-      t.getABaseType*().getUnboundDeclaration() instanceof
-        GenericCollections::SystemCollectionsGenericIEnumerableTInterface or
-      t.(ArrayType).getRank() = 1
-    )
-  }
-}
-
-/**
- * A class of foreach statements where the iterable expression
- * supports the use of the LINQ extension methods on `IEnumerable`.
- */
-class ForeachStmtEnumerable extends ForeachStmt {
-  ForeachStmtEnumerable() {
-    exists(ValueOrRefType t | t = this.getIterableExpr().getType() |
-      t.getABaseType*() instanceof Collections::SystemCollectionsIEnumerableInterface or
-      t.(ArrayType).getRank() = 1
-    )
-  }
 }
 
 /**
@@ -66,7 +35,7 @@ class ForeachStmtEnumerable extends ForeachStmt {
  * accesses the loop variable and with a body that assigns `false` to a variable
  * and `break`s out of the `foreach`.
  */
-predicate missedAllOpportunity(ForeachStmtGenericEnumerable fes) {
+predicate missedAllOpportunity(ForeachStmt fes) {
   exists(IfStmt is |
     // The loop contains an if statement with no else case, and nothing else.
     is = firstStmt(fes) and
@@ -85,12 +54,12 @@ predicate missedAllOpportunity(ForeachStmtGenericEnumerable fes) {
 }
 
 /**
- * Holds if the `foreach` statement `fes` can be converted to a `.Cast()` call.
+ * Holds if `foreach` statement `fes` could be converted to a `.Cast()` call.
  * That is, the loop variable is accessed only in the first statement of the
- * block, the access is a cast, and the first statement is a
- * local variable declaration statement `s`.
+ * block, and the access is a cast. The first statement needs to be a
+ * `LocalVariableDeclStmt`.
  */
-predicate missedCastOpportunity(ForeachStmtEnumerable fes, LocalVariableDeclStmt s) {
+predicate missedCastOpportunity(ForeachStmt fes, LocalVariableDeclStmt s) {
   s = firstStmt(fes) and
   forex(VariableAccess va | va = fes.getVariable().getAnAccess() |
     va = s.getAVariableDeclExpr().getAChildExpr*()
@@ -102,12 +71,12 @@ predicate missedCastOpportunity(ForeachStmtEnumerable fes, LocalVariableDeclStmt
 }
 
 /**
- * Holds if `foreach` statement `fes` can be converted to an `.OfType()` call.
+ * Holds if `foreach` statement `fes` could be converted to an `.OfType()` call.
  * That is, the loop variable is accessed only in the first statement of the
- * block, the access is a cast with the `as` operator, and the first statement
- * is a local variable declaration statement `s`.
+ * block, and the access is a cast with the `as` operator. The first statement
+ * needs to be a `LocalVariableDeclStmt`.
  */
-predicate missedOfTypeOpportunity(ForeachStmtEnumerable fes, LocalVariableDeclStmt s) {
+predicate missedOfTypeOpportunity(ForeachStmt fes, LocalVariableDeclStmt s) {
   s = firstStmt(fes) and
   forex(VariableAccess va | va = fes.getVariable().getAnAccess() |
     va = s.getAVariableDeclExpr().getAChildExpr*()
@@ -119,12 +88,12 @@ predicate missedOfTypeOpportunity(ForeachStmtEnumerable fes, LocalVariableDeclSt
 }
 
 /**
- * Holds if `foreach` statement `fes` can be converted to a `.Select()` call.
+ * Holds if `foreach` statement `fes` could be converted to a `.Select()` call.
  * That is, the loop variable is accessed only in the first statement of the
- * block, the access is not a cast, and the first statement is a
- * local variable declaration statement `s`.
+ * block, and the access is not a cast. The first statement needs to be a
+ * `LocalVariableDeclStmt`.
  */
-predicate missedSelectOpportunity(ForeachStmtGenericEnumerable fes, LocalVariableDeclStmt s) {
+predicate missedSelectOpportunity(ForeachStmt fes, LocalVariableDeclStmt s) {
   s = firstStmt(fes) and
   forex(VariableAccess va | va = fes.getVariable().getAnAccess() |
     va = s.getAVariableDeclExpr().getAChildExpr*()
@@ -138,7 +107,7 @@ predicate missedSelectOpportunity(ForeachStmtGenericEnumerable fes, LocalVariabl
  * variable, and the body of the `if` is either a `continue` or there's nothing
  * else in the loop than the `if`.
  */
-predicate missedWhereOpportunity(ForeachStmtGenericEnumerable fes, IfStmt is) {
+predicate missedWhereOpportunity(ForeachStmt fes, IfStmt is) {
   // The very first thing the foreach loop does is test its iteration variable.
   is = firstStmt(fes) and
   exists(VariableAccess va |
@@ -159,9 +128,9 @@ predicate missedWhereOpportunity(ForeachStmtGenericEnumerable fes, IfStmt is) {
 class AnyCall extends MethodCall {
   AnyCall() {
     exists(Method m |
-      m = this.getTarget().getUnboundDeclaration() and
+      m = getTarget().getUnboundDeclaration() and
       isEnumerableType(m.getDeclaringType()) and
-      m.hasName("Any`1")
+      m.hasName("Any<>")
     )
   }
 }
@@ -170,28 +139,28 @@ class AnyCall extends MethodCall {
 class CountCall extends MethodCall {
   CountCall() {
     exists(Method m |
-      m = this.getTarget().getUnboundDeclaration() and
+      m = getTarget().getUnboundDeclaration() and
       isEnumerableType(m.getDeclaringType()) and
-      m.hasName("Count`1")
+      m.hasName("Count<>")
     )
   }
 }
 
 /** A variable of type IEnumerable&lt;T>, for some T. */
 class IEnumerableSequence extends Variable {
-  IEnumerableSequence() { isIEnumerableType(this.getType()) }
+  IEnumerableSequence() { isIEnumerableType(getType()) }
 }
 
 /** A LINQ Select(...) call. */
 class SelectCall extends ExtensionMethodCall {
   SelectCall() {
     exists(Method m |
-      m = this.getTarget().getUnboundDeclaration() and
+      m = getTarget().getUnboundDeclaration() and
       isEnumerableType(m.getDeclaringType()) and
-      m.hasName("Select`2")
+      m.hasName("Select<,>")
     )
   }
 
   /** Gets the anonymous function expression supplied as the argument to the Select (if possible). */
-  AnonymousFunctionExpr getFunctionExpr() { result = this.getArgument(1) }
+  AnonymousFunctionExpr getFunctionExpr() { result = getArgument(1) }
 }

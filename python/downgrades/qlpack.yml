@@ -2,4 +2,3 @@ name: codeql/python-downgrades
 groups: python
 downgrades: .
 library: true
-warnOnImplicitThis: true

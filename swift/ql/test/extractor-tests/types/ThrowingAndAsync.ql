@@ -1,6 +1,6 @@
 import codeql.swift.elements
 
-from Function f, AnyFunctionType t, string s
+from FuncDecl f, AnyFunctionType t, string s
 where
   f.getInterfaceType() = t and
   f.getLocation().getFile().getName().matches("%swift/ql/test%") and

@@ -30,5 +30,4 @@
       - /Diagnostics/Internal/.*/
 - exclude:
     tags contain:
-      - modeleditor
       - modelgenerator

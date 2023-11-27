@@ -7,8 +7,6 @@ namespace codeql {
 
 class ExprTranslator : public AstTranslatorBase<ExprTranslator> {
  public:
-  static constexpr std::string_view name = "expr";
-
   using AstTranslatorBase<ExprTranslator>::AstTranslatorBase;
 
   codeql::IntegerLiteralExpr translateIntegerLiteralExpr(const swift::IntegerLiteralExpr& expr);
@@ -41,7 +39,7 @@ class ExprTranslator : public AstTranslatorBase<ExprTranslator> {
   codeql::OpenExistentialExpr translateOpenExistentialExpr(const swift::OpenExistentialExpr& expr);
   codeql::OptionalEvaluationExpr translateOptionalEvaluationExpr(
       const swift::OptionalEvaluationExpr& expr);
-  codeql::RebindSelfInInitializerExpr translateRebindSelfInConstructorExpr(
+  codeql::RebindSelfInConstructorExpr translateRebindSelfInConstructorExpr(
       const swift::RebindSelfInConstructorExpr& expr);
   codeql::SuperRefExpr translateSuperRefExpr(const swift::SuperRefExpr& expr);
   codeql::DotSyntaxCallExpr translateDotSyntaxCallExpr(const swift::DotSyntaxCallExpr& expr);
@@ -71,11 +69,11 @@ class ExprTranslator : public AstTranslatorBase<ExprTranslator> {
   codeql::TryExpr translateTryExpr(const swift::TryExpr& expr);
   codeql::ForceTryExpr translateForceTryExpr(const swift::ForceTryExpr& expr);
   codeql::OptionalTryExpr translateOptionalTryExpr(const swift::OptionalTryExpr& expr);
-  codeql::InitializerRefCallExpr translateConstructorRefCallExpr(
+  codeql::ConstructorRefCallExpr translateConstructorRefCallExpr(
       const swift::ConstructorRefCallExpr& expr);
   codeql::DiscardAssignmentExpr translateDiscardAssignmentExpr(
       const swift::DiscardAssignmentExpr& expr);
-  codeql::ExplicitClosureExpr translateClosureExpr(const swift::ClosureExpr& expr);
+  codeql::ClosureExpr translateClosureExpr(const swift::ClosureExpr& expr);
   codeql::AutoClosureExpr translateAutoClosureExpr(const swift::AutoClosureExpr& expr);
   codeql::CoerceExpr translateCoerceExpr(const swift::CoerceExpr& expr);
   codeql::ConditionalCheckedCastExpr translateConditionalCheckedCastExpr(
@@ -87,14 +85,13 @@ class ExprTranslator : public AstTranslatorBase<ExprTranslator> {
   codeql::DictionaryExpr translateDictionaryExpr(const swift::DictionaryExpr& expr);
   codeql::MemberRefExpr translateMemberRefExpr(const swift::MemberRefExpr& expr);
   codeql::KeyPathExpr translateKeyPathExpr(const swift::KeyPathExpr& expr);
-  codeql::LazyInitializationExpr translateLazyInitializerExpr(
-      const swift::LazyInitializerExpr& expr);
+  codeql::LazyInitializerExpr translateLazyInitializerExpr(const swift::LazyInitializerExpr& expr);
   codeql::ForceValueExpr translateForceValueExpr(const swift::ForceValueExpr& expr);
-  codeql::IfExpr translateTernaryExpr(const swift::TernaryExpr& expr);
+  codeql::IfExpr translateIfExpr(const swift::IfExpr& expr);
   codeql::KeyPathDotExpr translateKeyPathDotExpr(const swift::KeyPathDotExpr& expr);
   codeql::KeyPathApplicationExpr translateKeyPathApplicationExpr(
       const swift::KeyPathApplicationExpr& expr);
-  codeql::OtherInitializerRefExpr translateOtherConstructorDeclRefExpr(
+  codeql::OtherConstructorDeclRefExpr translateOtherConstructorDeclRefExpr(
       const swift::OtherConstructorDeclRefExpr& expr);
   codeql::UnresolvedDeclRefExpr translateUnresolvedDeclRefExpr(
       const swift::UnresolvedDeclRefExpr& expr);
@@ -119,16 +116,11 @@ class ExprTranslator : public AstTranslatorBase<ExprTranslator> {
   codeql::AppliedPropertyWrapperExpr translateAppliedPropertyWrapperExpr(
       const swift::AppliedPropertyWrapperExpr& expr);
   codeql::RegexLiteralExpr translateRegexLiteralExpr(const swift::RegexLiteralExpr& expr);
-  codeql::SingleValueStmtExpr translateSingleValueStmtExpr(const swift::SingleValueStmtExpr& expr);
-  codeql::PackExpansionExpr translatePackExpansionExpr(const swift::PackExpansionExpr& expr);
-  codeql::PackElementExpr translatePackElementExpr(const swift::PackElementExpr& expr);
-  codeql::CopyExpr translateCopyExpr(const swift::CopyExpr& expr);
-  codeql::ConsumeExpr translateConsumeExpr(const swift::ConsumeExpr& expr);
 
  private:
-  void fillClosureExpr(const swift::AbstractClosureExpr& expr, codeql::ClosureExpr& entry);
+  void fillAbstractClosureExpr(const swift::AbstractClosureExpr& expr,
+                               codeql::AbstractClosureExpr& entry);
   TrapLabel<ArgumentTag> emitArgument(const swift::Argument& arg);
-  TrapLabel<KeyPathComponentTag> emitKeyPathComponent(const swift::KeyPathExpr::Component& expr);
   void fillExplicitCastExpr(const swift::ExplicitCastExpr& expr, codeql::ExplicitCastExpr& entry);
   void fillIdentityExpr(const swift::IdentityExpr& expr, codeql::IdentityExpr& entry);
   void fillAnyTryExpr(const swift::AnyTryExpr& expr, codeql::AnyTryExpr& entry);

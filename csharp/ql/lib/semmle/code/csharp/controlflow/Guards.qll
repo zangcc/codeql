@@ -1946,7 +1946,7 @@ module Internal {
       |
         def =
           guarded
-              .getAstNode()
+              .getElement()
               .(AccessOrCallExpr)
               .getAnSsaQualifier(guarded.getBasicBlock().getANode()) and
         if v.isReferentialProperty()

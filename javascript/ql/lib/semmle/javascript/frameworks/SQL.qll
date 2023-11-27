@@ -104,7 +104,7 @@ private module Postgres {
   API::Node clientOrPool() { result = API::Node::ofType("pg", ["Client", "PoolClient", "Pool"]) }
 
   /** A call to the Postgres `query` method. */
-  private class QueryCall extends DatabaseAccess, API::CallNode {
+  private class QueryCall extends DatabaseAccess, DataFlow::MethodCallNode {
     QueryCall() { this = clientOrPool().getMember(["execute", "query"]).getACall() }
 
     override DataFlow::Node getAResult() {
@@ -117,16 +117,8 @@ private module Postgres {
       PromiseFlow::loadStep(this.getALocalUse(), result, Promises::valueProp())
     }
 
-    override DataFlow::Node getAQueryArgument() {
-      result = this.getArgument(0) or result = this.getParameter(0).getMember("text").asSink()
-    }
+    override DataFlow::Node getAQueryArgument() { result = this.getArgument(0) }
   }
-
-  /**
-   * Gets the Postgres Query class.
-   * This class can be used to create reusable query objects (see https://node-postgres.com/apis/client).
-   */
-  API::Node query() { result = API::moduleImport("pg").getMember("Query") }
 
   /** An expression that is passed to the `query` method and hence interpreted as SQL. */
   class QueryString extends SQL::SqlString {
@@ -134,8 +126,6 @@ private module Postgres {
       this = any(QueryCall qc).getAQueryArgument()
       or
       this = API::moduleImport("pg-cursor").getParameter(0).asSink()
-      or
-      this = query().getParameter(0).asSink()
     }
   }
 
@@ -253,7 +243,7 @@ private module Postgres {
 /**
  * Provides classes modeling the `sqlite3` package.
  */
-private module Sqlite3 {
+private module Sqlite {
   /** Gets an expression that constructs or returns a Sqlite database instance. */
   API::Node database() { result = API::Node::ofType("sqlite3", "Database") }
 
@@ -267,62 +257,6 @@ private module Sqlite3 {
       result = this.getCallback(1).getParameter(1) or
       PromiseFlow::loadStep(this.getALocalUse(), result, Promises::valueProp())
     }
-
-    override DataFlow::Node getAQueryArgument() { result = this.getArgument(0) }
-  }
-
-  /** An expression that is passed to the `query` method and hence interpreted as SQL. */
-  class QueryString extends SQL::SqlString {
-    QueryString() { this = any(QueryCall qc).getAQueryArgument() }
-  }
-}
-
-/**
- * Provides classes modeling the `sqlite` package.
- */
-private module Sqlite {
-  /** Gets an expression that constructs or returns a Sqlite database instance. */
-  API::Node database() {
-    result = API::moduleImport("sqlite").getMember("open").getReturn().getPromised()
-  }
-
-  /** A call to a Sqlite query method. */
-  private class QueryCall extends DatabaseAccess, API::CallNode {
-    QueryCall() {
-      this = database().getMember(["all", "each", "exec", "get", "prepare", "run"]).getACall()
-    }
-
-    override DataFlow::Node getAResult() { result = this }
-
-    override DataFlow::Node getAQueryArgument() { result = this.getArgument(0) }
-  }
-
-  /** An expression that is passed to the `query` method and hence interpreted as SQL. */
-  class QueryString extends SQL::SqlString {
-    QueryString() { this = any(QueryCall qc).getAQueryArgument() }
-  }
-}
-
-/**
- * Provides classes modeling the `better-sqlite3` package.
- */
-private module BetterSqlite3 {
-  /**
-   * Gets a `better-sqlite3` database instance.
-   */
-  API::Node database() {
-    result =
-      [
-        API::moduleImport("better-sqlite3").getInstance(),
-        API::moduleImport("better-sqlite3").getReturn()
-      ]
-    or
-    result = database().getMember("exec").getReturn()
-  }
-
-  /** A call to a better-sqlite3 query method. */
-  private class QueryCall extends DatabaseAccess, API::CallNode {
-    QueryCall() { this = database().getMember(["exec", "prepare"]).getACall() }
 
     override DataFlow::Node getAQueryArgument() { result = this.getArgument(0) }
   }

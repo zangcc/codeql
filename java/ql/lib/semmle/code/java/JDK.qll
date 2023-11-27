@@ -177,11 +177,6 @@ class TypeObjectInputStream extends RefType {
   TypeObjectInputStream() { this.hasQualifiedName("java.io", "ObjectInputStream") }
 }
 
-/** The class `java.io.InputStream`. */
-class TypeInputStream extends RefType {
-  TypeInputStream() { this.hasQualifiedName("java.io", "InputStream") }
-}
-
 /** The class `java.nio.file.Paths`. */
 class TypePaths extends Class {
   TypePaths() { this.hasQualifiedName("java.nio.file", "Paths") }
@@ -204,18 +199,18 @@ class TypeFile extends Class {
 
 // --- Standard methods ---
 /**
- * DEPRECATED: Any constructor of class `java.lang.ProcessBuilder`.
+ * Any constructor of class `java.lang.ProcessBuilder`.
  */
-deprecated class ProcessBuilderConstructor extends Constructor, ExecCallable {
+class ProcessBuilderConstructor extends Constructor, ExecCallable {
   ProcessBuilderConstructor() { this.getDeclaringType() instanceof TypeProcessBuilder }
 
   override int getAnExecutedArgument() { result = 0 }
 }
 
 /**
- * DEPRECATED: Any of the methods named `command` on class `java.lang.ProcessBuilder`.
+ * Any of the methods named `command` on class `java.lang.ProcessBuilder`.
  */
-deprecated class MethodProcessBuilderCommand extends Method, ExecCallable {
+class MethodProcessBuilderCommand extends Method, ExecCallable {
   MethodProcessBuilderCommand() {
     this.hasName("command") and
     this.getDeclaringType() instanceof TypeProcessBuilder
@@ -225,9 +220,9 @@ deprecated class MethodProcessBuilderCommand extends Method, ExecCallable {
 }
 
 /**
- * DEPRECATED: Any method named `exec` on class `java.lang.Runtime`.
+ * Any method named `exec` on class `java.lang.Runtime`.
  */
-deprecated class MethodRuntimeExec extends Method, ExecCallable {
+class MethodRuntimeExec extends Method, ExecCallable {
   MethodRuntimeExec() {
     this.hasName("exec") and
     this.getDeclaringType() instanceof TypeRuntime
@@ -259,10 +254,10 @@ class MethodSystemGetProperty extends ValuePreservingMethod {
 }
 
 /**
- * A call to a method named `getProperty` on class `java.lang.System`.
+ * An access to a method named `getProperty` on class `java.lang.System`.
  */
-class MethodCallSystemGetProperty extends MethodCall {
-  MethodCallSystemGetProperty() { this.getMethod() instanceof MethodSystemGetProperty }
+class MethodAccessSystemGetProperty extends MethodAccess {
+  MethodAccessSystemGetProperty() { this.getMethod() instanceof MethodSystemGetProperty }
 
   /**
    * Holds if this call has a compile-time constant first argument with the value `propertyName`.
@@ -275,9 +270,6 @@ class MethodCallSystemGetProperty extends MethodCall {
     this.getArgument(0).(CompileTimeConstantExpr).getStringValue() = propertyName
   }
 }
-
-/** DEPRECATED: Alias for `MethodCallSystemGetProperty`. */
-deprecated class MethodAccessSystemGetProperty = MethodCallSystemGetProperty;
 
 /**
  * Any method named `exit` on class `java.lang.Runtime` or `java.lang.System`.

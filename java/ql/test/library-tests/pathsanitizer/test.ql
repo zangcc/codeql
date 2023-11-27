@@ -2,12 +2,18 @@ import java
 import semmle.code.java.security.PathSanitizer
 import TestUtilities.InlineFlowTest
 
-module PathSanitizerConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { DefaultFlowConfig::isSource(source) }
-
-  predicate isSink(DataFlow::Node sink) { DefaultFlowConfig::isSink(sink) }
-
-  predicate isBarrier(DataFlow::Node sanitizer) { sanitizer instanceof PathInjectionSanitizer }
+class EnableLegacy extends EnableLegacyConfiguration {
+  EnableLegacy() { exists(this) }
 }
 
-import TaintFlowTest<PathSanitizerConfig>
+class PathSanitizerConf extends DefaultTaintFlowConf {
+  override predicate isSanitizer(DataFlow::Node sanitizer) {
+    sanitizer instanceof PathInjectionSanitizer
+  }
+}
+
+class Test extends InlineFlowTest {
+  override DataFlow::Configuration getValueFlowConfig() { none() }
+
+  override DataFlow::Configuration getTaintFlowConfig() { result = any(PathSanitizerConf config) }
+}

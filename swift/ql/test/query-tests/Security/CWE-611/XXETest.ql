@@ -9,12 +9,14 @@ class TestRemoteSource extends RemoteFlowSource {
   override string getSourceType() { result = "Test source" }
 }
 
-module XxeTest implements TestSig {
-  string getARelevantTag() { result = "hasXXE" }
+class XxeTest extends InlineExpectationsTest {
+  XxeTest() { this = "XxeTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
-    exists(DataFlow::Node source, DataFlow::Node sink, Expr sinkExpr |
-      XxeFlow::flow(source, sink) and
+  override string getARelevantTag() { result = "hasXXE" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
+    exists(XxeConfiguration config, DataFlow::Node source, DataFlow::Node sink, Expr sinkExpr |
+      config.hasFlow(source, sink) and
       sinkExpr = sink.asExpr() and
       location = sinkExpr.getLocation() and
       element = sinkExpr.toString() and
@@ -23,5 +25,3 @@ module XxeTest implements TestSig {
     )
   }
 }
-
-import MakeTest<XxeTest>

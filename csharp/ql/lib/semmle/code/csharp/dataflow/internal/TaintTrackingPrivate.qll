@@ -25,7 +25,7 @@ predicate defaultTaintSanitizer(DataFlow::Node node) { none() }
  * of `c` at sinks and inputs to additional taint steps.
  */
 bindingset[node]
-predicate defaultImplicitTaintRead(DataFlow::Node node, DataFlow::ContentSet c) { none() }
+predicate defaultImplicitTaintRead(DataFlow::Node node, DataFlow::Content c) { none() }
 
 private predicate localCilTaintStep(CIL::DataFlowNode src, CIL::DataFlowNode sink) {
   src = sink.(CIL::BinaryArithmeticExpr).getAnOperand() or
@@ -156,8 +156,7 @@ private module Cached {
     // tracking configurations where the source is a collection
     readStep(nodeFrom, TElementContent(), nodeTo)
     or
-    FlowSummaryImpl::Private::Steps::summaryLocalStep(nodeFrom.(FlowSummaryNode).getSummaryNode(),
-      nodeTo.(FlowSummaryNode).getSummaryNode(), false)
+    FlowSummaryImpl::Private::Steps::summaryLocalStep(nodeFrom, nodeTo, false)
     or
     nodeTo = nodeFrom.(DataFlow::NonLocalJumpNode).getAJumpSuccessor(false)
   }

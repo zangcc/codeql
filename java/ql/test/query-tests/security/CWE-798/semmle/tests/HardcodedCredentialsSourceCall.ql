@@ -2,17 +2,19 @@ import java
 import semmle.code.java.security.HardcodedCredentialsSourceCallQuery
 import TestUtilities.InlineExpectationsTest
 
-module HardcodedCredentialsSourceCallTest implements TestSig {
-  string getARelevantTag() { result = "HardcodedCredentialsSourceCall" }
+class HardcodedCredentialsSourceCallTest extends InlineExpectationsTest {
+  HardcodedCredentialsSourceCallTest() { this = "HardcodedCredentialsSourceCallTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "HardcodedCredentialsSourceCall" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "HardcodedCredentialsSourceCall" and
-    exists(DataFlow::Node sink | HardcodedCredentialSourceCallFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, HardcodedCredentialSourceCallConfiguration conf |
+      conf.hasFlow(_, sink)
+    |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<HardcodedCredentialsSourceCallTest>

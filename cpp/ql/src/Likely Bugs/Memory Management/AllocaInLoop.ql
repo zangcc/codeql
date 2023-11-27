@@ -14,7 +14,7 @@
 
 import cpp
 import semmle.code.cpp.rangeanalysis.RangeAnalysisUtils
-import semmle.code.cpp.ir.dataflow.DataFlow
+import semmle.code.cpp.dataflow.DataFlow
 
 /** Gets a loop that contains `e`. */
 Loop getAnEnclosingLoopOfExpr(Expr e) { result = getAnEnclosingLoopOfStmt(e.getEnclosingStmt()) }
@@ -186,19 +186,6 @@ class LoopWithAlloca extends Stmt {
   }
 
   /**
-   * Gets an expression associated with a dataflow node.
-   */
-  private Expr getExpr(DataFlow::Node node) {
-    result = node.asInstruction().getAst()
-    or
-    result = node.asOperand().getUse().getAst()
-    or
-    result = node.(DataFlow::RawIndirectInstruction).getInstruction().getAst()
-    or
-    result = node.(DataFlow::RawIndirectOperand).getOperand().getUse().getAst()
-  }
-
-  /**
    * Gets a definition that may be the most recent definition of the
    * controlling variable `var` before this loop.
    */
@@ -207,10 +194,14 @@ class LoopWithAlloca extends Stmt {
       va = var.getAnAccess() and
       this.conditionRequiresInequality(va, _, _) and
       DataFlow::localFlow(result, DataFlow::exprNode(va)) and
-      // Phi nodes will be preceded by nodes that represent actual definitions
-      not result instanceof DataFlow::SsaPhiNode and
       // A source is outside the loop if it's not inside the loop
-      not exists(Expr e | e = this.getExpr(result) | this = getAnEnclosingLoopOfExpr(e))
+      not exists(Expr e |
+        e = result.asExpr()
+        or
+        e = result.asDefiningArgument()
+      |
+        this = getAnEnclosingLoopOfExpr(e)
+      )
     )
   }
 
@@ -220,11 +211,7 @@ class LoopWithAlloca extends Stmt {
    */
   private int getAControllingVarInitialValue(Variable var, DataFlow::Node source) {
     source = this.getAPrecedingDef(var) and
-    (
-      result = this.getExpr(source).getValue().toInt()
-      or
-      result = this.getExpr(source).(Assignment).getRValue().getValue().toInt()
-    )
+    result = source.asExpr().getValue().toInt()
   }
 
   /**

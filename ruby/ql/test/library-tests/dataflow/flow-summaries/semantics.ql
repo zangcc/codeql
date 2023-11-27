@@ -5,7 +5,6 @@
 
 import codeql.ruby.AST
 import TestUtilities.InlineFlowTest
-import DefaultFlowTest
 import PathGraph
 private import codeql.ruby.dataflow.FlowSummary
 
@@ -203,24 +202,24 @@ private class S16 extends Summary {
 }
 
 /**
- * `Argument[splat]` (input) 1
+ * `Argument[hash-splat]` (output) 1
  */
 private class S17 extends Summary {
   S17() { this = "s17" }
 
   override predicate propagates(string input, string output) {
-    input = "Argument[splat]" and output = "ReturnValue"
+    input = "Argument[0]" and output = "Argument[hash-splat]"
   }
 }
 
 /**
- * `Argument[splat]` (input) 2
+ * `Argument[hash-splat]` (output) 2
  */
 private class S18 extends Summary {
   S18() { this = "s18" }
 
   override predicate propagates(string input, string output) {
-    input = "Argument[splat].Element[any]" and output = "ReturnValue"
+    input = "Argument[0]" and output = "Argument[hash-splat].Element[:foo]"
   }
 }
 

@@ -36,8 +36,8 @@ predicate isGigaSpacesEventMethod(Method eventMethod) {
  */
 class GigaSpacesSpaceIdGetterMethod extends Method {
   GigaSpacesSpaceIdGetterMethod() {
-    this.getAnAnnotation().getType().hasQualifiedName("com.gigaspaces.annotation.pojo", "SpaceId") and
-    this.getName().matches("get%")
+    getAnAnnotation().getType().hasQualifiedName("com.gigaspaces.annotation.pojo", "SpaceId") and
+    getName().matches("get%")
   }
 }
 
@@ -47,10 +47,10 @@ class GigaSpacesSpaceIdGetterMethod extends Method {
 class GigaSpacesSpaceIdSetterMethod extends Method {
   GigaSpacesSpaceIdSetterMethod() {
     exists(GigaSpacesSpaceIdGetterMethod getterMethod |
-      getterMethod.getDeclaringType() = this.getDeclaringType() and
-      this.getName().matches("set%")
+      getterMethod.getDeclaringType() = getDeclaringType() and
+      getName().matches("set%")
     |
-      getterMethod.getName().suffix(3) = this.getName().suffix(3)
+      getterMethod.getName().suffix(3) = getName().suffix(3)
     )
   }
 }
@@ -61,9 +61,7 @@ class GigaSpacesSpaceIdSetterMethod extends Method {
  */
 class GigaSpacesSpaceRoutingMethod extends Method {
   GigaSpacesSpaceRoutingMethod() {
-    this.getAnAnnotation()
-        .getType()
-        .hasQualifiedName("com.gigaspaces.annotation.pojo", "SpaceRouting") and
-    this.getName().matches("get%")
+    getAnAnnotation().getType().hasQualifiedName("com.gigaspaces.annotation.pojo", "SpaceRouting") and
+    getName().matches("get%")
   }
 }

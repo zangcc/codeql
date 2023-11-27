@@ -11,11 +11,9 @@ import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.security.QueryInjection
 
 /**
- * DEPRECATED: Use `QueryInjectionFlow` instead.
- *
  * A taint-tracking configuration for unvalidated user input that is used in SQL queries.
  */
-deprecated class QueryInjectionFlowConfig extends TaintTracking::Configuration {
+class QueryInjectionFlowConfig extends TaintTracking::Configuration {
   QueryInjectionFlowConfig() { this = "SqlInjectionLib::QueryInjectionFlowConfig" }
 
   override predicate isSource(DataFlow::Node src) { src instanceof RemoteFlowSource }
@@ -34,43 +32,11 @@ deprecated class QueryInjectionFlowConfig extends TaintTracking::Configuration {
 }
 
 /**
- * A taint-tracking configuration for unvalidated user input that is used in SQL queries.
- */
-module QueryInjectionFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src instanceof ThreatModelFlowSource }
-
-  predicate isSink(DataFlow::Node sink) { sink instanceof QueryInjectionSink }
-
-  predicate isBarrier(DataFlow::Node node) {
-    node.getType() instanceof PrimitiveType or
-    node.getType() instanceof BoxedType or
-    node.getType() instanceof NumberType
-  }
-
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
-    any(AdditionalQueryInjectionTaintStep s).step(node1, node2)
-  }
-}
-
-/** Tracks flow of unvalidated user input that is used in SQL queries. */
-module QueryInjectionFlow = TaintTracking::Global<QueryInjectionFlowConfig>;
-
-/**
  * Implementation of `SqlTainted.ql`. This is extracted to a QLL so that it
  * can be excluded from `SqlConcatenated.ql` to avoid overlapping results.
  */
-deprecated predicate queryTaintedBy(
+predicate queryTaintedBy(
   QueryInjectionSink query, DataFlow::PathNode source, DataFlow::PathNode sink
 ) {
-  any(QueryInjectionFlowConfig c).hasFlowPath(source, sink) and sink.getNode() = query
-}
-
-/**
- * Implementation of `SqlTainted.ql`. This is extracted to a QLL so that it
- * can be excluded from `SqlConcatenated.ql` to avoid overlapping results.
- */
-predicate queryIsTaintedBy(
-  QueryInjectionSink query, QueryInjectionFlow::PathNode source, QueryInjectionFlow::PathNode sink
-) {
-  QueryInjectionFlow::flowPath(source, sink) and sink.getNode() = query
+  exists(QueryInjectionFlowConfig conf | conf.hasFlowPath(source, sink) and sink.getNode() = query)
 }

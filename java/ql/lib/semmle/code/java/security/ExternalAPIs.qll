@@ -12,6 +12,9 @@ import semmle.code.java.dataflow.TaintTracking
  */
 abstract class SafeExternalApiMethod extends Method { }
 
+/** DEPRECATED: Alias for SafeExternalApiMethod */
+deprecated class SafeExternalAPIMethod = SafeExternalApiMethod;
+
 /** The default set of "safe" external APIs. */
 private class DefaultSafeExternalApiMethod extends SafeExternalApiMethod {
   DefaultSafeExternalApiMethod() {
@@ -92,12 +95,11 @@ class ExternalApiDataNode extends DataFlow::Node {
   string getMethodDescription() { result = this.getMethod().getQualifiedName() }
 }
 
-/**
- * DEPRECATED: Use `UntrustedDataToExternalApiFlow` instead.
- *
- * A configuration for tracking flow from `RemoteFlowSource`s to `ExternalApiDataNode`s.
- */
-deprecated class UntrustedDataToExternalApiConfig extends TaintTracking::Configuration {
+/** DEPRECATED: Alias for ExternalApiDataNode */
+deprecated class ExternalAPIDataNode = ExternalApiDataNode;
+
+/** A configuration for tracking flow from `RemoteFlowSource`s to `ExternalApiDataNode`s. */
+class UntrustedDataToExternalApiConfig extends TaintTracking::Configuration {
   UntrustedDataToExternalApiConfig() { this = "UntrustedDataToExternalAPIConfig" }
 
   override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
@@ -105,27 +107,21 @@ deprecated class UntrustedDataToExternalApiConfig extends TaintTracking::Configu
   override predicate isSink(DataFlow::Node sink) { sink instanceof ExternalApiDataNode }
 }
 
-/**
- * Taint tracking configuration for flow from `ThreatModelFlowSource`s to `ExternalApiDataNode`s.
- */
-module UntrustedDataToExternalApiConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
-
-  predicate isSink(DataFlow::Node sink) { sink instanceof ExternalApiDataNode }
-}
-
-/**
- * Tracks flow from untrusted data to external APIs.
- */
-module UntrustedDataToExternalApiFlow = TaintTracking::Global<UntrustedDataToExternalApiConfig>;
+/** DEPRECATED: Alias for UntrustedDataToExternalApiConfig */
+deprecated class UntrustedDataToExternalAPIConfig = UntrustedDataToExternalApiConfig;
 
 /** A node representing untrusted data being passed to an external API. */
 class UntrustedExternalApiDataNode extends ExternalApiDataNode {
-  UntrustedExternalApiDataNode() { UntrustedDataToExternalApiFlow::flowTo(this) }
+  UntrustedExternalApiDataNode() { any(UntrustedDataToExternalApiConfig c).hasFlow(_, this) }
 
   /** Gets a source of untrusted data which is passed to this external API data node. */
-  DataFlow::Node getAnUntrustedSource() { UntrustedDataToExternalApiFlow::flow(result, this) }
+  DataFlow::Node getAnUntrustedSource() {
+    any(UntrustedDataToExternalApiConfig c).hasFlow(result, this)
+  }
 }
+
+/** DEPRECATED: Alias for UntrustedExternalApiDataNode */
+deprecated class UntrustedExternalAPIDataNode = UntrustedExternalApiDataNode;
 
 /** An external API which is used with untrusted data. */
 private newtype TExternalApi =
@@ -160,3 +156,6 @@ class ExternalApiUsedWithUntrustedData extends TExternalApi {
     )
   }
 }
+
+/** DEPRECATED: Alias for ExternalApiUsedWithUntrustedData */
+deprecated class ExternalAPIUsedWithUntrustedData = ExternalApiUsedWithUntrustedData;

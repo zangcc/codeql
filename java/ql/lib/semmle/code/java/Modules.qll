@@ -73,10 +73,10 @@ class RequiresDirective extends Directive, @requires {
 
   override string toString() {
     exists(string transitive, string static |
-      (if this.isTransitive() then transitive = "transitive " else transitive = "") and
-      (if this.isStatic() then static = "static " else static = "")
+      (if isTransitive() then transitive = "transitive " else transitive = "") and
+      (if isStatic() then static = "static " else static = "")
     |
-      result = "requires " + transitive + static + this.getTargetModule() + ";"
+      result = "requires " + transitive + static + getTargetModule() + ";"
     )
   }
 }
@@ -111,11 +111,11 @@ class ExportsDirective extends Directive, @exports {
 
   override string toString() {
     exists(string toClause |
-      if this.isQualified()
-      then toClause = (" to " + concat(this.getATargetModule().getName(), ", "))
+      if isQualified()
+      then toClause = (" to " + concat(getATargetModule().getName(), ", "))
       else toClause = ""
     |
-      result = "exports " + this.getExportedPackage() + toClause + ";"
+      result = "exports " + getExportedPackage() + toClause + ";"
     )
   }
 }
@@ -150,11 +150,11 @@ class OpensDirective extends Directive, @opens {
 
   override string toString() {
     exists(string toClause |
-      if this.isQualified()
-      then toClause = (" to " + concat(this.getATargetModule().getName(), ", "))
+      if isQualified()
+      then toClause = (" to " + concat(getATargetModule().getName(), ", "))
       else toClause = ""
     |
-      result = "opens " + this.getOpenedPackage() + toClause + ";"
+      result = "opens " + getOpenedPackage() + toClause + ";"
     )
   }
 }
@@ -170,7 +170,7 @@ class UsesDirective extends Directive, @uses {
    */
   string getServiceInterfaceName() { uses(this, result) }
 
-  override string toString() { result = "uses " + this.getServiceInterfaceName() + ";" }
+  override string toString() { result = "uses " + getServiceInterfaceName() + ";" }
 }
 
 /**
@@ -191,7 +191,7 @@ class ProvidesDirective extends Directive, @provides {
 
   override string toString() {
     result =
-      "provides " + this.getServiceInterfaceName() + " with " +
-        concat(this.getServiceImplementationName(), ", ") + ";"
+      "provides " + getServiceInterfaceName() + " with " +
+        concat(getServiceImplementationName(), ", ") + ";"
   }
 }

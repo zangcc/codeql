@@ -2,7 +2,7 @@ import csharp
 
 class ImplementsICryptoTransform extends Class {
   ImplementsICryptoTransform() {
-    this.getABaseType*().hasFullyQualifiedName("System.Security.Cryptography", "ICryptoTransform")
+    this.getABaseType*().hasQualifiedName("System.Security.Cryptography", "ICryptoTransform")
   }
 }
 

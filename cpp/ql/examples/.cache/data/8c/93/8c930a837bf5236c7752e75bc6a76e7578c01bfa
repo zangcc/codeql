@@ -1,0 +1,24 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "01-log-sensitive-print.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "71aeec42ce2f60e7e2d20ea62cb6c1e212e14394"
+  debugInfo: "61c2fd199591ed52e9acd33d0778fdf68a11972c"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "538a78714128283b500f8d597129e70bc2ea44be"
+- cached: "6c8b3996f913a2c301248eb9686264937fe1493c"
+  debugInfo: "ace4f403710ddd310a6780a53b19a87cfb14b4bf"
+- cached: "5a7f9fbc1550c93084b1c41446939bca46efe511"
+  debugInfo: "3374566367136cbf440178c0d1b5ad8b54bbb508"
+- cached: "2407ffc6dc5373c4974dadf0af691749a6e8ee39"
+  debugInfo: "f7627808d0b01d6a20001944d5037ee42788175a"
+- cached: "a2f35a2f0cb5eb3c1bba3e648e10074f25e4d046"
+  debugInfo: "9cbac98842d946a41fd95c6d60aae7b8b59ae0d7"
+results:
+  '#select':
+    resultArranger: "4\"fc\"ei120s0s\"str1\"s"
+inputsDigest: "8c930a837bf5236c7752e75bc6a76e7578c01bfa"

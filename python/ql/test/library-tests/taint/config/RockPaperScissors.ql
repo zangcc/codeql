@@ -5,6 +5,7 @@
 import python
 import semmle.python.dataflow.TaintTracking
 import TaintLib
+import semmle.python.security.Paths
 
 from RockPaperScissorConfig config, TaintedPathSource src, TaintedPathSink sink
 where config.hasFlowPath(src, sink)

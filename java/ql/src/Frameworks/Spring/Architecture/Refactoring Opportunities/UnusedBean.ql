@@ -18,10 +18,10 @@ import semmle.code.java.frameworks.spring.Spring
 class InstanceFieldWrite extends FieldWrite {
   InstanceFieldWrite() {
     // Must be in an instance callable
-    not this.getEnclosingCallable().isStatic() and
+    not getEnclosingCallable().isStatic() and
     // Must be declared in this type or a supertype.
-    this.getEnclosingCallable().getDeclaringType().inherits(this.getField()) and
-    this.isOwnFieldAccess()
+    getEnclosingCallable().getDeclaringType().inherits(getField()) and
+    isOwnFieldAccess()
   }
 }
 
@@ -62,7 +62,7 @@ class SpringPureClass extends Class {
   SpringPureClass() {
     // The only permitted statement in static initializers is the initialization of a static
     // final or effectively final logger fields, or effectively immutable types.
-    forall(Stmt s | s = getANestedStmt(this.getAMember().(StaticInitializer).getBody()) |
+    forall(Stmt s | s = getANestedStmt(getAMember().(StaticInitializer).getBody()) |
       exists(Field f | f = s.(ExprStmt).getExpr().(AssignExpr).getDest().(FieldWrite).getField() |
         (
           // A logger field
@@ -79,8 +79,8 @@ class SpringPureClass extends Class {
     // No constructor, instance initializer or Spring bean init or setter method that is impure.
     not exists(Callable c, ImpureStmt impureStmt |
       (
-        this.inherits(c.(Method)) or
-        c = this.getAMember()
+        inherits(c.(Method)) or
+        c = getAMember()
       ) and
       impureStmt.getEnclosingCallable() = c
     |
@@ -110,14 +110,14 @@ class SpringPureClass extends Class {
  */
 class SpringBeanFactory extends ClassOrInterface {
   SpringBeanFactory() {
-    this.getAnAncestor().hasQualifiedName("org.springframework.beans.factory", "BeanFactory")
+    getAnAncestor().hasQualifiedName("org.springframework.beans.factory", "BeanFactory")
   }
 
   /**
    * Get a bean constructed by a call to this bean factory.
    */
   SpringBean getAConstructedBean() {
-    exists(Method getBean, MethodCall call |
+    exists(Method getBean, MethodAccess call |
       getBean.hasName("getBean") and
       call.getMethod() = getBean and
       getBean.getDeclaringType() = this
@@ -136,20 +136,20 @@ class LiveSpringBean extends SpringBean {
   LiveSpringBean() {
     // Must not be needed for side effects due to construction
     // Only loaded by the container when required, so construction cannot have any useful side-effects
-    not this.isLazyInit() and
+    not isLazyInit() and
     // or has no side-effects when constructed
-    not this.getClass() instanceof SpringPureClass
+    not getClass() instanceof SpringPureClass
     or
     (
       // If the class does not exist for this bean, or the class is not a source bean, then this is
       // likely to be a definition using a library class, in which case we should consider it to be
       // live.
-      not exists(this.getClass())
+      not exists(getClass())
       or
-      not this.getClass().fromSource()
+      not getClass().fromSource()
       or
       // In alfresco, "webscript" beans should be considered live
-      this.getBeanParent*().getBeanParentName() = "webscript"
+      getBeanParent*().getBeanParentName() = "webscript"
       or
       // A live child bean implies this bean is live
       exists(LiveSpringBean child | this = child.getBeanParent())

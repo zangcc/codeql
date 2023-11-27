@@ -1,7 +1,6 @@
 package com.github.codeql
 
-import com.github.codeql.comments.CommentExtractorPSI
-import com.github.codeql.comments.CommentExtractorLighterAST
+import com.github.codeql.comments.CommentExtractor
 import com.github.codeql.utils.*
 import com.github.codeql.utils.versions.*
 import com.semmle.extractor.java.OdasaOutput
@@ -80,7 +79,6 @@ open class KotlinFileExtractor(
     globalExtensionState: KotlinExtractorGlobalState,
 ): KotlinUsesExtractor(logger, tw, dependencyCollector, externalClassExtractor, primitiveTypeMapping, pluginContext, globalExtensionState) {
 
-    val usesK2 = usesK2(pluginContext)
     val metaAnnotationSupport = MetaAnnotationSupport(logger, pluginContext, this)
 
     private inline fun <T> with(kind: String, element: IrElement, f: () -> T): T {
@@ -109,7 +107,7 @@ open class KotlinFileExtractor(
     fun extractFileContents(file: IrFile, id: Label<DbFile>) {
         with("file", file) {
             val locId = tw.getWholeFileLocation()
-            val pkg = file.packageFqName.asString()
+            val pkg = file.fqName.asString()
             val pkgId = extractPackage(pkg)
             tw.writeHasLocation(id, locId)
             tw.writeCupackage(id, pkgId)
@@ -129,15 +127,7 @@ open class KotlinFileExtractor(
                 }
             }
             extractStaticInitializer(file, { extractFileClass(file) })
-            val psiCommentsExtracted = CommentExtractorPSI(this, file, tw.fileId).extract()
-            val lighterAstCommentsExtracted = CommentExtractorLighterAST(this, file, tw.fileId).extract()
-            if (psiCommentsExtracted == lighterAstCommentsExtracted) {
-                if (psiCommentsExtracted) {
-                    logger.warnElement("Found both PSI and LighterAST comments in ${file.path}.", file)
-                } else {
-                    logger.warnElement("Comments could not be processed in ${file.path}.", file)
-                }
-            }
+            CommentExtractor(this, file, tw.fileId).extract()
 
             if (!declarationStack.isEmpty()) {
                 logger.errorElement("Declaration stack is not empty after processing the file", file)
@@ -167,26 +157,22 @@ open class KotlinFileExtractor(
             else -> false
         }
 
-    private fun FunctionDescriptor.tryIsHiddenToOvercomeSignatureClash(d: IrFunction): Boolean {
-        try {
-            return this.isHiddenToOvercomeSignatureClash
-        }
-        catch (e: NotImplementedError) {
-            // `org.jetbrains.kotlin.ir.descriptors.IrBasedClassConstructorDescriptor.isHiddenToOvercomeSignatureClash` throws the exception
-            // TODO: We need a replacement for this for Kotlin 2
-            if (!usesK2) {
-                logger.warnElement("Couldn't query if element is fake, deciding it's not.", d, e)
-            }
-            return false
-        }
-    }
-
     @OptIn(ObsoleteDescriptorBasedAPI::class)
     private fun isFake(d: IrDeclarationWithVisibility): Boolean {
         val hasFakeVisibility = d.visibility.let { it is DelegatedDescriptorVisibility && it.delegate == Visibilities.InvisibleFake } || d.isFakeOverride
         if (hasFakeVisibility && !isJavaBinaryObjectMethodRedeclaration(d))
             return true
-        return (d as? IrFunction)?.descriptor?.tryIsHiddenToOvercomeSignatureClash(d) == true
+        try {
+            if ((d as? IrFunction)?.descriptor?.isHiddenToOvercomeSignatureClash == true) {
+                return true
+            }
+        }
+        catch (e: NotImplementedError) {
+            // `org.jetbrains.kotlin.ir.descriptors.IrBasedClassConstructorDescriptor.isHiddenToOvercomeSignatureClash` throws the exception
+            logger.warnElement("Couldn't query if element is fake, deciding it's not.", d, e)
+            return false
+        }
+        return false
     }
 
     private fun shouldExtractDecl(declaration: IrDeclaration, extractPrivateMembers: Boolean) =
@@ -205,7 +191,7 @@ open class KotlinFileExtractor(
                     }
                 }
                 is IrFunction -> {
-                    val parentId = useDeclarationParentOf(declaration, false)?.cast<DbReftype>()
+                    val parentId = useDeclarationParent(declaration.parent, false)?.cast<DbReftype>()
                     if (parentId != null) {
                         extractFunction(declaration, parentId, extractBody = extractFunctionBodies, extractMethodAndParameterTypeAccesses = extractFunctionBodies, extractAnnotations = extractAnnotations, null, listOf())
                     }
@@ -215,21 +201,21 @@ open class KotlinFileExtractor(
                     // Leaving this intentionally empty. init blocks are extracted during class extraction.
                 }
                 is IrProperty -> {
-                    val parentId = useDeclarationParentOf(declaration, false)?.cast<DbReftype>()
+                    val parentId = useDeclarationParent(declaration.parent, false)?.cast<DbReftype>()
                     if (parentId != null) {
                         extractProperty(declaration, parentId, extractBackingField = true, extractFunctionBodies = extractFunctionBodies, extractPrivateMembers = extractPrivateMembers, extractAnnotations = extractAnnotations, null, listOf())
                     }
                     Unit
                 }
                 is IrEnumEntry -> {
-                    val parentId = useDeclarationParentOf(declaration, false)?.cast<DbReftype>()
+                    val parentId = useDeclarationParent(declaration.parent, false)?.cast<DbReftype>()
                     if (parentId != null) {
                         extractEnumEntry(declaration, parentId, extractPrivateMembers, extractFunctionBodies)
                     }
                     Unit
                 }
                 is IrField -> {
-                    val parentId = useDeclarationParentOf(declaration, false)?.cast<DbReftype>()
+                    val parentId = useDeclarationParent(getFieldParent(declaration), false)?.cast<DbReftype>()
                     if (parentId != null) {
                         // For consistency with the Java extractor, enum entries get type accesses only if we're extracting from .kt source (i.e., when `extractFunctionBodies` is set)
                         extractField(declaration, parentId, extractAnnotationEnumTypeAccesses = extractFunctionBodies)
@@ -380,10 +366,7 @@ open class KotlinFileExtractor(
 
             val typeArgs = removeOuterClassTypeArgs(c, argsIncludingOuterClasses)
             if (typeArgs != null) {
-                // From 1.9, the list might change when we call erase,
-                // so we make a copy that it is safe to iterate over.
-                val typeArgsCopy = typeArgs.toList()
-                for ((idx, arg) in typeArgsCopy.withIndex()) {
+                for ((idx, arg) in typeArgs.withIndex()) {
                     val argId = getTypeArgumentLabel(arg).id
                     tw.writeTypeArgs(argId, idx, id)
                 }
@@ -422,10 +405,11 @@ open class KotlinFileExtractor(
 
     private fun getLocation(decl: IrDeclaration, typeArgs: List<IrTypeArgument>?): Label<DbLocation> {
         return if (typeArgs != null && typeArgs.isNotEmpty()) {
-            val binaryPath = getIrDeclarationBinaryPath(decl)
-            if (binaryPath == null) {
+            val c = getContainingClassOrSelf(decl)
+            if (c == null) {
                 tw.getLocation(decl)
             } else {
+                val binaryPath = getIrClassBinaryPath(c)
                 val newTrapWriter = tw.makeFileTrapWriter(binaryPath, true)
                 newTrapWriter.getWholeFileLocation()
             }
@@ -485,7 +469,7 @@ open class KotlinFileExtractor(
 
     private fun extractObinitFunction(c: IrClass, parentId: Label<out DbClassorinterface>) {
         // add method:
-        val obinitLabel = getObinitLabel(c, parentId)
+        val obinitLabel = getObinitLabel(c)
         val obinitId = tw.getLabelFor<DbMethod>(obinitLabel)
         val returnType = useType(pluginContext.irBuiltIns.unitType, TypeContext.RETURN)
         tw.writeMethods(obinitId, "<obinit>", "<obinit>()", returnType.javaResult.id, parentId, obinitId)
@@ -565,13 +549,9 @@ open class KotlinFileExtractor(
                 logger.warnElement("Expected annotation property to define a getter", prop)
             } else {
                 val getterId = useFunction<DbMethod>(getter)
-                if (getterId == null) {
-                    logger.errorElement("Couldn't get ID for getter", getter)
-                } else {
-                    val exprId = extractAnnotationValueExpression(v, id, i, "{$getterId}", getter.returnType, extractEnumTypeAccesses)
-                    if (exprId != null) {
-                        tw.writeAnnotValue(id, getterId, exprId)
-                    }
+                val exprId = extractAnnotationValueExpression(v, id, i, "{${getterId}}", getter.returnType, extractEnumTypeAccesses)
+                if (exprId != null) {
+                    tw.writeAnnotValue(id, getterId, exprId)
                 }
             }
         }
@@ -604,7 +584,7 @@ open class KotlinFileExtractor(
                 extractAnnotation(v, parent, idx, extractEnumTypeAccesses, contextLabel)
             }
             is IrVararg -> {
-                tw.getLabelFor<DbArrayinit>("@\"annotationarray;{$parent};$contextLabel\"").also { arrayId ->
+                tw.getLabelFor<DbArrayinit>("@\"annotationarray;{${parent}};$contextLabel\"").also { arrayId ->
                     // Use the context type (i.e., the type the annotation expects, not the actual type of the array)
                     // because the Java extractor fills in array types using the same technique. These should only
                     // differ for generic annotations.
@@ -658,10 +638,6 @@ open class KotlinFileExtractor(
                         tw.writeIsEnumType(id)
                     } else if (kind != ClassKind.CLASS && kind != ClassKind.OBJECT && kind != ClassKind.ENUM_ENTRY) {
                         logger.warnElement("Unrecognised class kind $kind", c)
-                    }
-
-                    if (c.origin == IrDeclarationOrigin.FILE_CLASS) {
-                        tw.writeFile_class(id)
                     }
 
                     if (c.isData) {
@@ -996,10 +972,6 @@ open class KotlinFileExtractor(
     private fun extractInstanceInitializerBlock(parent: StmtParent, enclosingConstructor: IrConstructor) {
         with("object initializer block", enclosingConstructor) {
             val constructorId = useFunction<DbConstructor>(enclosingConstructor)
-            if (constructorId == null) {
-                logger.errorElement("Cannot get ID for constructor", enclosingConstructor)
-                return
-            }
             val enclosingClass = enclosingConstructor.parentClassOrNull
             if (enclosingClass == null) {
                 logger.errorElement("Constructor's parent is not a class", enclosingConstructor)
@@ -1173,10 +1145,6 @@ open class KotlinFileExtractor(
             return
 
         val id = getDefaultsMethodLabel(f)
-        if (id == null) {
-            logger.errorElement("Cannot get defaults method label for function", f)
-            return
-        }
         val locId = getLocation(f, null)
         val extReceiver = f.extensionReceiverParameter
         val dispatchReceiver = if (f.shouldExtractAsStatic) null else f.dispatchReceiverParameter
@@ -1218,7 +1186,7 @@ open class KotlinFileExtractor(
             // n + o'th parameter, where `o` is the parameter offset caused by adding any dispatch receiver to the parameter list.
             // Note we don't need to add the extension receiver here because `useValueParameter` always assumes an extension receiver
             // will be prepended if one exists.
-            val realFunctionId = useFunction<DbCallable>(f, parentId, null)
+            val realFunctionId = useFunction<DbCallable>(f)
             DeclarationStackAdjuster(f, OverriddenFunctionAttributes(id, id, locId, nonSyntheticParams, typeParameters = listOf(), isStatic = true)).use {
                 val realParamsVarId = getValueParameterLabel(id, parameterTypes.size - 2)
                 val intType = pluginContext.irBuiltIns.intType
@@ -1298,13 +1266,9 @@ open class KotlinFileExtractor(
             val sourceParentId =
                 maybeSourceParentId ?:
                     if (typeSubstitution != null)
-                        useDeclarationParentOf(f, false)
+                        useDeclarationParent(f.parent, false)
                     else
                         parentId
-            if (sourceParentId == null) {
-                logger.errorElement("Cannot get source parent ID for function", f)
-                return
-            }
             val sourceDeclId = tw.getLabelFor<DbCallable>(getFunctionLabel(f, sourceParentId, listOf(), overloadParameters))
             val overriddenAttributes = OverriddenFunctionAttributes(id = overloadId, sourceDeclarationId = sourceDeclId, valueParameters = overloadParameters)
             forceExtractFunction(f, parentId, extractBody = false, extractMethodAndParameterTypeAccesses, extractAnnotations = false, typeSubstitution, classTypeArgsIncludingOuterClasses, overriddenAttributes = overriddenAttributes)
@@ -1322,7 +1286,7 @@ open class KotlinFileExtractor(
                         val constructorCallId = tw.getFreshIdLabel<DbConstructorinvocationstmt>()
                         tw.writeStmts_constructorinvocationstmt(constructorCallId, blockId, 0, overloadId)
                         tw.writeHasLocation(constructorCallId, realFunctionLocId)
-                        tw.writeCallableBinding(constructorCallId, getDefaultsMethodLabel(f, parentId))
+                        tw.writeCallableBinding(constructorCallId, getDefaultsMethodLabel(f))
 
                         extractDefaultsCallArguments(constructorCallId, f, overloadId, constructorCallId, regularArgs, null, null)
                     } else {
@@ -1439,17 +1403,10 @@ open class KotlinFileExtractor(
 
                 val sourceDeclaration =
                     overriddenAttributes?.sourceDeclarationId ?:
-                        if (typeSubstitution != null && overriddenAttributes?.id == null) {
-                            val sourceFunId = useFunction<DbCallable>(f)
-                            if (sourceFunId == null) {
-                                logger.errorElement("Cannot get source ID for function", f)
-                                id // TODO: This is wrong; we ought to just fail in this case
-                            } else {
-                                sourceFunId
-                            }
-                        } else {
+                        if (typeSubstitution != null && overriddenAttributes?.id == null)
+                            useFunction(f)
+                        else
                             id
-                        }
 
                 val extReceiver = f.extensionReceiverParameter
                 // The following parameter order is correct, because member $default methods (where the order would be [dispatchParam], [extensionParam], normalParams) are not extracted here
@@ -1599,7 +1556,7 @@ open class KotlinFileExtractor(
                 val setter = p.setter
 
                 if (getter == null) {
-                    if (!isExternalDeclaration(p)) {
+                    if (p.modality != Modality.FINAL || !isExternalDeclaration(p)) {
                         logger.warnElement("IrProperty without a getter", p)
                     }
                 } else if (shouldExtractDecl(getter, extractPrivateMembers)) {
@@ -1630,7 +1587,7 @@ open class KotlinFileExtractor(
                 }
 
                 if (bf != null && extractBackingField) {
-                    val fieldParentId = useDeclarationParentOf(bf, false)
+                    val fieldParentId = useDeclarationParent(getFieldParent(bf), false)
                     if (fieldParentId != null) {
                         val fieldId = extractField(bf, fieldParentId.cast(), extractFunctionBodies)
                         tw.writeKtPropertyBackingFields(id, fieldId)
@@ -1741,13 +1698,12 @@ open class KotlinFileExtractor(
 
     private fun extractSyntheticBody(b: IrSyntheticBody, callable: Label<out DbCallable>) {
         with("synthetic body", b) {
-            val kind = b.kind
-            when {
-                kind == IrSyntheticBodyKind.ENUM_VALUES -> tw.writeKtSyntheticBody(callable, 1)
-                kind == IrSyntheticBodyKind.ENUM_VALUEOF -> tw.writeKtSyntheticBody(callable, 2)
-                kind == kind_ENUM_ENTRIES -> tw.writeKtSyntheticBody(callable, 3)
+            when (b.kind) {
+                IrSyntheticBodyKind.ENUM_VALUES -> tw.writeKtSyntheticBody(callable, 1)
+                IrSyntheticBodyKind.ENUM_VALUEOF -> tw.writeKtSyntheticBody(callable, 2)
                 else -> {
-                    logger.errorElement("Unhandled synthetic body kind " + kind, b)
+                    // TODO: Support IrSyntheticBodyKind.ENUM_ENTRIES
+                    logger.errorElement("Unhandled synthetic body kind " + b.kind.javaClass, b)
                 }
             }
         }
@@ -1915,9 +1871,8 @@ open class KotlinFileExtractor(
             verboseln("No match as didn't find target package")
             return false
         }
-        val targetName = targetPkg.packageFqName.asString()
-        if (targetName != pName) {
-            verboseln("No match as package name is $targetName")
+        if (targetPkg.fqName.asString() != pName) {
+            verboseln("No match as package name is ${targetPkg.fqName.asString()}")
             return false
         }
         verboseln("Match")
@@ -2103,23 +2058,13 @@ open class KotlinFileExtractor(
             getFunctionShortName(f).nameInDB + "\$default"
         }
 
-    private fun getDefaultsMethodLabel(f: IrFunction): Label<out DbCallable>? {
-        val classTypeArgsIncludingOuterClasses = null
-        val parentId = useDeclarationParentOf(f, false, classTypeArgsIncludingOuterClasses, true)
-        if (parentId == null) {
-            logger.errorElement("Couldn't get parent ID for defaults method", f)
-            return null
-        }
-        return getDefaultsMethodLabel(f, parentId)
-    }
-
-    private fun getDefaultsMethodLabel(f: IrFunction, parentId: Label<out DbElement>): Label<out DbCallable> {
+    private fun getDefaultsMethodLabel(f: IrFunction): Label<out DbCallable> {
         val defaultsMethodName = if (f is IrConstructor) "<init>" else getDefaultsMethodName(f)
         val argTypes = getDefaultsMethodArgTypes(f)
 
         val defaultMethodLabelStr = getFunctionLabel(
             f.parent,
-            parentId,
+            maybeParentId = null,
             defaultsMethodName,
             argTypes,
             erase(f.returnType),
@@ -2168,7 +2113,7 @@ open class KotlinFileExtractor(
         if (overriddenCallTarget.isLocalFunction()) {
             extractTypeAccess(getLocallyVisibleFunctionLabels(overriddenCallTarget).type, locId, id, -1, enclosingCallable, enclosingStmt)
         } else {
-            extractStaticTypeAccessQualifierUnchecked(overriddenCallTarget, id, locId, enclosingCallable, enclosingStmt)
+            extractStaticTypeAccessQualifierUnchecked(overriddenCallTarget.parent, id, locId, enclosingCallable, enclosingStmt)
         }
 
         extractDefaultsCallArguments(id, overriddenCallTarget, enclosingCallable, enclosingStmt, valueArguments, dispatchReceiver, extensionReceiver)
@@ -2394,17 +2339,8 @@ open class KotlinFileExtractor(
         extractValueArguments(argParent, idxOffset)
     }
 
-    private fun extractStaticTypeAccessQualifierUnchecked(target: IrDeclaration, parentExpr: Label<out DbExprparent>, locId: Label<DbLocation>, enclosingCallable: Label<out DbCallable>?, enclosingStmt: Label<out DbStmt>?) {
-        val parent = target.parent
-        if (parent is IrExternalPackageFragment) {
-            // This is in a file class.
-            val fqName = getFileClassFqName(target)
-            if (fqName == null) {
-                logger.error("Can't get FqName for static type access qualifier in external package fragment ${target.javaClass}")
-            } else {
-                extractTypeAccess(useFileClassType(fqName), locId, parentExpr, -1, enclosingCallable, enclosingStmt)
-            }
-        } else if (parent is IrClass) {
+    private fun extractStaticTypeAccessQualifierUnchecked(parent: IrDeclarationParent, parentExpr: Label<out DbExprparent>, locId: Label<DbLocation>, enclosingCallable: Label<out DbCallable>?, enclosingStmt: Label<out DbStmt>?) {
+        if (parent is IrClass) {
             extractTypeAccessRecursive(parent.toRawType(), locId, parentExpr, -1, enclosingCallable, enclosingStmt)
         } else if (parent is IrFile) {
             extractTypeAccess(useFileClassType(parent), locId, parentExpr, -1, enclosingCallable, enclosingStmt)
@@ -2415,7 +2351,7 @@ open class KotlinFileExtractor(
 
     private fun extractStaticTypeAccessQualifier(target: IrDeclaration, parentExpr: Label<out DbExprparent>, locId: Label<DbLocation>, enclosingCallable: Label<out DbCallable>?, enclosingStmt: Label<out DbStmt>?) {
         if (target.shouldExtractAsStatic) {
-            extractStaticTypeAccessQualifierUnchecked(target, parentExpr, locId, enclosingCallable, enclosingStmt)
+            extractStaticTypeAccessQualifierUnchecked(target.parent, parentExpr, locId, enclosingCallable, enclosingStmt)
         }
     }
 
@@ -2458,16 +2394,12 @@ open class KotlinFileExtractor(
         return result
     }
 
-    private fun findTopLevelFunctionOrWarn(functionPkg: String, functionName: String, type: String, parameterTypes: Array<String>, warnAgainstElement: IrElement): IrFunction? {
+    private fun findTopLevelFunctionOrWarn(functionFilter: String, type: String, parameterTypes: Array<String>, warnAgainstElement: IrElement): IrFunction? {
 
-        val fn = getFunctionsByFqName(pluginContext, functionPkg, functionName)
+        val fn = getFunctionsByFqName(pluginContext, functionFilter)
             .firstOrNull { fnSymbol ->
-                val owner = fnSymbol.owner
-                (owner.parentClassOrNull?.fqNameWhenAvailable?.asString() == type
-                 ||
-                 (owner.parent is IrExternalPackageFragment && getFileClassFqName(owner)?.asString() == type))
-                &&
-                owner.valueParameters.map { it.type.classFqName?.asString() }.toTypedArray() contentEquals parameterTypes
+                fnSymbol.owner.parentClassOrNull?.fqNameWhenAvailable?.asString() == type &&
+                fnSymbol.owner.valueParameters.map { it.type.classFqName?.asString() }.toTypedArray() contentEquals parameterTypes
             }?.owner
 
         if (fn != null) {
@@ -2475,15 +2407,15 @@ open class KotlinFileExtractor(
                 extractExternalClassLater(fn.parentAsClass)
             }
         } else {
-            logger.errorElement("Couldn't find JVM intrinsic function $functionPkg $functionName in $type", warnAgainstElement)
+            logger.errorElement("Couldn't find JVM intrinsic function $functionFilter in $type", warnAgainstElement)
         }
 
         return fn
     }
 
-    private fun findTopLevelPropertyOrWarn(propertyPkg: String, propertyName: String, type: String, warnAgainstElement: IrElement): IrProperty? {
+    private fun findTopLevelPropertyOrWarn(propertyFilter: String, type: String, warnAgainstElement: IrElement): IrProperty? {
 
-        val prop = getPropertiesByFqName(pluginContext, propertyPkg, propertyName)
+        val prop = getPropertiesByFqName(pluginContext, propertyFilter)
             .firstOrNull { it.owner.parentClassOrNull?.fqNameWhenAvailable?.asString() == type }
             ?.owner
 
@@ -2492,7 +2424,7 @@ open class KotlinFileExtractor(
                 extractExternalClassLater(prop.parentAsClass)
             }
         } else {
-            logger.errorElement("Couldn't find JVM intrinsic property $propertyPkg $propertyName in $type", warnAgainstElement)
+            logger.errorElement("Couldn't find JVM intrinsic property $propertyFilter in $type", warnAgainstElement)
         }
 
         return prop
@@ -2575,9 +2507,8 @@ open class KotlinFileExtractor(
             verboseln("No match as didn't find target package")
             return false
         }
-        val targetName = targetPkg.packageFqName.asString()
-        if (targetName != pkgName) {
-            verboseln("No match as package name is $targetName not $pkgName")
+        if (targetPkg.fqName.asString() != pkgName) {
+            verboseln("No match as package name is ${targetPkg.fqName.asString()} not $pkgName")
             return false
         }
         verboseln("Match")
@@ -2987,11 +2918,7 @@ open class KotlinFileExtractor(
                         tw.writeStmts_throwstmt(throwId, stmtParent.parent, stmtParent.idx, callable)
                         tw.writeHasLocation(throwId, locId)
                         val newExprId = extractNewExpr(it, null, thrownType, locId, throwId, 0, callable, throwId)
-                        if (newExprId == null) {
-                            logger.errorElement("No ID for newExpr in noWhenBranchMatchedException", c)
-                        } else {
-                            extractTypeAccess(thrownType, locId, newExprId, -3, callable, throwId)
-                        }
+                        extractTypeAccess(thrownType, locId, newExprId, -3, callable, throwId)
                     }
                 }
                 isBuiltinCallInternal(c, "illegalArgumentException") -> {
@@ -3089,7 +3016,7 @@ open class KotlinFileExtractor(
                 }
                 isBuiltinCall(c, "<get-java>", "kotlin.jvm") -> {
                     // Special case for KClass<*>.java, which is used in the Parcelize plugin. In normal cases, this is already rewritten to the property referenced below:
-                    findTopLevelPropertyOrWarn("kotlin.jvm", "java", "kotlin.jvm.JvmClassMappingKt", c)?.let { javaProp ->
+                    findTopLevelPropertyOrWarn("kotlin.jvm.java", "kotlin.jvm.JvmClassMappingKt", c)?.let { javaProp ->
                         val getter = javaProp.getter
                         if (getter == null) {
                             logger.error("Couldn't find getter of `kotlin.jvm.JvmClassMappingKt::java`")
@@ -3121,7 +3048,7 @@ open class KotlinFileExtractor(
                         "kotlin.jvm.internal.ArrayIteratorsKt"
                     }
 
-                    findTopLevelFunctionOrWarn("kotlin.jvm.internal", "iterator", typeFilter, arrayOf(parentClass.kotlinFqName.asString()), c)?.let { iteratorFn ->
+                    findTopLevelFunctionOrWarn("kotlin.jvm.internal.iterator", typeFilter, arrayOf(parentClass.kotlinFqName.asString()), c)?.let { iteratorFn ->
                         val dispatchReceiver = c.dispatchReceiver
                         if (dispatchReceiver == null) {
                             logger.errorElement("No dispatch receiver found for array iterator call", c)
@@ -3335,20 +3262,13 @@ open class KotlinFileExtractor(
         idx: Int,
         callable: Label<out DbCallable>,
         enclosingStmt: Label<out DbStmt>
-    ): Label<DbNewexpr>? {
-        val funId = useFunction<DbConstructor>(calledConstructor, constructorTypeArgs)
-        if (funId == null) {
-            logger.error("Cannot get ID for newExpr function")
-            return null
-        }
-        return extractNewExpr(funId, constructedType, locId, parent, idx, callable, enclosingStmt)
-    }
+    ): Label<DbNewexpr> = extractNewExpr(useFunction<DbConstructor>(calledConstructor, constructorTypeArgs), constructedType, locId, parent, idx, callable, enclosingStmt)
 
     private fun needsObinitFunction(c: IrClass) = c.primaryConstructor == null && c.constructors.count() > 1
 
-    private fun getObinitLabel(c: IrClass, parentId: Label<out DbElement>): String = getFunctionLabel(
+    private fun getObinitLabel(c: IrClass) = getFunctionLabel(
         c,
-        parentId,
+        null,
         "<obinit>",
         listOf(),
         pluginContext.irBuiltIns.unitType,
@@ -3378,40 +3298,30 @@ open class KotlinFileExtractor(
         val valueArgs = (0 until e.valueArgumentsCount).map { e.getValueArgument(it) }
 
         val id = if (e !is IrEnumConstructorCall && callUsesDefaultArguments(e.symbol.owner, valueArgs)) {
-            val defaultsMethodId = getDefaultsMethodLabel(e.symbol.owner)
-            if (defaultsMethodId == null) {
-                logger.errorElement("Cannot get defaults method ID", e)
-                return
-            }
-            extractNewExpr(defaultsMethodId.cast(), type, locId, parent, idx, callable, enclosingStmt).also {
+            extractNewExpr(getDefaultsMethodLabel(e.symbol.owner).cast(), type, locId, parent, idx, callable, enclosingStmt).also {
                 extractDefaultsCallArguments(it, e.symbol.owner, callable, enclosingStmt, valueArgs, null, null)
             }
         } else {
-            val newExprId = extractNewExpr(e.symbol.owner, eType.arguments, type, locId, parent, idx, callable, enclosingStmt)
-            if (newExprId == null) {
-                logger.errorElement("Cannot get newExpr ID", e)
-                return
+            extractNewExpr(e.symbol.owner, eType.arguments, type, locId, parent, idx, callable, enclosingStmt).also {
+
+                val realCallTarget = e.symbol.owner.realOverrideTarget
+                // Generated constructor calls to kotlin.Enum have no arguments in IR, but the constructor takes two parameters.
+                if (e is IrEnumConstructorCall &&
+                    realCallTarget is IrConstructor &&
+                    realCallTarget.parentClassOrNull?.fqNameWhenAvailable?.asString() == "kotlin.Enum" &&
+                    realCallTarget.valueParameters.size == 2 &&
+                    realCallTarget.valueParameters[0].type == pluginContext.irBuiltIns.stringType &&
+                    realCallTarget.valueParameters[1].type == pluginContext.irBuiltIns.intType) {
+
+                    val id0 = extractNull(pluginContext.irBuiltIns.stringType, locId, it, 0, callable, enclosingStmt)
+                    tw.writeCompiler_generated(id0, CompilerGeneratedKinds.ENUM_CONSTRUCTOR_ARGUMENT.kind)
+
+                    val id1 = extractConstantInteger(0, locId, it, 1, callable, enclosingStmt)
+                    tw.writeCompiler_generated(id1, CompilerGeneratedKinds.ENUM_CONSTRUCTOR_ARGUMENT.kind)
+                } else {
+                    extractCallValueArguments(it, e, enclosingStmt, callable, 0)
+                }
             }
-
-            val realCallTarget = e.symbol.owner.realOverrideTarget
-            // Generated constructor calls to kotlin.Enum have no arguments in IR, but the constructor takes two parameters.
-            if (e is IrEnumConstructorCall &&
-                realCallTarget is IrConstructor &&
-                realCallTarget.parentClassOrNull?.fqNameWhenAvailable?.asString() == "kotlin.Enum" &&
-                realCallTarget.valueParameters.size == 2 &&
-                realCallTarget.valueParameters[0].type == pluginContext.irBuiltIns.stringType &&
-                realCallTarget.valueParameters[1].type == pluginContext.irBuiltIns.intType) {
-
-                val id0 = extractNull(pluginContext.irBuiltIns.stringType, locId, newExprId, 0, callable, enclosingStmt)
-                tw.writeCompiler_generated(id0, CompilerGeneratedKinds.ENUM_CONSTRUCTOR_ARGUMENT.kind)
-
-                val id1 = extractConstantInteger(0, locId, newExprId, 1, callable, enclosingStmt)
-                tw.writeCompiler_generated(id1, CompilerGeneratedKinds.ENUM_CONSTRUCTOR_ARGUMENT.kind)
-            } else {
-                extractCallValueArguments(newExprId, e, enclosingStmt, callable, 0)
-            }
-
-            newExprId
         }
 
         if (isAnonymous) {
@@ -3780,13 +3690,9 @@ open class KotlinFileExtractor(
 
                     val locId = tw.getLocation(e)
                     val methodId = useFunction<DbConstructor>(e.symbol.owner)
-                    if (methodId == null) {
-                        logger.errorElement("Cannot get ID for delegating constructor", e)
-                    } else {
-                        tw.writeCallableBinding(id.cast<DbCaller>(), methodId)
-                    }
 
                     tw.writeHasLocation(id, locId)
+                    tw.writeCallableBinding(id.cast<DbCaller>(), methodId)
                     extractCallValueArguments(id, e, id, callable, 0)
                     val dr = e.dispatchReceiver
                     if (dr != null) {
@@ -3868,13 +3774,7 @@ open class KotlinFileExtractor(
                         val id = tw.getFreshIdLabel<DbMethodaccess>()
                         val type = useType(pluginContext.irBuiltIns.unitType)
                         val locId = tw.getLocation(e)
-                        val parentClass = irConstructor.parentAsClass
-                        val parentId = useDeclarationParentOf(irConstructor, false, null, true)
-                        if (parentId == null) {
-                            logger.errorElement("Cannot get parent ID for obinit", e)
-                            return
-                        }
-                        val methodLabel = getObinitLabel(parentClass, parentId)
+                        val methodLabel = getObinitLabel(irConstructor.parentAsClass)
                         val methodId = tw.getLabelFor<DbMethod>(methodLabel)
                         tw.writeExprs_methodaccess(id, type.javaResult.id, exprParent.parent, exprParent.idx)
                         tw.writeExprsKotlinType(id, type.kotlinResult.id)
@@ -4728,11 +4628,7 @@ open class KotlinFileExtractor(
             extractExprContext(callId, locId, labels.methodId, retId)
 
             val callableId = useFunction<DbCallable>(target.owner.realOverrideTarget, classTypeArgsIncludingOuterClasses)
-            if (callableId == null) {
-                logger.error("Cannot get ID for reflection target")
-            } else {
-                tw.writeCallableBinding(callId.cast<DbCaller>(), callableId)
-            }
+            tw.writeCallableBinding(callId.cast<DbCaller>(), callableId)
 
             val useFirstArgAsDispatch: Boolean
             if (dispatchReceiverInfo != null) {
@@ -4876,16 +4772,9 @@ open class KotlinFileExtractor(
                 logger.errorElement("Cannot find class for kPropertyType. ${kPropertyType.classFqName?.asString()}", propertyReferenceExpr)
                 return
             }
-            val parameterTypes: List<IrType>? = kPropertyType.arguments.map {
-                if (it is IrType) {
-                    it
-                } else {
-                    logger.errorElement("Unexpected: Non-IrType (${it.javaClass}) property reference parameter.", propertyReferenceExpr)
-                    null
-                }
-            }.requireNoNullsOrNull()
+            val parameterTypes = kPropertyType.arguments.map { it as? IrType }.requireNoNullsOrNull()
             if (parameterTypes == null) {
-                logger.errorElement("Unexpected: One or more non-IrType property reference parameters.", propertyReferenceExpr)
+                logger.errorElement("Unexpected: Non-IrType parameter.", propertyReferenceExpr)
                 return
             }
 
@@ -4921,24 +4810,20 @@ open class KotlinFileExtractor(
             val getterReturnType = parameterTypes.last()
 
             if (getter != null) {
+                val getLabels = addFunctionManual(tw.getFreshIdLabel(), OperatorNameConventions.GET.asString(), getterParameterTypes, getterReturnType, classId, locId)
                 val getterCallableId = useFunction<DbCallable>(getter.owner.realOverrideTarget, classTypeArguments)
-                if (getterCallableId == null) {
-                    logger.errorElement("Cannot get ID for getter", propertyReferenceExpr)
-                } else {
-                    val getLabels = addFunctionManual(tw.getFreshIdLabel(), OperatorNameConventions.GET.asString(), getterParameterTypes, getterReturnType, classId, locId)
 
-                    helper.extractCallToReflectionTarget(
-                        getLabels,
-                        getter,
-                        getterReturnType,
-                        expressionTypeArguments,
-                        classTypeArguments
-                    )
+                helper.extractCallToReflectionTarget(
+                    getLabels,
+                    getter,
+                    getterReturnType,
+                    expressionTypeArguments,
+                    classTypeArguments
+                )
 
-                    tw.writePropertyRefGetBinding(idPropertyRef, getterCallableId)
+                tw.writePropertyRefGetBinding(idPropertyRef, getterCallableId)
 
-                    helper.extractPropertyReferenceInvoke(getLabels.methodId, getterParameterTypes, getterReturnType)
-                }
+                helper.extractPropertyReferenceInvoke(getLabels.methodId, getterParameterTypes, getterReturnType)
             } else {
                 // Property without a getter.
                 if (backingField == null) {
@@ -4959,22 +4844,19 @@ open class KotlinFileExtractor(
             }
 
             if (setter != null) {
+                val setLabels = addFunctionManual(tw.getFreshIdLabel(), OperatorNameConventions.SET.asString(), parameterTypes, pluginContext.irBuiltIns.unitType, classId, locId)
+
                 val setterCallableId = useFunction<DbCallable>(setter.owner.realOverrideTarget, classTypeArguments)
-                if (setterCallableId == null) {
-                    logger.errorElement("Cannot get ID for setter", propertyReferenceExpr)
-                } else {
-                    val setLabels = addFunctionManual(tw.getFreshIdLabel(), OperatorNameConventions.SET.asString(), parameterTypes, pluginContext.irBuiltIns.unitType, classId, locId)
 
-                    helper.extractCallToReflectionTarget(
-                        setLabels,
-                        setter,
-                        pluginContext.irBuiltIns.unitType,
-                        expressionTypeArguments,
-                        classTypeArguments
-                    )
+                helper.extractCallToReflectionTarget(
+                    setLabels,
+                    setter,
+                    pluginContext.irBuiltIns.unitType,
+                    expressionTypeArguments,
+                    classTypeArguments
+                )
 
-                    tw.writePropertyRefSetBinding(idPropertyRef, setterCallableId)
-                }
+                tw.writePropertyRefSetBinding(idPropertyRef, setterCallableId)
             } else {
                 if (backingField != null && !backingField.owner.isFinal) {
                     val setLabels = addFunctionManual(tw.getFreshIdLabel(), OperatorNameConventions.SET.asString(), parameterTypes, pluginContext.irBuiltIns.unitType, classId, locId)
@@ -5066,16 +4948,9 @@ open class KotlinFileExtractor(
                 return
             }
 
-            val parameterTypes: List<IrType>? = type.arguments.map {
-                if (it is IrType) {
-                    it
-                } else {
-                    logger.errorElement("Unexpected: Non-IrType (${it.javaClass}) function reference parameter.", functionReferenceExpr)
-                    null
-                }
-            }.requireNoNullsOrNull()
+            val parameterTypes = type.arguments.map { it as? IrType }.requireNoNullsOrNull()
             if (parameterTypes == null) {
-                logger.errorElement("Unexpected: One or more non-IrType function reference parameters.", functionReferenceExpr)
+                logger.errorElement("Unexpected: Non-IrType parameter.", functionReferenceExpr)
                 return
             }
 
@@ -5116,11 +4991,7 @@ open class KotlinFileExtractor(
             tw.writeCallableBinding(idMemberRef, ids.constructor)
 
             val targetCallableId = useFunction<DbCallable>(target.owner.realOverrideTarget, classTypeArguments)
-            if (targetCallableId == null) {
-                logger.errorElement("Cannot get ID for function reference callable", functionReferenceExpr)
-            } else {
-                tw.writeMemberRefBinding(idMemberRef, targetCallableId)
-            }
+            tw.writeMemberRefBinding(idMemberRef, targetCallableId)
 
             val helper = CallableReferenceHelper(functionReferenceExpr, locId, ids)
 
@@ -5266,11 +5137,7 @@ open class KotlinFileExtractor(
         tw.writeExprsKotlinType(callId, callType.kotlinResult.id)
         extractExprContext(callId, locId, funLabels.methodId, retId)
         val calledMethodId = useFunction<DbMethod>(lambda)
-        if (calledMethodId == null) {
-            logger.errorElement("Cannot get ID for called lambda", lambda)
-        } else {
-            tw.writeCallableBinding(callId, calledMethodId)
-        }
+        tw.writeCallableBinding(callId, calledMethodId)
 
         // this access
         extractThisAccess(ids.type, funLabels.methodId, callId, -1, retId, locId)
@@ -5446,10 +5313,7 @@ open class KotlinFileExtractor(
     private fun extractTypeAccessRecursive(t: IrType, location: Label<out DbLocation>, parent: Label<out DbExprparent>, idx: Int, typeContext: TypeContext = TypeContext.OTHER): Label<out DbExpr> {
         val typeAccessId = extractTypeAccess(useType(t, typeContext), location, parent, idx)
         if (t is IrSimpleType) {
-            // From 1.9, the list might change when we call erase,
-            // so we make a copy that it is safe to iterate over.
-            val argumentsCopy = t.arguments.toList()
-            argumentsCopy.forEachIndexed { argIdx, arg ->
+            t.arguments.forEachIndexed { argIdx, arg ->
                 extractWildcardTypeAccessRecursive(arg, location, typeAccessId, argIdx)
             }
         }
@@ -5667,7 +5531,7 @@ open class KotlinFileExtractor(
                         return
                     }
 
-                    val typeOwner = e.typeOperand.classifierOrFail.owner
+                    val typeOwner = e.typeOperandClassifier.owner
                     if (typeOwner !is IrClass) {
                         logger.errorElement("Expected to find SAM conversion to IrClass. Found '${typeOwner.javaClass}' instead. Can't implement SAM interface.", e)
                         return
@@ -5739,11 +5603,7 @@ open class KotlinFileExtractor(
                     tw.writeExprsKotlinType(callId, callType.kotlinResult.id)
                     extractExprContext(callId, locId, ids.function, returnId)
                     val calledMethodId = useFunction<DbMethod>(invokeMethod, functionType.arguments)
-                    if (calledMethodId == null) {
-                        logger.errorElement("Cannot get ID for called method", invokeMethod)
-                    } else {
-                        tw.writeCallableBinding(callId, calledMethodId)
-                    }
+                    tw.writeCallableBinding(callId, calledMethodId)
 
                     // <fn> access
                     val lhsId = tw.getFreshIdLabel<DbVaraccess>()
@@ -5866,17 +5726,14 @@ open class KotlinFileExtractor(
             if (baseConstructor == null) {
                 logger.warnElement("Cannot find base constructor", elementToReportOn)
             } else {
-                val baseConstructorId = useFunction<DbConstructor>(baseConstructor)
-                if (baseConstructorId == null) {
-                    logger.errorElement("Cannot find base constructor ID", elementToReportOn)
-                } else {
-                    val superCallId = tw.getFreshIdLabel<DbSuperconstructorinvocationstmt>()
-                    tw.writeStmts_superconstructorinvocationstmt(superCallId, constructorBlockId, 0, ids.constructor)
+                val superCallId = tw.getFreshIdLabel<DbSuperconstructorinvocationstmt>()
+                tw.writeStmts_superconstructorinvocationstmt(superCallId, constructorBlockId, 0, ids.constructor)
 
-                    tw.writeHasLocation(superCallId, locId)
-                    tw.writeCallableBinding(superCallId.cast<DbCaller>(), baseConstructorId)
-                    extractSuperconstructorArgs(superCallId)
-                }
+                val baseConstructorId = useFunction<DbConstructor>(baseConstructor)
+
+                tw.writeHasLocation(superCallId, locId)
+                tw.writeCallableBinding(superCallId.cast<DbCaller>(), baseConstructorId)
+                extractSuperconstructorArgs(superCallId)
             }
         }
 

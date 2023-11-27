@@ -1,7 +1,5 @@
 .. _using-the-codeql-cli:
 
-:orphan:
-
 Using the CodeQL CLI
 ====================
 

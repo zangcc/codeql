@@ -14,15 +14,16 @@
 import java
 import BeanShellInjection
 import semmle.code.java.dataflow.FlowSources
-import semmle.code.java.dataflow.TaintTracking
-import BeanShellInjectionFlow::PathGraph
+import DataFlow::PathGraph
 
-module BeanShellInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+class BeanShellInjectionConfig extends TaintTracking::Configuration {
+  BeanShellInjectionConfig() { this = "BeanShellInjectionConfig" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof BeanShellInjectionSink }
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
 
-  predicate isAdditionalFlowStep(DataFlow::Node prod, DataFlow::Node succ) {
+  override predicate isSink(DataFlow::Node sink) { sink instanceof BeanShellInjectionSink }
+
+  override predicate isAdditionalTaintStep(DataFlow::Node prod, DataFlow::Node succ) {
     exists(ClassInstanceExpr cie |
       cie.getConstructedType()
           .hasQualifiedName("org.springframework.scripting.support", "StaticScriptSource") and
@@ -30,7 +31,7 @@ module BeanShellInjectionConfig implements DataFlow::ConfigSig {
       cie = succ.asExpr()
     )
     or
-    exists(MethodCall ma |
+    exists(MethodAccess ma |
       ma.getMethod().hasName("setScript") and
       ma.getMethod()
           .getDeclaringType()
@@ -41,9 +42,7 @@ module BeanShellInjectionConfig implements DataFlow::ConfigSig {
   }
 }
 
-module BeanShellInjectionFlow = TaintTracking::Global<BeanShellInjectionConfig>;
-
-from BeanShellInjectionFlow::PathNode source, BeanShellInjectionFlow::PathNode sink
-where BeanShellInjectionFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, BeanShellInjectionConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "BeanShell injection from $@.", source.getNode(),
   "this user input"

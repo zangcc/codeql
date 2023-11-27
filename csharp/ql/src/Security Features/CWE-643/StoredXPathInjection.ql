@@ -13,20 +13,14 @@
 
 import csharp
 import semmle.code.csharp.security.dataflow.flowsources.Stored
-import semmle.code.csharp.security.dataflow.XPathInjectionQuery
-import StoredXpathInjection::PathGraph
+import semmle.code.csharp.security.dataflow.XPathInjectionQuery as XPathInjection
+import semmle.code.csharp.dataflow.DataFlow::DataFlow::PathGraph
 
-module StoredXpathInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof StoredFlowSource }
-
-  predicate isSink = XpathInjectionConfig::isSink/1;
-
-  predicate isBarrier = XpathInjectionConfig::isBarrier/1;
+class StoredTaintTrackingConfiguration extends XPathInjection::TaintTrackingConfiguration {
+  override predicate isSource(DataFlow::Node source) { source instanceof StoredFlowSource }
 }
 
-module StoredXpathInjection = TaintTracking::Global<StoredXpathInjectionConfig>;
-
-from StoredXpathInjection::PathNode source, StoredXpathInjection::PathNode sink
-where StoredXpathInjection::flowPath(source, sink)
+from StoredTaintTrackingConfiguration c, DataFlow::PathNode source, DataFlow::PathNode sink
+where c.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This XPath expression depends on a $@.", source.getNode(),
   "stored (potentially user-provided) value"

@@ -1,24 +1,24 @@
 import java
 import semmle.code.java.dataflow.TaintTracking
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) {
+class Conf extends TaintTracking::Configuration {
+  Conf() { this = "qltest lambda" }
+
+  override predicate isSource(DataFlow::Node src) {
     src.asExpr().(VarAccess).getVariable().hasName("args")
     or
-    src.asExpr().(MethodCall).getMethod().hasName("source")
+    src.asExpr().(MethodAccess).getMethod().hasName("source")
   }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSink(DataFlow::Node sink) {
     sink.asExpr().(Argument).getCall() =
-      any(MethodCall ma |
+      any(MethodAccess ma |
         ma.getMethod().hasName("exec") and
-        ma.getQualifier().(MethodCall).getMethod().hasName("getRuntime")
+        ma.getQualifier().(MethodAccess).getMethod().hasName("getRuntime")
       )
   }
 }
 
-module Flow = TaintTracking::Global<Config>;
-
-from DataFlow::Node src, DataFlow::Node sink
-where Flow::flow(src, sink)
+from DataFlow::Node src, DataFlow::Node sink, Conf c
+where c.hasFlow(src, sink)
 select src, sink

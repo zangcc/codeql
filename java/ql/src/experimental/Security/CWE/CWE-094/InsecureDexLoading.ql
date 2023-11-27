@@ -13,9 +13,9 @@
 
 import java
 import InsecureDexLoading
-import InsecureDexFlow::PathGraph
+import DataFlow::PathGraph
 
-from InsecureDexFlow::PathNode source, InsecureDexFlow::PathNode sink
-where InsecureDexFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, InsecureDexConfiguration conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "Potential arbitrary code execution due to $@.",
   source.getNode(), "a value loaded from a world-writable source."

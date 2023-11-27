@@ -1,5 +1,4 @@
 import semmle.code.cpp.ir.implementation.raw.internal.TranslatedElement
-private import TranslatedExpr
 private import cpp
 private import semmle.code.cpp.ir.implementation.IRType
 private import semmle.code.cpp.ir.implementation.Opcode
@@ -9,18 +8,19 @@ private import TranslatedInitialization
 private import InstructionTag
 private import semmle.code.cpp.ir.internal.IRUtilities
 
-class TranslatedStaticStorageDurationVarInit extends TranslatedRootElement,
-  TTranslatedStaticStorageDurationVarInit, InitializationContext
-{
-  Variable var;
+class TranslatedGlobalOrNamespaceVarInit extends TranslatedRootElement,
+  TTranslatedGlobalOrNamespaceVarInit, InitializationContext {
+  GlobalOrNamespaceVariable var;
 
-  TranslatedStaticStorageDurationVarInit() { this = TTranslatedStaticStorageDurationVarInit(var) }
+  TranslatedGlobalOrNamespaceVarInit() { this = TTranslatedGlobalOrNamespaceVarInit(var) }
 
   override string toString() { result = var.toString() }
 
-  final override Variable getAst() { result = var }
+  final override GlobalOrNamespaceVariable getAst() { result = var }
 
   final override Declaration getFunction() { result = var }
+
+  final Location getLocation() { result = var.getLocation() }
 
   override Instruction getFirstInstruction() { result = this.getInstruction(EnterFunctionTag()) }
 
@@ -110,13 +110,11 @@ class TranslatedStaticStorageDurationVarInit extends TranslatedRootElement,
       (
         varUsed instanceof GlobalOrNamespaceVariable
         or
-        varUsed instanceof StaticLocalVariable
-        or
         varUsed instanceof MemberVariable and not varUsed instanceof Field
       ) and
       exists(VariableAccess access |
         access.getTarget() = varUsed and
-        getEnclosingVariable(access) = var
+        access.getEnclosingVariable() = var
       )
       or
       var = varUsed
@@ -129,4 +127,6 @@ class TranslatedStaticStorageDurationVarInit extends TranslatedRootElement,
   }
 }
 
-TranslatedStaticStorageDurationVarInit getTranslatedVarInit(Variable var) { result.getAst() = var }
+TranslatedGlobalOrNamespaceVarInit getTranslatedVarInit(GlobalOrNamespaceVariable var) {
+  result.getAst() = var
+}

@@ -1,4 +1,5 @@
 using Semmle.Extraction.Entities;
+using Semmle.Util;
 
 namespace Semmle.Extraction
 {

@@ -30,7 +30,9 @@ query predicate nestedTypes(NestedType nt, RefType parent) {
   parent = nt.getEnclosingType()
 }
 
-query predicate javaKotlinCalleeAgreement(MethodCall javaMa, MethodCall kotlinMa, Callable callee) {
+query predicate javaKotlinCalleeAgreement(
+  MethodAccess javaMa, MethodAccess kotlinMa, Callable callee
+) {
   javaMa.getCallee() = callee and
   kotlinMa.getCallee() = callee and
   javaMa.getFile().getExtension() = "java" and

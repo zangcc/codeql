@@ -2,10 +2,12 @@ import java
 import TestUtilities.InlineExpectationsTest
 import semmle.code.java.security.AndroidCertificatePinningQuery
 
-module Test implements TestSig {
-  string getARelevantTag() { result = ["hasNoTrustedResult", "hasUntrustedResult"] }
+class Test extends InlineExpectationsTest {
+  Test() { this = "AndroidMissingCertificatePinningTest" }
 
-  predicate hasActualResult(Location loc, string el, string tag, string value) {
+  override string getARelevantTag() { result = ["hasNoTrustedResult", "hasUntrustedResult"] }
+
+  override predicate hasActualResult(Location loc, string el, string tag, string value) {
     exists(DataFlow::Node node |
       missingPinning(node, _) and
       loc = node.getLocation() and
@@ -15,5 +17,3 @@ module Test implements TestSig {
     )
   }
 }
-
-import MakeTest<Test>

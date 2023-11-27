@@ -13,11 +13,9 @@
 
 import java
 import semmle.code.java.security.SensitiveResultReceiverQuery
-import SensitiveResultReceiverFlow::PathGraph
+import DataFlow::PathGraph
 
-from
-  SensitiveResultReceiverFlow::PathNode src, SensitiveResultReceiverFlow::PathNode sink,
-  DataFlow::Node recSrc
-where isSensitiveResultReceiver(src, sink, recSrc)
+from DataFlow::PathNode src, DataFlow::PathNode sink, DataFlow::Node recSrc
+where sensitiveResultReceiver(src, sink, recSrc)
 select sink, src, sink, "This $@ is sent to a ResultReceiver obtained from $@.", src,
   "sensitive information", recSrc, "this untrusted source"

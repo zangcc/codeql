@@ -19,8 +19,6 @@ DataFlow::InvokeNode tlsInvocation() {
   or
   result = DataFlow::moduleMember("https", "Agent").getAnInstantiation()
   or
-  result = DataFlow::moduleMember("https", "createServer").getACall()
-  or
   exists(DataFlow::NewNode new |
     new = DataFlow::moduleMember("tls", "TLSSocket").getAnInstantiation()
   |

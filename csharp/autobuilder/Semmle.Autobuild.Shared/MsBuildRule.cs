@@ -1,7 +1,6 @@
+using Semmle.Util.Logging;
 using System.Collections.Generic;
 using System.Linq;
-using Semmle.Util;
-using Semmle.Util.Logging;
 
 namespace Semmle.Autobuild.Shared
 {
@@ -15,12 +14,14 @@ namespace Semmle.Autobuild.Shared
         /// <returns></returns>
         public static CommandBuilder MsBuildCommand(this CommandBuilder cmdBuilder, IAutobuilder<AutobuildOptionsShared> builder)
         {
+            var isArmMac = builder.Actions.IsMacOs() && builder.Actions.IsArm();
+
             // mono doesn't ship with `msbuild` on Arm-based Macs, but we can fall back to
             // msbuild that ships with `dotnet` which can be invoked with `dotnet msbuild`
             // perhaps we should do this on all platforms?
-            return builder.Actions.IsRunningOnAppleSilicon()
-                ? cmdBuilder.RunCommand("dotnet").Argument("msbuild")
-                : cmdBuilder.RunCommand("msbuild");
+            return isArmMac ?
+                cmdBuilder.RunCommand("dotnet").Argument("msbuild") :
+                cmdBuilder.RunCommand("msbuild");
         }
     }
 
@@ -82,12 +83,7 @@ namespace Semmle.Autobuild.Shared
                         Argument("/t:restore").
                         QuoteArgument(projectOrSolution.FullPath);
 
-                    if (builder.Actions.IsRunningOnAppleSilicon())
-                    {
-                        // On Apple Silicon, only try package restore with `dotnet msbuild /t:restore`
-                        ret &= BuildScript.Try(msbuildRestoreCommand.Script);
-                    }
-                    else if (nugetDownloaded)
+                    if (nugetDownloaded)
                     {
                         ret &= BuildScript.Try(nugetRestore | msbuildRestoreCommand.Script);
                     }
@@ -194,7 +190,7 @@ namespace Semmle.Autobuild.Shared
             })
             &
             BuildScript.DownloadFile(
-                FileUtils.NugetExeUrl,
+                "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe",
                 path,
                 e => builder.Log(Severity.Warning, $"Failed to download 'nuget.exe': {e.Message}"))
             &

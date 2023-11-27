@@ -1,0 +1,7 @@
+name: codeql/java-queries
+groups: 
+  - java
+  - queries
+dependencies:
+  codeql/java-all: ${workspace}
+  codeql/java-queries: ${workspace}

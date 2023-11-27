@@ -77,18 +77,16 @@ def through(tainted):
     captureOut2()
     SINK(sinkO2["x"]) #$ MISSING:captured
 
-    nonSink1 = { "x": "" }
+    nonSink0 = { "x": "" }
     def captureOut1NotCalled():
-        nonSink1["x"] = tainted
-    SINK_F(nonSink1["x"])
+        nonSink0["x"] = tainted
+    SINK_F(nonSink0["x"])
 
-    nonSink2 = { "x": "" }
     def captureOut2NotCalled():
-        # notice that `m` is not called
         def m():
-            nonSink2["x"] = tainted
+            nonSink0["x"] = tainted
     captureOut2NotCalled()
-    SINK_F(nonSink2["x"])
+    SINK_F(nonSink0["x"])
 
 @expects(4)
 def test_through():

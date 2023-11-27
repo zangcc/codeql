@@ -1,8 +1,6 @@
-namespace {
 class C { };
-}
 
-static void f() {
+void f() {
 	new C;
   return;
 }

@@ -13,9 +13,11 @@
 
 import java
 
-class SpecialCollectionCreation extends MethodCall {
+class SpecialCollectionCreation extends MethodAccess {
   SpecialCollectionCreation() {
-    exists(Method m, RefType rt | m = this.(MethodCall).getCallee() and rt = m.getDeclaringType() |
+    exists(Method m, RefType rt |
+      m = this.(MethodAccess).getCallee() and rt = m.getDeclaringType()
+    |
       rt.hasQualifiedName("java.util", "Arrays") and m.hasName("asList")
       or
       rt.hasQualifiedName("java.util", "Collections") and
@@ -44,7 +46,7 @@ predicate containsSpecialCollection(Expr e, SpecialCollectionCreation origin) {
 }
 
 predicate iterOfSpecialCollection(Expr e, SpecialCollectionCreation origin) {
-  exists(MethodCall ma | ma = e |
+  exists(MethodAccess ma | ma = e |
     containsSpecialCollection(ma.getQualifier(), origin) and
     ma.getCallee().hasName("iterator")
   )
@@ -65,7 +67,7 @@ predicate iterOfSpecialCollection(Expr e, SpecialCollectionCreation origin) {
   )
 }
 
-from MethodCall remove, SpecialCollectionCreation scc
+from MethodAccess remove, SpecialCollectionCreation scc
 where
   remove.getCallee().hasName("remove") and
   iterOfSpecialCollection(remove.getQualifier(), scc)

@@ -15,11 +15,7 @@ import java
 import semmle.code.java.dataflow.TaintTracking
 import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.dataflow.ExternalFlow
-import RemoteUrlToOpenStreamFlow::PathGraph
-
-private class ActivateModels extends ActiveExperimentalModels {
-  ActivateModels() { this = "openstream-called-on-tainted-url" }
-}
+import DataFlow::PathGraph
 
 class UrlConstructor extends ClassInstanceExpr {
   UrlConstructor() { this.getConstructor().getDeclaringType() instanceof TypeUrl }
@@ -32,18 +28,20 @@ class UrlConstructor extends ClassInstanceExpr {
   }
 }
 
-module RemoteUrlToOpenStreamFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+class RemoteUrlToOpenStreamFlowConfig extends TaintTracking::Configuration {
+  RemoteUrlToOpenStreamFlowConfig() { this = "OpenStream::RemoteURLToOpenStreamFlowConfig" }
 
-  predicate isSink(DataFlow::Node sink) {
-    exists(MethodCall m |
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) {
+    exists(MethodAccess m |
       sink.asExpr() = m.getQualifier() and m.getMethod() instanceof UrlOpenStreamMethod
     )
     or
     sinkNode(sink, "url-open-stream")
   }
 
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+  override predicate isAdditionalTaintStep(DataFlow::Node node1, DataFlow::Node node2) {
     exists(UrlConstructor u |
       node1.asExpr() = u.stringArg() and
       node2.asExpr() = u
@@ -51,13 +49,9 @@ module RemoteUrlToOpenStreamFlowConfig implements DataFlow::ConfigSig {
   }
 }
 
-module RemoteUrlToOpenStreamFlow = TaintTracking::Global<RemoteUrlToOpenStreamFlowConfig>;
-
-from
-  RemoteUrlToOpenStreamFlow::PathNode source, RemoteUrlToOpenStreamFlow::PathNode sink,
-  MethodCall call
+from DataFlow::PathNode source, DataFlow::PathNode sink, MethodAccess call
 where
   sink.getNode().asExpr() = call.getQualifier() and
-  RemoteUrlToOpenStreamFlow::flowPath(source, sink)
+  any(RemoteUrlToOpenStreamFlowConfig c).hasFlowPath(source, sink)
 select call, source, sink,
   "URL on which openStream is called may have been constructed from remote source."

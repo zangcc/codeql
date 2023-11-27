@@ -20,7 +20,7 @@ class WaitMethod extends Method {
   }
 }
 
-from MethodCall ma
+from MethodAccess ma
 where
   ma.getMethod() instanceof WaitMethod and
   not ma.getEnclosingStmt().getEnclosingStmt*() instanceof LoopStmt

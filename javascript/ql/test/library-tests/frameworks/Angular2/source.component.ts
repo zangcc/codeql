@@ -1,4 +1,4 @@
-import { Component,ElementRef } from "@angular/core";
+import { Component } from "@angular/core";
 import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
@@ -9,7 +9,6 @@ export class Source {
     taint: string;
     taintedArray: string[];
     safeArray: string[];
-    elementRef: ElementRef;
 
     constructor(private sanitizer: DomSanitizer) {
         this.taint = source();
@@ -19,6 +18,5 @@ export class Source {
 
     methodOnComponent(x) {
         this.sanitizer.bypassSecurityTrustHtml(x);
-        this.elementRef.nativeElement.innerHTML = x;
     }
 }

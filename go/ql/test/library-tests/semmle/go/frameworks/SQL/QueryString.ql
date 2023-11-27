@@ -1,24 +1,29 @@
 import go
 import TestUtilities.InlineExpectationsTest
 
-module SqlTest implements TestSig {
-  string getARelevantTag() { result = "query" }
+class SqlTest extends InlineExpectationsTest {
+  SqlTest() { this = "SQLTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "query" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "query" and
-    exists(SQL::Query q, SQL::QueryString qs | qs = q.getAQueryString() |
+    exists(SQL::Query q, SQL::QueryString qs, int qsLine | qs = q.getAQueryString() |
       q.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
         location.getStartColumn(), location.getEndLine(), location.getEndColumn()) and
+      qs.hasLocationInfo(_, qsLine, _, _, _) and
       element = q.toString() and
       value = qs.toString()
     )
   }
 }
 
-module QueryString implements TestSig {
-  string getARelevantTag() { result = "querystring" }
+class QueryString extends InlineExpectationsTest {
+  QueryString() { this = "QueryString no Query" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "querystring" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "querystring" and
     element = "" and
     exists(SQL::QueryString qs | not exists(SQL::Query q | qs = q.getAQueryString()) |
@@ -28,31 +33,3 @@ module QueryString implements TestSig {
     )
   }
 }
-
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node n) { n.asExpr() instanceof StringLit }
-
-  predicate isSink(DataFlow::Node n) {
-    n = any(DataFlow::CallNode cn | cn.getTarget().getName() = "sink").getAnArgument()
-  }
-}
-
-module Flow = TaintTracking::Global<Config>;
-
-module TaintFlow implements TestSig {
-  string getARelevantTag() { result = "flowfrom" }
-
-  predicate hasActualResult(Location location, string element, string tag, string value) {
-    tag = "flowfrom" and
-    element = "" and
-    exists(DataFlow::Node fromNode, DataFlow::Node toNode |
-      toNode
-          .hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
-            location.getStartColumn(), location.getEndLine(), location.getEndColumn()) and
-      Flow::flow(fromNode, toNode) and
-      value = fromNode.asExpr().(StringLit).getValue()
-    )
-  }
-}
-
-import MakeTest<MergeTests3<SqlTest, QueryString, TaintFlow>>

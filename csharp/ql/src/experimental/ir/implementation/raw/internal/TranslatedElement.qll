@@ -366,6 +366,9 @@ abstract class TranslatedElement extends TTranslatedElement {
    */
   abstract Language::AST getAst();
 
+  /** DEPRECATED: Alias for getAst */
+  deprecated Language::AST getAST() { result = this.getAst() }
+
   /**
    * Get the first instruction to be executed in the evaluation of this element.
    */

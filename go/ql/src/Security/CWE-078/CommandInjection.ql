@@ -13,17 +13,11 @@
 
 import go
 import semmle.go.security.CommandInjection
+import DataFlow::PathGraph
 
-module Flow =
-  DataFlow::MergePathGraph<CommandInjection::Flow::PathNode,
-    CommandInjection::DoubleDashSanitizingFlow::PathNode, CommandInjection::Flow::PathGraph,
-    CommandInjection::DoubleDashSanitizingFlow::PathGraph>;
-
-import Flow::PathGraph
-
-from Flow::PathNode source, Flow::PathNode sink
-where
-  CommandInjection::Flow::flowPath(source.asPathNode1(), sink.asPathNode1()) or
-  CommandInjection::DoubleDashSanitizingFlow::flowPath(source.asPathNode2(), sink.asPathNode2())
+from
+  CommandInjection::Configuration cfg, CommandInjection::DoubleDashSanitizingConfiguration cfg2,
+  DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink) or cfg2.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This command depends on a $@.", source.getNode(),
   "user-provided value"

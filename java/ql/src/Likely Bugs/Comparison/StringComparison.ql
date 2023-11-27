@@ -21,7 +21,7 @@ class StringValue extends Expr {
     exists(Method intern |
       intern.getDeclaringType() instanceof TypeString and
       intern.hasName("intern") and
-      this.(MethodCall).getMethod() = intern
+      this.(MethodAccess).getMethod() = intern
     )
     or
     // Ternary conditional operator.
@@ -35,7 +35,7 @@ class StringValue extends Expr {
     variableValuesInterned(this.(VarAccess).getVariable())
     or
     // Method accesses whose results are all interned.
-    forex(ReturnStmt rs | rs.getEnclosingCallable() = this.(MethodCall).getMethod() |
+    forex(ReturnStmt rs | rs.getEnclosingCallable() = this.(MethodAccess).getMethod() |
       rs.getResult().(StringValue).isInterned()
     )
   }

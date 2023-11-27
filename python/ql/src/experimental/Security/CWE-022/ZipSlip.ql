@@ -1,8 +1,8 @@
 /**
- * @name Arbitrary file access during archive extraction ("Zip Slip")
- * @description Extracting files from a malicious ZIP file, or similar type of archive, without
- *              validating that the destination file path is within the destination directory
- *              can allow an attacker to unexpectedly gain access to resources.
+ * @name Arbitrary file write during archive extraction ("Zip Slip")
+ * @description Extracting files from a malicious archive without validating that the
+ *              destination file path is within the destination directory can cause files outside
+ *              the destination directory to be overwritten.
  * @kind path-problem
  * @id py/zipslip
  * @problem.severity error
@@ -15,10 +15,10 @@
 
 import python
 import experimental.semmle.python.security.ZipSlip
-import ZipSlipFlow::PathGraph
+import DataFlow::PathGraph
 
-from ZipSlipFlow::PathNode source, ZipSlipFlow::PathNode sink
-where ZipSlipFlow::flowPath(source, sink)
+from ZipSlipConfig config, DataFlow::PathNode source, DataFlow::PathNode sink
+where config.hasFlowPath(source, sink)
 select source.getNode(), source, sink,
   "This unsanitized archive entry, which may contain '..', is used in a $@.", sink.getNode(),
   "file system operation"

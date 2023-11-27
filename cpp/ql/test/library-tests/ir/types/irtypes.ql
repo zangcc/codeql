@@ -2,10 +2,12 @@ private import cpp
 private import semmle.code.cpp.ir.implementation.raw.IR
 import TestUtilities.InlineExpectationsTest
 
-module IRTypesTest implements TestSig {
-  string getARelevantTag() { result = "irtype" }
+class IRTypesTest extends InlineExpectationsTest {
+  IRTypesTest() { this = "IRTypesTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "irtype" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(IRUserVariable irVar |
       location = irVar.getLocation() and
       element = irVar.toString() and
@@ -14,5 +16,3 @@ module IRTypesTest implements TestSig {
     )
   }
 }
-
-import MakeTest<IRTypesTest>

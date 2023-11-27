@@ -1,4 +1,4 @@
-static void always_false_1() {
+void always_false_1() {
   if(0) {
     l1:;
   }
@@ -8,7 +8,7 @@ static void always_false_1() {
   l3:;
 }
 
-static void always_false_2() {
+void always_false_2() {
   if(0)
     l1:;
   else
@@ -16,7 +16,7 @@ static void always_false_2() {
   l3:;
 }
 
-static void always_true_1() {
+void always_true_1() {
   if(1) {
     l1:;
   }
@@ -26,7 +26,7 @@ static void always_true_1() {
   l3:;
 }
 
-static void always_true_2() {
+void always_true_2() {
   if(1)
     l1:;
   else
@@ -34,7 +34,7 @@ static void always_true_2() {
   l3:;
 }
 
-static void normal(int x, int y) {
+void normal(int x, int y) {
   if(x == y) {
     l1:;
   }

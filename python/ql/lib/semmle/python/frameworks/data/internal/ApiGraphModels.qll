@@ -63,8 +63,9 @@
  * the type is not intended to match a static type.
  */
 
-private import codeql.util.Unit
 private import ApiGraphModelsSpecific as Specific
+
+private class Unit = Specific::Unit;
 
 private module API = Specific::API;
 
@@ -454,14 +455,6 @@ private API::Node getNodeFromPath(string type, AccessPath path, int n) {
   or
   // Apply a type step
   typeStep(getNodeFromPath(type, path, n), result)
-  or
-  // Apply a fuzzy step (without advancing 'n')
-  path.getToken(n).getName() = "Fuzzy" and
-  result = Specific::getAFuzzySuccessor(getNodeFromPath(type, path, n))
-  or
-  // Skip a fuzzy step (advance 'n' without changing the current node)
-  path.getToken(n - 1).getName() = "Fuzzy" and
-  result = getNodeFromPath(type, path, n - 1)
 }
 
 /**
@@ -508,14 +501,6 @@ private API::Node getNodeFromSubPath(API::Node base, AccessPath subPath, int n) 
   // will themselves find by following type-steps.
   n > 0 and
   n < subPath.getNumToken()
-  or
-  // Apply a fuzzy step (without advancing 'n')
-  subPath.getToken(n).getName() = "Fuzzy" and
-  result = Specific::getAFuzzySuccessor(getNodeFromSubPath(base, subPath, n))
-  or
-  // Skip a fuzzy step (advance 'n' without changing the current node)
-  subPath.getToken(n - 1).getName() = "Fuzzy" and
-  result = getNodeFromSubPath(base, subPath, n - 1)
 }
 
 /**
@@ -577,7 +562,7 @@ private Specific::InvokeNode getInvocationFromPath(string type, AccessPath path)
  */
 bindingset[name]
 private predicate isValidTokenNameInIdentifyingAccessPath(string name) {
-  name = ["Argument", "Parameter", "ReturnValue", "WithArity", "TypeVar", "Fuzzy"]
+  name = ["Argument", "Parameter", "ReturnValue", "WithArity", "TypeVar"]
   or
   Specific::isExtraValidTokenNameInIdentifyingAccessPath(name)
 }
@@ -588,7 +573,7 @@ private predicate isValidTokenNameInIdentifyingAccessPath(string name) {
  */
 bindingset[name]
 private predicate isValidNoArgumentTokenInIdentifyingAccessPath(string name) {
-  name = ["ReturnValue", "Fuzzy"]
+  name = "ReturnValue"
   or
   Specific::isExtraValidNoArgumentTokenInIdentifyingAccessPath(name)
 }
@@ -660,15 +645,6 @@ module ModelOutput {
     }
 
     /**
-     * Holds if a `baseNode` is a callable identified by the `type,path` part of a summary row.
-     */
-    cached
-    predicate resolvedSummaryRefBase(string type, string path, API::Node baseNode) {
-      summaryModel(type, path, _, _, _) and
-      baseNode = getNodeFromPath(type, path)
-    }
-
-    /**
      * Holds if `node` is seen as an instance of `type` due to a type definition
      * contributed by a CSV model.
      */
@@ -678,17 +654,6 @@ module ModelOutput {
 
   import Cached
   import Specific::ModelOutputSpecific
-  private import codeql.mad.ModelValidation as SharedModelVal
-
-  private module KindValConfig implements SharedModelVal::KindValidationConfigSig {
-    predicate summaryKind(string kind) { summaryModel(_, _, _, _, kind) }
-
-    predicate sinkKind(string kind) { sinkModel(_, _, kind) }
-
-    predicate sourceKind(string kind) { sourceModel(_, _, kind) }
-  }
-
-  private module KindVal = SharedModelVal::KindValidation<KindValConfig>;
 
   /**
    * Gets an error message relating to an invalid CSV row in a model.
@@ -734,8 +699,5 @@ module ModelOutput {
       not isValidNoArgumentTokenInIdentifyingAccessPath(token.getName()) and
       result = "Invalid token '" + token + "' is missing its arguments, in access path: " + path
     )
-    or
-    // Check for invalid model kinds
-    result = KindVal::getInvalidModelKind()
   }
 }

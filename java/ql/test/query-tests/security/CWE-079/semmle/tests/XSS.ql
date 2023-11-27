@@ -1,18 +1,33 @@
 import java
-import semmle.code.java.security.XssQuery
+import semmle.code.java.dataflow.FlowSources
+import semmle.code.java.security.XSS
 import TestUtilities.InlineExpectationsTest
 
-module XssTest implements TestSig {
-  string getARelevantTag() { result = "xss" }
+class XssConfig extends TaintTracking::Configuration {
+  XssConfig() { this = "XSSConfig" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) { sink instanceof XssSink }
+
+  override predicate isSanitizer(DataFlow::Node node) { node instanceof XssSanitizer }
+
+  override predicate isAdditionalTaintStep(DataFlow::Node node1, DataFlow::Node node2) {
+    any(XssAdditionalTaintStep s).step(node1, node2)
+  }
+}
+
+class XssTest extends InlineExpectationsTest {
+  XssTest() { this = "XssTest" }
+
+  override string getARelevantTag() { result = "xss" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "xss" and
-    exists(DataFlow::Node sink | XssFlow::flowTo(sink) |
+    exists(DataFlow::Node sink, XssConfig conf | conf.hasFlowTo(sink) |
       sink.getLocation() = location and
       element = sink.toString() and
       value = ""
     )
   }
 }
-
-import MakeTest<XssTest>

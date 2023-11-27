@@ -14,15 +14,15 @@
 
 import java
 
-class InvokeInterfaceOrVirtualMethodCall extends MethodCall {
-  InvokeInterfaceOrVirtualMethodCall() {
+class InvokeInterfaceOrVirtualMethodAccess extends MethodAccess {
+  InvokeInterfaceOrVirtualMethodAccess() {
     this.getMethod().getDeclaringType() instanceof Interface or
     not this.hasQualifier() or
     not this.getQualifier() instanceof SuperAccess
   }
 }
 
-from InvokeInterfaceOrVirtualMethodCall ma, Method m
+from InvokeInterfaceOrVirtualMethodAccess ma, Method m
 where
   ma.getMethod() = m and
   m.hasName("notify") and

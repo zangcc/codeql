@@ -1,7 +1,7 @@
 import python
 import semmle.python.regex
 
-from RegExp r, int start, int end, int part_start, int part_end
+from Regex r, int start, int end, int part_start, int part_end
 where
   r.getLocation().getFile().getBaseName() = "test.py" and
   r.alternationOption(start, end, part_start, part_end)

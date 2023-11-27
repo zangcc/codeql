@@ -50,14 +50,14 @@ class StringReplaceCallSequence extends DataFlow::CallNode instanceof StringRepl
 
   /** Gets a string that is the replacement of this call. */
   string getAReplacementString() {
-    this.getAMember().replaces(_, result)
+    getAMember().replaces(_, result)
     or
     // StringReplaceCall::replaces/2 can't always find the `old` string, so this is added as a fallback.
-    this.getAMember().getRawReplacement().getStringValue() = result
+    getAMember().getRawReplacement().getStringValue() = result
   }
 
   /** Gets a string that is being replaced by this call. */
-  string getAReplacedString() { this.getAMember().getAReplacedString() = result }
+  string getAReplacedString() { getAMember().getAReplacedString() = result }
 }
 
 /**
@@ -120,8 +120,7 @@ module HtmlSanitization {
   /**
    * An incomplete sanitizer for HTML-relevant characters.
    */
-  class IncompleteSanitizer extends IncompleteBlacklistSanitizer instanceof StringReplaceCallSequence
-  {
+  class IncompleteSanitizer extends IncompleteBlacklistSanitizer instanceof StringReplaceCallSequence {
     string unsanitized;
 
     IncompleteSanitizer() {

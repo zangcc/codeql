@@ -2,7 +2,7 @@
 
 import semmle.code.java.Type
 
-class JaxbElement extends Class {
+library class JaxbElement extends Class {
   JaxbElement() {
     this.getAnAncestor().getQualifiedName() = "javax.xml.bind.JAXBElement" or
     this.getAnAnnotation().getType().getName() = "XmlRootElement"
@@ -12,7 +12,7 @@ class JaxbElement extends Class {
 /** DEPRECATED: Alias for JaxbElement */
 deprecated class JAXBElement = JaxbElement;
 
-class JaxbMarshalMethod extends Method {
+library class JaxbMarshalMethod extends Method {
   JaxbMarshalMethod() {
     this.getDeclaringType().getQualifiedName() = "javax.xml.bind.Marshaller" and
     this.getName() = "marshal"
@@ -151,7 +151,7 @@ class JaxbBoundField extends Field {
 /**
  * A getter or setter method, as defined by whether the method name starts with "set" or "get".
  */
-class GetterOrSetterMethod extends Method {
+library class GetterOrSetterMethod extends Method {
   GetterOrSetterMethod() { this.getName().matches("get%") or this.getName().matches("set%") }
 
   Field getField() {

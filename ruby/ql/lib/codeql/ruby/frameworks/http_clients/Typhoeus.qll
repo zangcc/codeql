@@ -7,6 +7,7 @@ private import codeql.ruby.CFG
 private import codeql.ruby.Concepts
 private import codeql.ruby.ApiGraphs
 private import codeql.ruby.DataFlow
+private import codeql.ruby.dataflow.internal.DataFlowImplForHttpClientLibraries as DataFlowImplForHttpClientLibraries
 
 /**
  * A call that makes an HTTP request using `Typhoeus`.
@@ -37,7 +38,8 @@ class TyphoeusHttpRequest extends Http::Client::Request::Range, DataFlow::CallNo
   override predicate disablesCertificateValidation(
     DataFlow::Node disablingNode, DataFlow::Node argumentOrigin
   ) {
-    TyphoeusDisablesCertificateValidationFlow::flow(argumentOrigin, disablingNode) and
+    any(TyphoeusDisablesCertificateValidationConfiguration config)
+        .hasFlow(argumentOrigin, disablingNode) and
     disablingNode = this.getCertificateValidationControllingValue()
   }
 
@@ -45,13 +47,16 @@ class TyphoeusHttpRequest extends Http::Client::Request::Range, DataFlow::CallNo
 }
 
 /** A configuration to track values that can disable certificate validation for Typhoeus. */
-private module TyphoeusDisablesCertificateValidationConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source.asExpr().getExpr().(BooleanLiteral).isFalse() }
+private class TyphoeusDisablesCertificateValidationConfiguration extends DataFlowImplForHttpClientLibraries::Configuration {
+  TyphoeusDisablesCertificateValidationConfiguration() {
+    this = "TyphoeusDisablesCertificateValidationConfiguration"
+  }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node source) {
+    source.asExpr().getExpr().(BooleanLiteral).isFalse()
+  }
+
+  override predicate isSink(DataFlow::Node sink) {
     sink = any(TyphoeusHttpRequest req).getCertificateValidationControllingValue()
   }
 }
-
-private module TyphoeusDisablesCertificateValidationFlow =
-  DataFlow::Global<TyphoeusDisablesCertificateValidationConfig>;

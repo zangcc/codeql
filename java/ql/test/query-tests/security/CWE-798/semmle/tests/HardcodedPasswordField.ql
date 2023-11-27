@@ -2,10 +2,12 @@ import java
 import semmle.code.java.security.HardcodedPasswordField
 import TestUtilities.InlineExpectationsTest
 
-module HardcodedPasswordFieldTest implements TestSig {
-  string getARelevantTag() { result = "HardcodedPasswordField" }
+class HardcodedPasswordFieldTest extends InlineExpectationsTest {
+  HardcodedPasswordFieldTest() { this = "HardcodedPasswordFieldTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "HardcodedPasswordField" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "HardcodedPasswordField" and
     exists(Expr assigned | passwordFieldAssignedHardcodedValue(_, assigned) |
       assigned.getLocation() = location and
@@ -14,5 +16,3 @@ module HardcodedPasswordFieldTest implements TestSig {
     )
   }
 }
-
-import MakeTest<HardcodedPasswordFieldTest>

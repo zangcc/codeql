@@ -225,12 +225,6 @@ public class PartialPathTraversalTest {
         }
     }
 
-    public void doesNotFlagOptimalSafeVersion(File dir, File parent) throws IOException {
-        if (!dir.toPath().normalize().startsWith(parent.toPath())) { // Safe
-            throw new IOException("Path traversal attempt: " + dir.getCanonicalPath());
-        }
-    }
-
     public void doesNotFlag() {
         "hello".startsWith("goodbye");
     }

@@ -15,10 +15,9 @@
  */
 
 import semmle.code.cpp.security.BufferWrite
-import semmle.code.cpp.security.FlowSources as FS
-import semmle.code.cpp.dataflow.new.TaintTracking
-import semmle.code.cpp.controlflow.IRGuards
-import Flow::PathGraph
+import semmle.code.cpp.security.Security
+import semmle.code.cpp.ir.dataflow.internal.DefaultTaintTrackingImpl
+import TaintedWithPath
 
 /*
  * --- Summary of CWE-120 alerts ---
@@ -48,54 +47,38 @@ predicate isUnboundedWrite(BufferWrite bw) {
   not exists(bw.getMaxData(_)) // and we can't deduce an upper bound to the amount copied
 }
 
+/*
+ * predicate isMaybeUnboundedWrite(BufferWrite bw)
+ * {
+ *   not bw.hasExplicitLimit()                           // has no explicit size limit
+ *   and exists(bw.getMaxData())                         // and we can deduce an upper bound to the amount copied
+ *   and (not exists(getBufferSize(bw.getDest(), _)))    // but we can't work out the size of the destination to be sure
+ * }
+ */
+
 /**
  * Holds if `e` is a source buffer going into an unbounded write `bw` or a
  * qualifier of (a qualifier of ...) such a source.
  */
-predicate unboundedWriteSource(Expr e, BufferWrite bw, boolean qualifier) {
-  isUnboundedWrite(bw) and e = bw.getASource() and qualifier = false
+predicate unboundedWriteSource(Expr e, BufferWrite bw) {
+  isUnboundedWrite(bw) and e = bw.getASource()
   or
-  exists(FieldAccess fa | unboundedWriteSource(fa, bw, _) and e = fa.getQualifier()) and
-  qualifier = true
+  exists(FieldAccess fa | unboundedWriteSource(fa, bw) and e = fa.getQualifier())
 }
 
-predicate isSource(FS::FlowSource source, string sourceType) { source.getSourceType() = sourceType }
+/*
+ * --- user input reach ---
+ */
 
-predicate isSink(DataFlow::Node sink, BufferWrite bw, boolean qualifier) {
-  unboundedWriteSource(sink.asIndirectExpr(), bw, qualifier)
-  or
-  // `gets` and `scanf` reads from stdin so there's no real input.
-  // The `BufferWrite` library models this as the call itself being
-  // the source. In this case we mark the output argument as being
-  // the sink so that we report a path where source = sink (because
-  // the same output argument is also included in `isSource`).
-  bw.getASource() = bw and
-  unboundedWriteSource(sink.asDefiningArgument(), bw, qualifier)
+class Configuration extends TaintTrackingConfiguration {
+  override predicate isSink(Element tainted) { unboundedWriteSource(tainted, _) }
+
+  override predicate taintThroughGlobals() { any() }
 }
 
-predicate lessThanOrEqual(IRGuardCondition g, Expr e, boolean branch) {
-  exists(Operand left |
-    g.comparesLt(left, _, _, true, branch) or
-    g.comparesEq(left, _, _, true, branch)
-  |
-    left.getDef().getUnconvertedResultExpression() = e
-  )
-}
-
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { isSource(source, _) }
-
-  predicate isSink(DataFlow::Node sink) { isSink(sink, _, _) }
-
-  predicate isBarrierOut(DataFlow::Node node) { isSink(node, _, false) }
-
-  predicate isBarrier(DataFlow::Node node) {
-    // Block flow if the node is guarded by any <, <= or = operations.
-    node = DataFlow::BarrierGuard<lessThanOrEqual/3>::getABarrierNode()
-  }
-}
-
-module Flow = TaintTracking::Global<Config>;
+/*
+ * --- put it together ---
+ */
 
 /*
  * An unbounded write is, for example `strcpy(..., tainted)`. We're looking
@@ -104,20 +87,17 @@ module Flow = TaintTracking::Global<Config>;
  *
  * In the case of `gets` and `scanf`, where the source buffer is implicit, the
  * `BufferWrite` library reports the source buffer to be the same as the
- * destination buffer. So to report an alert on a pattern like:
- * ```
- * char s[32];
- * gets(s);
- * ```
- * we define the sink as the node corresponding to the output argument of `gets`.
- * This gives us a path where the source is equal to the sink.
+ * destination buffer. Since those destination-buffer arguments are also
+ * modeled in the taint-tracking library as being _sources_ of taint, they are
+ * in practice reported as being tainted because the `security.TaintTracking`
+ * library does not distinguish between taint going into an argument and out of
+ * an argument. Thus, we get the desired alerts.
  */
 
-from BufferWrite bw, Flow::PathNode source, Flow::PathNode sink, string sourceType
+from BufferWrite bw, Expr inputSource, Expr tainted, PathNode sourceNode, PathNode sinkNode
 where
-  Flow::flowPath(source, sink) and
-  isSource(source.getNode(), sourceType) and
-  isSink(sink.getNode(), bw, _)
-select bw, source, sink,
-  "This '" + bw.getBWDesc() + "' with input from $@ may overflow the destination.",
-  source.getNode(), sourceType
+  taintedWithPath(inputSource, tainted, sourceNode, sinkNode) and
+  unboundedWriteSource(tainted, bw)
+select bw, sourceNode, sinkNode,
+  "This '" + bw.getBWDesc() + "' with input from $@ may overflow the destination.", inputSource,
+  inputSource.toString()

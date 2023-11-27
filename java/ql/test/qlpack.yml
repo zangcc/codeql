@@ -5,4 +5,3 @@ dependencies:
     codeql/java-queries: ${workspace}
 extractor: java
 tests: .
-warnOnImplicitThis: true

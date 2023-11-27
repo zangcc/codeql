@@ -1,0 +1,14 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "constantbrackets.ql"
+dbscheme: "4d00210ca570d55c4833af11d3372b774dbc63f2"
+stages:
+- cached: "32bedb0cbd3cdbeb79fcb4c0bb7585e87fbd8358"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+results:
+  '#select':
+    resultArranger: "1\"idx\"ei12"
+inputsDigest: "a4eead9c57d9c4c16ba4c6b41dfd4271f48e0f90"

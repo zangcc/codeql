@@ -20,15 +20,15 @@ class Cookie extends Storable, ClassInstanceExpr {
 
   /** Gets a store, for example `response.addCookie(cookie);`. */
   override Expr getAStore() {
-    exists(DataFlow::Node n |
+    exists(CookieToStoreFlowConfig conf, DataFlow::Node n |
       cookieStore(n, result) and
-      CookieToStoreFlow::flow(DataFlow::exprNode(this), n)
+      conf.hasFlow(DataFlow::exprNode(this), n)
     )
   }
 }
 
 private predicate cookieStore(DataFlow::Node cookie, Expr store) {
-  exists(MethodCall m, Method def |
+  exists(MethodAccess m, Method def |
     m.getMethod() = def and
     def.getName() = "addCookie" and
     def.getDeclaringType().hasQualifiedName("javax.servlet.http", "HttpServletResponse") and
@@ -37,12 +37,12 @@ private predicate cookieStore(DataFlow::Node cookie, Expr store) {
   )
 }
 
-private module CookieToStoreFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src.asExpr() instanceof Cookie }
+private class CookieToStoreFlowConfig extends DataFlow3::Configuration {
+  CookieToStoreFlowConfig() { this = "CookieToStoreFlowConfig" }
 
-  predicate isSink(DataFlow::Node sink) { cookieStore(sink, _) }
+  override predicate isSource(DataFlow::Node src) { src.asExpr() instanceof Cookie }
+
+  override predicate isSink(DataFlow::Node sink) { cookieStore(sink, _) }
 }
-
-private module CookieToStoreFlow = DataFlow::Global<CookieToStoreFlowConfig>;
 
 private Expr cookieInput(Cookie c) { result = c.getArgument(1) }

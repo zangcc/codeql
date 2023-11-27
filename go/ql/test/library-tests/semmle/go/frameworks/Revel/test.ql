@@ -7,22 +7,24 @@ class Sink extends DataFlow::Node {
   }
 }
 
-private module TestConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof UntrustedFlowSource }
+class TestConfig extends TaintTracking::Configuration {
+  TestConfig() { this = "testconfig" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof Sink }
+  override predicate isSource(DataFlow::Node source) { source instanceof UntrustedFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) { sink instanceof Sink }
 }
 
-private module TestFlow = TaintTracking::Global<TestConfig>;
+class MissingDataFlowTest extends InlineExpectationsTest {
+  MissingDataFlowTest() { this = "MissingDataFlow" }
 
-module MissingDataFlowTest implements TestSig {
-  string getARelevantTag() { result = "noflow" }
+  override string getARelevantTag() { result = "noflow" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "noflow" and
     value = "" and
     exists(Sink sink |
-      not TestFlow::flowTo(sink) and
+      not any(TestConfig c).hasFlow(_, sink) and
       sink.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
         location.getStartColumn(), location.getEndLine(), location.getEndColumn()) and
       element = sink.toString()
@@ -30,10 +32,12 @@ module MissingDataFlowTest implements TestSig {
   }
 }
 
-module HttpResponseBodyTest implements TestSig {
-  string getARelevantTag() { result = "responsebody" }
+class HttpResponseBodyTest extends InlineExpectationsTest {
+  HttpResponseBodyTest() { this = "HttpResponseBodyTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "responsebody" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "responsebody" and
     exists(Http::ResponseBody rb |
       rb.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
@@ -43,5 +47,3 @@ module HttpResponseBodyTest implements TestSig {
     )
   }
 }
-
-import MakeTest<MergeTests<MissingDataFlowTest, HttpResponseBodyTest>>

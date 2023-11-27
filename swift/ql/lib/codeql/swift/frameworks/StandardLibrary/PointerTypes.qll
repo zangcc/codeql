@@ -4,7 +4,6 @@
  */
 
 import swift
-private import codeql.swift.dataflow.ExternalFlow
 
 /**
  * A Swift unsafe typed pointer type such as `UnsafePointer`,
@@ -57,17 +56,4 @@ class CVaListPointerType extends NominalType {
  */
 class ManagedBufferPointerType extends BoundGenericType {
   ManagedBufferPointerType() { this.getName().matches("ManagedBufferPointer<%") }
-}
-
-/**
- * A model for `UnsafePointer` and related Swift class members that permit taint flow.
- */
-private class PointerSummaries extends SummaryModelCsv {
-  override predicate row(string row) {
-    row =
-      [
-        ";UnsafeMutablePointer;true;init(mutating:);;;Argument[0];ReturnValue;taint",
-        ";UnsafeMutableBufferPointer;true;update(repeating:);;;Argument[0];Argument[-1].CollectionElement;value",
-      ]
-  }
 }

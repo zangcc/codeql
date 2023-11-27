@@ -19,5 +19,5 @@ class UnspecifiedElement extends Generated::UnspecifiedElement {
     )
   }
 
-  override Location getLocation() { result = this.getParent().(Locatable).getLocation() }
+  override Location getImmediateLocation() { result = this.getParent().(Locatable).getLocation() }
 }

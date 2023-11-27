@@ -13,24 +13,45 @@
  */
 
 import java
-import semmle.code.java.dataflow.DataFlow
-import semmle.code.java.security.ArithmeticCommon
-import semmle.code.java.security.ArithmeticUncontrolledQuery
+import semmle.code.java.dataflow.TaintTracking
+import semmle.code.java.security.RandomQuery
+import semmle.code.java.security.SecurityTests
+import ArithmeticCommon
+import DataFlow::PathGraph
 
-module Flow =
-  DataFlow::MergePathGraph<ArithmeticUncontrolledOverflowFlow::PathNode,
-    ArithmeticUncontrolledUnderflowFlow::PathNode, ArithmeticUncontrolledOverflowFlow::PathGraph,
-    ArithmeticUncontrolledUnderflowFlow::PathGraph>;
+class TaintSource extends DataFlow::ExprNode {
+  TaintSource() {
+    exists(RandomDataSource m | not m.resultMayBeBounded() | m.getOutput() = this.getExpr())
+  }
+}
 
-import Flow::PathGraph
+class ArithmeticUncontrolledOverflowConfig extends TaintTracking::Configuration {
+  ArithmeticUncontrolledOverflowConfig() { this = "ArithmeticUncontrolledOverflowConfig" }
 
-from Flow::PathNode source, Flow::PathNode sink, ArithExpr exp, string effect
+  override predicate isSource(DataFlow::Node source) { source instanceof TaintSource }
+
+  override predicate isSink(DataFlow::Node sink) { overflowSink(_, sink.asExpr()) }
+
+  override predicate isSanitizer(DataFlow::Node n) { overflowBarrier(n) }
+}
+
+class ArithmeticUncontrolledUnderflowConfig extends TaintTracking::Configuration {
+  ArithmeticUncontrolledUnderflowConfig() { this = "ArithmeticUncontrolledUnderflowConfig" }
+
+  override predicate isSource(DataFlow::Node source) { source instanceof TaintSource }
+
+  override predicate isSink(DataFlow::Node sink) { underflowSink(_, sink.asExpr()) }
+
+  override predicate isSanitizer(DataFlow::Node n) { underflowBarrier(n) }
+}
+
+from DataFlow::PathNode source, DataFlow::PathNode sink, ArithExpr exp, string effect
 where
-  ArithmeticUncontrolledOverflowFlow::flowPath(source.asPathNode1(), sink.asPathNode1()) and
+  any(ArithmeticUncontrolledOverflowConfig c).hasFlowPath(source, sink) and
   overflowSink(exp, sink.getNode().asExpr()) and
   effect = "overflow"
   or
-  ArithmeticUncontrolledUnderflowFlow::flowPath(source.asPathNode2(), sink.asPathNode2()) and
+  any(ArithmeticUncontrolledUnderflowConfig c).hasFlowPath(source, sink) and
   underflowSink(exp, sink.getNode().asExpr()) and
   effect = "underflow"
 select exp, source, sink,

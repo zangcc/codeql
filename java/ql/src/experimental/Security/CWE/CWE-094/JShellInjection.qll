@@ -11,7 +11,7 @@ class JShellInjectionSink extends DataFlow::Node {
 }
 
 /** A call to `JShell.eval`. */
-private class JShellEvalCall extends MethodCall {
+private class JShellEvalCall extends MethodAccess {
   JShellEvalCall() {
     this.getMethod().hasName("eval") and
     this.getMethod().getDeclaringType().hasQualifiedName("jdk.jshell", "JShell") and
@@ -20,7 +20,7 @@ private class JShellEvalCall extends MethodCall {
 }
 
 /** A call to `SourceCodeAnalysis.wrappers`. */
-private class SourceCodeAnalysisWrappersCall extends MethodCall {
+private class SourceCodeAnalysisWrappersCall extends MethodAccess {
   SourceCodeAnalysisWrappersCall() {
     this.getMethod().hasName("wrappers") and
     this.getMethod().getDeclaringType().hasQualifiedName("jdk.jshell", "SourceCodeAnalysis") and
@@ -29,7 +29,7 @@ private class SourceCodeAnalysisWrappersCall extends MethodCall {
 }
 
 /** A call to `SourceCodeAnalysis.analyzeCompletion`. */
-class SourceCodeAnalysisAnalyzeCompletionCall extends MethodCall {
+class SourceCodeAnalysisAnalyzeCompletionCall extends MethodAccess {
   SourceCodeAnalysisAnalyzeCompletionCall() {
     this.getMethod().hasName("analyzeCompletion") and
     this.getMethod()
@@ -41,7 +41,7 @@ class SourceCodeAnalysisAnalyzeCompletionCall extends MethodCall {
 }
 
 /** A call to `CompletionInfo.source` or `CompletionInfo.remaining`. */
-class CompletionInfoSourceOrRemainingCall extends MethodCall {
+class CompletionInfoSourceOrRemainingCall extends MethodAccess {
   CompletionInfoSourceOrRemainingCall() {
     this.getMethod().getName() in ["source", "remaining"] and
     this.getMethod()

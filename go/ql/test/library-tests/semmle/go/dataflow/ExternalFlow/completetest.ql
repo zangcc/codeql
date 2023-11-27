@@ -8,10 +8,16 @@ import ModelValidation
 import semmle.go.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
 import TestUtilities.InlineFlowTest
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { sourceNode(src, "qltest") }
+class Config extends TaintTracking::Configuration {
+  Config() { this = "external-flow-test" }
 
-  predicate isSink(DataFlow::Node src) { sinkNode(src, "qltest") }
+  override predicate isSource(DataFlow::Node src) { sourceNode(src, "qltest") }
+
+  override predicate isSink(DataFlow::Node src) { sinkNode(src, "qltest") }
 }
 
-import TaintFlowTest<Config>
+class ExternalFlowTest extends InlineFlowTest {
+  override DataFlow::Configuration getValueFlowConfig() { none() }
+
+  override DataFlow::Configuration getTaintFlowConfig() { result = any(Config config) }
+}

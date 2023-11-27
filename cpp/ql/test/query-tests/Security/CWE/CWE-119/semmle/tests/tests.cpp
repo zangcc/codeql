@@ -407,7 +407,7 @@ void test15()
 		{
 			if (ptr[5] == ' ') // GOOD
 			{
-				break;
+				// ...
 			}
 		}
 	}
@@ -576,7 +576,7 @@ void test21(bool cond)
 	} else {
 		if (ptr[-1] == 0) { return; } // BAD: accesses buffer[-1]
 	}
-	if (ptr[-1] == 0) { return; } // BAD: accesses buffer[-1] or buffer[0] [NOT DETECTED]
+	if (ptr[-1] == 0) { return; } // BAD: accesses buffer[-1] or buffer[0]
 
 	ptr = buffer;
 	for (i = 0; i < 2; i++)
@@ -603,31 +603,6 @@ void test22(bool b, const char* source) {
   memcpy(dest, source, n); // GOOD
 }
 
-int test23() {
-	char buffer[100];
-	return sizeof(buffer) / sizeof(buffer[101]); // GOOD
-}
-
-char* strcpy(char *, const char *);
-
-void test24(char* source) {
-	char buffer[100];
-	strcpy(buffer, source); // BAD
-}
-
-struct my_struct {
-	char* home;
-};
-
-void test25(char* source) {
-	my_struct s;
-
-	s.home = source;
-
-	char buf[100];
-	strcpy(buf, s.home); // BAD
-}
-
 int tests_main(int argc, char *argv[])
 {
 	long long arr17[19];
@@ -652,9 +627,6 @@ int tests_main(int argc, char *argv[])
 	test20();
 	test21(argc == 0);
 	test22(argc == 0, argv[0]);
-	test23();
-	test24(argv[0]);
-	test25(argv[0]);
 
 	return 0;
 }

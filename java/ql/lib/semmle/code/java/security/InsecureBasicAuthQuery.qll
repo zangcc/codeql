@@ -6,12 +6,10 @@ import semmle.code.java.security.InsecureBasicAuth
 import semmle.code.java.dataflow.TaintTracking
 
 /**
- * DEPRECATED: Use `InsecureBasicAuthFlow` instead.
- *
  * A taint tracking configuration for the Basic authentication scheme
  * being used in HTTP connections.
  */
-deprecated class BasicAuthFlowConfig extends TaintTracking::Configuration {
+class BasicAuthFlowConfig extends TaintTracking::Configuration {
   BasicAuthFlowConfig() { this = "InsecureBasicAuth::BasicAuthFlowConfig" }
 
   override predicate isSource(DataFlow::Node src) { src instanceof InsecureBasicAuthSource }
@@ -22,22 +20,3 @@ deprecated class BasicAuthFlowConfig extends TaintTracking::Configuration {
     any(HttpUrlsAdditionalTaintStep c).step(node1, node2)
   }
 }
-
-/**
- * A taint tracking configuration for the Basic authentication scheme
- * being used in HTTP connections.
- */
-module BasicAuthFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src instanceof InsecureBasicAuthSource }
-
-  predicate isSink(DataFlow::Node sink) { sink instanceof InsecureBasicAuthSink }
-
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
-    any(HttpUrlsAdditionalTaintStep c).step(node1, node2)
-  }
-}
-
-/**
- * Tracks flow for the Basic authentication scheme being used in HTTP connections.
- */
-module InsecureBasicAuthFlow = TaintTracking::Global<BasicAuthFlowConfig>;

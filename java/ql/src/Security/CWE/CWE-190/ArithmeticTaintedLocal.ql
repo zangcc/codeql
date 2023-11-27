@@ -13,24 +13,37 @@
  */
 
 import java
-import semmle.code.java.dataflow.DataFlow
-import semmle.code.java.security.ArithmeticCommon
-import semmle.code.java.security.ArithmeticTaintedLocalQuery
+import semmle.code.java.dataflow.FlowSources
+import ArithmeticCommon
+import DataFlow::PathGraph
 
-module Flow =
-  DataFlow::MergePathGraph<ArithmeticTaintedLocalOverflowFlow::PathNode,
-    ArithmeticTaintedLocalUnderflowFlow::PathNode, ArithmeticTaintedLocalOverflowFlow::PathGraph,
-    ArithmeticTaintedLocalUnderflowFlow::PathGraph>;
+class ArithmeticTaintedLocalOverflowConfig extends TaintTracking::Configuration {
+  ArithmeticTaintedLocalOverflowConfig() { this = "ArithmeticTaintedLocalOverflowConfig" }
 
-import Flow::PathGraph
+  override predicate isSource(DataFlow::Node source) { source instanceof LocalUserInput }
 
-from Flow::PathNode source, Flow::PathNode sink, ArithExpr exp, string effect
+  override predicate isSink(DataFlow::Node sink) { overflowSink(_, sink.asExpr()) }
+
+  override predicate isSanitizer(DataFlow::Node n) { overflowBarrier(n) }
+}
+
+class ArithmeticTaintedLocalUnderflowConfig extends TaintTracking::Configuration {
+  ArithmeticTaintedLocalUnderflowConfig() { this = "ArithmeticTaintedLocalUnderflowConfig" }
+
+  override predicate isSource(DataFlow::Node source) { source instanceof LocalUserInput }
+
+  override predicate isSink(DataFlow::Node sink) { underflowSink(_, sink.asExpr()) }
+
+  override predicate isSanitizer(DataFlow::Node n) { underflowBarrier(n) }
+}
+
+from DataFlow::PathNode source, DataFlow::PathNode sink, ArithExpr exp, string effect
 where
-  ArithmeticTaintedLocalOverflowFlow::flowPath(source.asPathNode1(), sink.asPathNode1()) and
+  any(ArithmeticTaintedLocalOverflowConfig c).hasFlowPath(source, sink) and
   overflowSink(exp, sink.getNode().asExpr()) and
   effect = "overflow"
   or
-  ArithmeticTaintedLocalUnderflowFlow::flowPath(source.asPathNode2(), sink.asPathNode2()) and
+  any(ArithmeticTaintedLocalUnderflowConfig c).hasFlowPath(source, sink) and
   underflowSink(exp, sink.getNode().asExpr()) and
   effect = "underflow"
 select exp, source, sink,

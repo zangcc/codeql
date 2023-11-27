@@ -5,7 +5,6 @@
 import java
 private import semmle.code.java.dataflow.DataFlow
 private import semmle.code.java.frameworks.android.WebView
-private import semmle.code.java.frameworks.kotlin.Kotlin
 
 /**
  * A sink that represents a method that fetches a web resource in Android.
@@ -63,24 +62,8 @@ private class WebViewRef extends Element {
       t.isOwnInstanceAccess() or t.getInstanceAccess().isEnclosingInstanceAccess(this)
     )
     or
-    exists(Variable v | result.asExpr() = v.getAnAccess() |
-      v = this
-      or
-      applyReceiverVariable(this, v)
-    )
+    result = DataFlow::exprNode(this.(Variable).getAnAccess())
   }
-}
-
-/**
- * Holds if `p` is the lambda parameter that holds the receiver of an `apply` expression in Kotlin,
- * and `v` is the variable of the receiver in the outer scope.
- */
-private predicate applyReceiverVariable(Parameter p, Variable v) {
-  exists(LambdaExpr lambda, KotlinApply apply |
-    p.getCallable() = lambda.asMethod() and
-    lambda = apply.getLambdaArg() and
-    v = apply.getReceiver().(VarAccess).getVariable()
-  )
 }
 
 /**
@@ -88,7 +71,7 @@ private predicate applyReceiverVariable(Parameter p, Variable v) {
  * with `urlArg` as its first argument.
  */
 private predicate webViewLoadUrl(Argument urlArg, WebViewRef webview) {
-  exists(MethodCall loadUrl |
+  exists(MethodAccess loadUrl |
     loadUrl.getArgument(0) = urlArg and
     loadUrl.getMethod() instanceof WebViewLoadUrlMethod
   |
@@ -98,7 +81,7 @@ private predicate webViewLoadUrl(Argument urlArg, WebViewRef webview) {
     or
     // `webview` is received as a parameter of an event method in a custom `WebViewClient`,
     // so we need to find `WebViews` that use that specific `WebViewClient`.
-    exists(WebViewClientEventMethod eventMethod, MethodCall setWebClient |
+    exists(WebViewClientEventMethod eventMethod, MethodAccess setWebClient |
       setWebClient.getMethod() instanceof WebViewSetWebViewClientMethod and
       setWebClient.getArgument(0).getType() = eventMethod.getDeclaringType() and
       loadUrl.getQualifier().getUnderlyingExpr() = eventMethod.getWebViewParameter().getAnAccess()
@@ -114,7 +97,7 @@ private predicate webViewLoadUrl(Argument urlArg, WebViewRef webview) {
  * has been set to `true` via a `WebSettings` object obtained from it.
  */
 private predicate isJSEnabled(WebViewRef webview) {
-  exists(MethodCall allowJs, MethodCall settings |
+  exists(MethodAccess allowJs, MethodAccess settings |
     allowJs.getMethod() instanceof AllowJavaScriptMethod and
     allowJs.getArgument(0).(CompileTimeConstantExpr).getBooleanValue() = true and
     settings.getMethod() instanceof WebViewGetSettingsMethod and
@@ -129,7 +112,7 @@ private predicate isJSEnabled(WebViewRef webview) {
  *  obtained from it.
  */
 private predicate isAllowFileAccessEnabled(WebViewRef webview) {
-  exists(MethodCall allowFileAccess, MethodCall settings |
+  exists(MethodAccess allowFileAccess, MethodAccess settings |
     allowFileAccess.getMethod() instanceof CrossOriginAccessMethod and
     allowFileAccess.getArgument(0).(CompileTimeConstantExpr).getBooleanValue() = true and
     settings.getMethod() instanceof WebViewGetSettingsMethod and

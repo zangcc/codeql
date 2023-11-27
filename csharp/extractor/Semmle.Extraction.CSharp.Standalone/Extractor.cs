@@ -30,46 +30,27 @@ namespace Semmle.Extraction.CSharp.Standalone
             IProgressMonitor progressMonitor,
             Stopwatch stopwatch)
         {
-            var output = FileUtils.CreateTemporaryFile(".dll", out var shouldCleanUpContainingFolder);
-
-            try
-            {
-                CSharp.Extractor.Analyse(stopwatch, analyser, options,
-                    references => GetResolvedReferencesStandalone(referencePaths, references),
-                    (analyser, syntaxTrees) => CSharp.Extractor.ReadSyntaxTrees(sources, analyser, null, null, syntaxTrees),
-                    (syntaxTrees, references) => CSharpCompilation.Create(
-                        output.Name, syntaxTrees, references, new CSharpCompilationOptions(OutputKind.ConsoleApplication, allowUnsafe: true)
-                        ),
-                    (compilation, options) => analyser.Initialize(output.FullName, compilation, options),
-                    _ => { },
-                    () =>
-                    {
-                        foreach (var type in analyser.MissingNamespaces)
-                        {
-                            progressMonitor.MissingNamespace(type);
-                        }
-
-                        foreach (var type in analyser.MissingTypes)
-                        {
-                            progressMonitor.MissingType(type);
-                        }
-
-                        progressMonitor.MissingSummary(analyser.MissingTypes.Count(), analyser.MissingNamespaces.Count());
-                    });
-            }
-            finally
-            {
-                try
+            CSharp.Extractor.Analyse(stopwatch, analyser, options,
+                references => GetResolvedReferencesStandalone(referencePaths, references),
+                (analyser, syntaxTrees) => CSharp.Extractor.ReadSyntaxTrees(sources, analyser, null, null, syntaxTrees),
+                (syntaxTrees, references) => CSharpCompilation.Create("csharp.dll", syntaxTrees, references),
+                (compilation, options) => analyser.Initialize(compilation, options),
+                () => { },
+                _ => { },
+                () =>
                 {
-                    FileUtils.TryDelete(output.FullName);
-                    if (shouldCleanUpContainingFolder)
+                    foreach (var type in analyser.MissingNamespaces)
                     {
-                        output.Directory?.Delete(true);
+                        progressMonitor.MissingNamespace(type);
                     }
-                }
-                catch
-                { }
-            }
+
+                    foreach (var type in analyser.MissingTypes)
+                    {
+                        progressMonitor.MissingType(type);
+                    }
+
+                    progressMonitor.MissingSummary(analyser.MissingTypes.Count(), analyser.MissingNamespaces.Count());
+                });
         }
 
         private static void ExtractStandalone(
@@ -136,7 +117,7 @@ namespace Semmle.Extraction.CSharp.Standalone
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            using var logger = new ConsoleLogger(options.Verbosity, logThreadId: true);
+            using var logger = new ConsoleLogger(options.Verbosity);
             logger.Log(Severity.Info, "Running C# standalone extractor");
             using var a = new Analysis(logger, options);
             var sourceFileCount = a.Extraction.Sources.Count;

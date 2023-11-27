@@ -12,7 +12,7 @@
 
 import java
 
-from MethodCall mc, Method m
+from MethodAccess mc, Method m
 where
   (
     m.getDeclaringType().hasQualifiedName("java.lang", "Runtime") or

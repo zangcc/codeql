@@ -20,13 +20,13 @@ import semmle.javascript.security.dataflow.NosqlInjectionQuery as NosqlInjection
 import DataFlow::PathGraph
 import semmle.javascript.heuristics.AdditionalSources
 
-from DataFlow::Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink, string type
+from DataFlow::Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where
   (
-    cfg instanceof SqlInjection::Configuration and type = "string"
-    or
-    cfg instanceof NosqlInjection::Configuration and type = "object"
+    cfg instanceof SqlInjection::Configuration or
+    cfg instanceof NosqlInjection::Configuration
   ) and
-  cfg.hasFlowPath(source, sink)
-select sink.getNode(), source, sink, "This query " + type + " depends on a $@.", source.getNode(),
+  cfg.hasFlowPath(source, sink) and
+  source.getNode() instanceof HeuristicSource
+select sink.getNode(), source, sink, "This query depends on a $@.", source.getNode(),
   "user-provided value"

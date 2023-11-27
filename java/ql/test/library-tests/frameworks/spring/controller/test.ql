@@ -2,12 +2,20 @@ import java
 import semmle.code.java.dataflow.FlowSources
 import TestUtilities.InlineFlowTest
 
-module ValueFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+class EnableLegacy extends EnableLegacyConfiguration {
+  EnableLegacy() { exists(this) }
+}
 
-  predicate isSink(DataFlow::Node sink) {
+class ValueFlowConf extends DataFlow::Configuration {
+  ValueFlowConf() { this = "ValueFlowConf" }
+
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) {
     sink.asExpr().(Argument).getCall().getCallee().hasName("sink")
   }
 }
 
-import FlowTest<ValueFlowConfig, DefaultFlowConfig>
+class Test extends InlineFlowTest {
+  override DataFlow::Configuration getValueFlowConfig() { result = any(ValueFlowConf config) }
+}

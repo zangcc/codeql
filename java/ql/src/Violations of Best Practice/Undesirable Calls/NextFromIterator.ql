@@ -12,11 +12,11 @@
 
 import java
 
-from MethodCall m
+from MethodAccess m
 where
   m.getMethod().hasName("next") and
   m.getMethod().getNumberOfParameters() = 0 and
-  m.isOwnMethodCall() and
+  m.isOwnMethodAccess() and
   exists(Interface i, Method hasNext |
     i.getSourceDeclaration().hasQualifiedName("java.util", "Iterator") and
     m.getEnclosingCallable() = hasNext and

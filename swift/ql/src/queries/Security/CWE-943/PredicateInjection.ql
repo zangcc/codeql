@@ -14,9 +14,9 @@
 import swift
 import codeql.swift.dataflow.DataFlow
 import codeql.swift.security.PredicateInjectionQuery
-import PredicateInjectionFlow::PathGraph
+import DataFlow::PathGraph
 
-from PredicateInjectionFlow::PathNode source, PredicateInjectionFlow::PathNode sink
-where PredicateInjectionFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink
+where any(PredicateInjectionConf c).hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This predicate depends on a $@.", source.getNode(),
   "user-provided value"

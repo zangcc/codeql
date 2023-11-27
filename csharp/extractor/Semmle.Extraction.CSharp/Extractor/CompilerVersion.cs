@@ -130,14 +130,9 @@ namespace Semmle.Extraction.CSharp
         /// <returns>Modified list of arguments.</returns>
         private static IEnumerable<string> AddDefaultResponse(string responseFile, IEnumerable<string> args)
         {
-            var ret = SuppressDefaultResponseFile(args) || !File.Exists(responseFile) ?
+            return SuppressDefaultResponseFile(args) || !File.Exists(responseFile) ?
                 args :
                 new[] { "@" + responseFile }.Concat(args);
-
-            // make sure to never treat warnings as errors in the extractor:
-            // our version of Roslyn may report warnings that the actual build
-            // doesn't
-            return ret.Concat(new[] { "/warnaserror-" });
         }
 
         private static bool SuppressDefaultResponseFile(IEnumerable<string> args)

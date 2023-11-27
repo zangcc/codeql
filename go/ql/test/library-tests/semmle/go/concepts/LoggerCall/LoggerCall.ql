@@ -1,10 +1,12 @@
 import go
 import TestUtilities.InlineExpectationsTest
 
-module LoggerTest implements TestSig {
-  string getARelevantTag() { result = "logger" }
+class LoggerTest extends InlineExpectationsTest {
+  LoggerTest() { this = "LoggerTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "logger" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(LoggerCall log |
       log.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
         location.getStartColumn(), location.getEndLine(), location.getEndColumn()) and
@@ -14,5 +16,3 @@ module LoggerTest implements TestSig {
     )
   }
 }
-
-import MakeTest<LoggerTest>

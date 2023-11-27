@@ -18,5 +18,5 @@ import semmle.javascript.security.dataflow.ResourceExhaustionQuery
 
 from Configuration dataflow, DataFlow::PathNode source, DataFlow::PathNode sink
 where dataflow.hasFlowPath(source, sink)
-select sink, source, sink, sink.getNode().(Sink).getProblemDescription() + " from a $@.", source,
+select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), source, sink, sink.getNode().(Sink).getProblemDescription() + " from a $@.", source,
   "user-provided value"

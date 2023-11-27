@@ -11,10 +11,12 @@
  *       external/cwe/cwe-829
  */
 
+import codeql.ruby.AST
+import codeql.ruby.DataFlow
 import codeql.ruby.security.InsecureDownloadQuery
-import InsecureDownloadFlow::PathGraph
+import DataFlow::PathGraph
 
-from InsecureDownloadFlow::PathNode source, InsecureDownloadFlow::PathNode sink
-where InsecureDownloadFlow::flowPath(source, sink)
+from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "$@ of sensitive file from $@.",
   sink.getNode().(Sink).getDownloadCall(), "Download", source.getNode(), "HTTP source"

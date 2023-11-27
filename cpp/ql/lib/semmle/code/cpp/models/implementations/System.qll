@@ -7,15 +7,14 @@ import semmle.code.cpp.models.interfaces.CommandExecution
  * A function for running a command using a command interpreter.
  */
 private class SystemFunction extends CommandExecutionFunction, ArrayFunction, AliasFunction,
-  SideEffectFunction
-{
+  SideEffectFunction {
   SystemFunction() {
-    this.hasGlobalOrStdName("system") or // system(command)
-    this.hasGlobalName("popen") or // popen(command, mode)
+    hasGlobalOrStdName("system") or // system(command)
+    hasGlobalName("popen") or // popen(command, mode)
     // Windows variants
-    this.hasGlobalName("_popen") or // _popen(command, mode)
-    this.hasGlobalName("_wpopen") or // _wpopen(command, mode)
-    this.hasGlobalName("_wsystem") // _wsystem(command)
+    hasGlobalName("_popen") or // _popen(command, mode)
+    hasGlobalName("_wpopen") or // _wpopen(command, mode)
+    hasGlobalName("_wsystem") // _wsystem(command)
   }
 
   override predicate hasCommandArgument(FunctionInput input) { input.isParameterDeref(0) }
@@ -33,8 +32,8 @@ private class SystemFunction extends CommandExecutionFunction, ArrayFunction, Al
   override predicate hasOnlySpecificReadSideEffects() { any() }
 
   override predicate hasOnlySpecificWriteSideEffects() {
-    this.hasGlobalOrStdName("system") or
-    this.hasGlobalName("_wsystem")
+    hasGlobalOrStdName("system") or
+    hasGlobalName("_wsystem")
   }
 
   override predicate hasSpecificReadSideEffect(ParameterIndex i, boolean buffer) {

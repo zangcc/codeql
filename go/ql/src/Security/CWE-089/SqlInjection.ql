@@ -13,9 +13,9 @@
 
 import go
 import semmle.go.security.SqlInjection
-import SqlInjection::Flow::PathGraph
+import DataFlow::PathGraph
 
-from SqlInjection::Flow::PathNode source, SqlInjection::Flow::PathNode sink
-where SqlInjection::Flow::flowPath(source, sink)
+from SqlInjection::Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This query depends on a $@.", source.getNode(),
   "user-provided value"

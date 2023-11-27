@@ -16,10 +16,10 @@
  */
 
 import go
-import semmle.go.security.TaintedPath
-import TaintedPath::Flow::PathGraph
+import semmle.go.security.TaintedPath::TaintedPath
+import DataFlow::PathGraph
 
-from TaintedPath::Flow::PathNode source, TaintedPath::Flow::PathNode sink
-where TaintedPath::Flow::flowPath(source, sink)
+from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This path depends on a $@.", source.getNode(),
   "user-provided value"

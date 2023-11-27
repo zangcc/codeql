@@ -21,8 +21,8 @@ private class PredictableApacheRandomStringUtilsMethod extends Method {
   }
 }
 
-private class PredictableApacheRandomStringUtilsMethodCall extends MethodCall {
-  PredictableApacheRandomStringUtilsMethodCall() {
+private class PredictableApacheRandomStringUtilsMethodAccess extends MethodAccess {
+  PredictableApacheRandomStringUtilsMethodAccess() {
     this.getMethod() instanceof PredictableApacheRandomStringUtilsMethod
   }
 }
@@ -41,7 +41,7 @@ private class VulnerableJHipsterRandomUtilMethod extends Method {
     this.getReturnType() instanceof TypeString and
     exists(ReturnStmt s |
       s = this.getBody().(SingletonBlock).getStmt() and
-      s.getResult() instanceof PredictableApacheRandomStringUtilsMethodCall
+      s.getResult() instanceof PredictableApacheRandomStringUtilsMethodAccess
     )
   }
 }

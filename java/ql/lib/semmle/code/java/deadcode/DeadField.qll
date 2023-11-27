@@ -9,7 +9,7 @@ import semmle.code.java.frameworks.jackson.JacksonSerializability
  *
  * This defines the set of fields for which we will determine liveness.
  */
-class SourceField extends Field {
+library class SourceField extends Field {
   SourceField() { this.fromSource() }
 }
 
@@ -130,7 +130,7 @@ class JUnitAnnotatedField extends ReflectivelyReadField {
  */
 class ClassReflectivelyReadField extends ReflectivelyReadField {
   ClassReflectivelyReadField() {
-    exists(ReflectiveGetFieldCall fieldAccess | this = fieldAccess.inferAccessedField())
+    exists(ReflectiveFieldAccess fieldAccess | this = fieldAccess.inferAccessedField())
   }
 }
 
@@ -138,8 +138,7 @@ class ClassReflectivelyReadField extends ReflectivelyReadField {
  * Consider all `JacksonSerializableField`s as reflectively read.
  */
 class JacksonSerializableReflectivelyReadField extends ReflectivelyReadField,
-  JacksonSerializableField
-{ }
+  JacksonSerializableField { }
 
 /**
  * A field that is used when applying Jackson mixins.

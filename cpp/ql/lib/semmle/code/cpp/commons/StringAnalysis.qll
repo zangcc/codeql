@@ -27,6 +27,9 @@ predicate canValueFlow(Expr fromExpr, Expr toExpr) {
   fromExpr = toExpr.(ConditionalExpr).getElse()
 }
 
+/** DEPRECATED: Alias for AnalyzedString */
+deprecated class AnalysedString = AnalyzedString;
+
 /**
  * An analyzed null terminated string.
  */

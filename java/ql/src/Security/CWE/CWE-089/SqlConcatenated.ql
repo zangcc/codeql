@@ -15,18 +15,40 @@
 import java
 import semmle.code.java.security.SqlConcatenatedLib
 import semmle.code.java.security.SqlInjectionQuery
-import semmle.code.java.security.SqlConcatenatedQuery
+
+class UncontrolledStringBuilderSource extends DataFlow::ExprNode {
+  UncontrolledStringBuilderSource() {
+    exists(StringBuilderVar sbv |
+      uncontrolledStringBuilderQuery(sbv, _) and
+      this.getExpr() = sbv.getToStringCall()
+    )
+  }
+}
+
+class UncontrolledStringBuilderSourceFlowConfig extends TaintTracking::Configuration {
+  UncontrolledStringBuilderSourceFlowConfig() {
+    this = "SqlConcatenated::UncontrolledStringBuilderSourceFlowConfig"
+  }
+
+  override predicate isSource(DataFlow::Node src) { src instanceof UncontrolledStringBuilderSource }
+
+  override predicate isSink(DataFlow::Node sink) { sink instanceof QueryInjectionSink }
+
+  override predicate isSanitizer(DataFlow::Node node) {
+    node.getType() instanceof PrimitiveType or node.getType() instanceof BoxedType
+  }
+}
 
 from QueryInjectionSink query, Expr uncontrolled
 where
   (
     builtFromUncontrolledConcat(query.asExpr(), uncontrolled)
     or
-    exists(StringBuilderVar sbv |
+    exists(StringBuilderVar sbv, UncontrolledStringBuilderSourceFlowConfig conf |
       uncontrolledStringBuilderQuery(sbv, uncontrolled) and
-      UncontrolledStringBuilderSourceFlow::flow(DataFlow::exprNode(sbv.getToStringCall()), query)
+      conf.hasFlow(DataFlow::exprNode(sbv.getToStringCall()), query)
     )
   ) and
-  not queryIsTaintedBy(query, _, _)
+  not queryTaintedBy(query, _, _)
 select query, "Query built by concatenation with $@, which may be untrusted.", uncontrolled,
   "this expression"

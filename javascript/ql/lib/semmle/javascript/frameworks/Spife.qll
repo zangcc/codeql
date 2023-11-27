@@ -193,8 +193,7 @@ module Spife {
   /**
    * An access to a user-controlled Spife context input.
    */
-  private class ContextInputAccess extends Http::RequestInputAccess instanceof DataFlow::MethodCallNode
-  {
+  private class ContextInputAccess extends Http::RequestInputAccess instanceof DataFlow::MethodCallNode {
     ContextSource request;
     string kind;
 
@@ -277,8 +276,7 @@ module Spife {
   /**
    * An invocation that sets any number of headers of the HTTP response.
    */
-  private class MultipleHeaderDefinitions extends Http::ExplicitHeaderDefinition instanceof ReplyCall
-  {
+  private class MultipleHeaderDefinitions extends Http::ExplicitHeaderDefinition instanceof ReplyCall {
     MultipleHeaderDefinitions() {
       (
         // reply.header(RESPONSE, {'Cache-Control': 'no-cache'})
@@ -314,8 +312,7 @@ module Spife {
   /**
    * A header produced by a route handler with no explicit declaration of a Content-Type.
    */
-  private class ContentTypeRouteHandlerHeader extends Http::ImplicitHeaderDefinition instanceof RouteHandler
-  {
+  private class ContentTypeRouteHandlerHeader extends Http::ImplicitHeaderDefinition instanceof RouteHandler {
     override predicate defines(string headerName, string headerValue) {
       headerName = "content-type" and headerValue = "application/json"
     }

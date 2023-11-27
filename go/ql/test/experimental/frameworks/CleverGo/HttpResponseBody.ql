@@ -2,10 +2,12 @@ import go
 import TestUtilities.InlineExpectationsTest
 import experimental.frameworks.CleverGo
 
-module HttpResponseBodyTest implements TestSig {
-  string getARelevantTag() { result = ["contentType", "responseBody"] }
+class HttpResponseBodyTest extends InlineExpectationsTest {
+  HttpResponseBodyTest() { this = "HttpResponseBodyTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = ["contentType", "responseBody"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(Http::ResponseBody rd |
       rd.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
         location.getStartColumn(), location.getEndLine(), location.getEndColumn()) and
@@ -21,5 +23,3 @@ module HttpResponseBodyTest implements TestSig {
     )
   }
 }
-
-import MakeTest<HttpResponseBodyTest>

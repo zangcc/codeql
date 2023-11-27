@@ -13,39 +13,35 @@
 
 import cpp
 import semmle.code.cpp.commons.Environment
-import semmle.code.cpp.ir.dataflow.TaintTracking
-import semmle.code.cpp.ir.IR
-import Flow::PathGraph
+import semmle.code.cpp.ir.dataflow.internal.DefaultTaintTrackingImpl
+import TaintedWithPath
 
 /** A call that prints its arguments to `stdout`. */
 class PrintStdoutCall extends FunctionCall {
-  PrintStdoutCall() { this.getTarget().hasGlobalOrStdName(["puts", "printf"]) }
+  PrintStdoutCall() {
+    getTarget().hasGlobalOrStdName("puts") or
+    getTarget().hasGlobalOrStdName("printf")
+  }
 }
 
 /** A read of the QUERY_STRING environment variable */
 class QueryString extends EnvironmentRead {
-  QueryString() { this.getEnvironmentVariable() = "QUERY_STRING" }
+  QueryString() { getEnvironmentVariable() = "QUERY_STRING" }
 }
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) { node.asIndirectExpr() instanceof QueryString }
+class Configuration extends TaintTrackingConfiguration {
+  override predicate isSource(Expr source) { source instanceof QueryString }
 
-  predicate isSink(DataFlow::Node node) {
-    exists(PrintStdoutCall call | call.getAnArgument() = [node.asIndirectExpr(), node.asExpr()])
+  override predicate isSink(Element tainted) {
+    exists(PrintStdoutCall call | call.getAnArgument() = tainted)
   }
 
-  predicate isBarrier(DataFlow::Node node) {
-    isSink(node) and node.asExpr().getUnspecifiedType() instanceof ArithmeticType
-    or
-    node.asInstruction().(StoreInstruction).getResultType() instanceof ArithmeticType
+  override predicate isBarrier(Expr e) {
+    super.isBarrier(e) or e.getUnspecifiedType() instanceof IntegralType
   }
 }
 
-module Flow = TaintTracking::Global<Config>;
-
-from QueryString query, Flow::PathNode sourceNode, Flow::PathNode sinkNode
-where
-  Flow::flowPath(sourceNode, sinkNode) and
-  query = sourceNode.getNode().asIndirectExpr()
-select sinkNode.getNode(), sourceNode, sinkNode, "Cross-site scripting vulnerability due to $@.",
-  query, "this query data"
+from QueryString query, Element printedArg, PathNode sourceNode, PathNode sinkNode
+where taintedWithPath(query, printedArg, sourceNode, sinkNode)
+select printedArg, sourceNode, sinkNode, "Cross-site scripting vulnerability due to $@.", query,
+  "this query data"

@@ -13,9 +13,9 @@
 
 import go
 import semmle.go.security.StoredCommand
-import StoredCommand::Flow::PathGraph
+import DataFlow::PathGraph
 
-from StoredCommand::Flow::PathNode source, StoredCommand::Flow::PathNode sink
-where StoredCommand::Flow::flowPath(source, sink)
+from StoredCommand::Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
+where cfg.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This command depends on a $@.", source.getNode(),
   "stored value"

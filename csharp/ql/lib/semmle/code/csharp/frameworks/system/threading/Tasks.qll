@@ -29,9 +29,9 @@ class SystemThreadingTasksTaskClass extends SystemThreadingTasksClass {
   SystemThreadingTasksTaskClass() { this.hasName("Task") }
 }
 
-/** The ``System.Threading.Tasks.Task`1`` class. */
+/** The `System.Threading.Tasks.Task<T>` class. */
 class SystemThreadingTasksTaskTClass extends SystemThreadingTasksUnboundGenericClass {
-  SystemThreadingTasksTaskTClass() { this.hasName("Task`1") }
+  SystemThreadingTasksTaskTClass() { this.hasName("Task<>") }
 
   /** Gets the `Result` property. */
   Property getResultProperty() {

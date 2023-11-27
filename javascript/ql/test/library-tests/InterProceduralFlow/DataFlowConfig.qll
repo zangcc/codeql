@@ -22,7 +22,10 @@ class TestDataFlowConfiguration extends DataFlow::Configuration {
       f.getName().matches("%noReturnTracking%") and
       node = f.getAReturnedExpr().flow()
     )
-    or
-    node.asExpr().(PropAccess).getPropertyName() = "notTracked"
+  }
+
+  override predicate isBarrierEdge(DataFlow::Node src, DataFlow::Node snk) {
+    src = src and
+    snk.asExpr().(PropAccess).getPropertyName() = "notTracked"
   }
 }

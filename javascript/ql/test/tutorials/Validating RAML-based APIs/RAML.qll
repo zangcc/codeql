@@ -8,6 +8,9 @@ class RamlSpec extends YamlDocument, YamlMapping {
   RamlSpec() { getLocation().getFile().getExtension() = "raml" }
 }
 
+/** DEPRECATED: Alias for RamlSpec */
+deprecated class RAMLSpec = RamlSpec;
+
 /** A RAML resource specification. */
 class RamlResource extends YamlMapping {
   RamlResource() {
@@ -31,9 +34,12 @@ class RamlResource extends YamlMapping {
   /** Get the method for this resource with the given verb. */
   RamlMethod getMethod(string verb) {
     verb = httpVerb() and
-    result = this.lookup(verb)
+    result = lookup(verb)
   }
 }
+
+/** DEPRECATED: Alias for RamlResource */
+deprecated class RAMLResource = RamlResource;
 
 /** A RAML method specification. */
 class RamlMethod extends YamlValue {
@@ -51,3 +57,6 @@ class RamlMethod extends YamlValue {
     )
   }
 }
+
+/** DEPRECATED: Alias for RamlMethod */
+deprecated class RAMLMethod = RamlMethod;

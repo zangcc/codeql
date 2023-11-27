@@ -13,8 +13,8 @@
 
 import java
 import RevocationCheckingLib
-import DisabledRevocationCheckingFlow::PathGraph
+import DataFlow::PathGraph
 
-from DisabledRevocationCheckingFlow::PathNode source, DisabledRevocationCheckingFlow::PathNode sink
-where DisabledRevocationCheckingFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, DisabledRevocationCheckingConfig config
+where config.hasFlowPath(source, sink)
 select source.getNode(), source, sink, "This disables revocation checking."

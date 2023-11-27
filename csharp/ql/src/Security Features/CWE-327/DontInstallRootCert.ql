@@ -12,26 +12,27 @@
 
 import csharp
 import semmle.code.csharp.dataflow.DataFlow::DataFlow
-import AddCertToRootStore::PathGraph
+import semmle.code.csharp.dataflow.DataFlow::DataFlow::PathGraph
 
-module AddCertToRootStoreConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
+class AddCertToRootStoreConfig extends DataFlow::Configuration {
+  AddCertToRootStoreConfig() { this = "Adding Certificate To Root Store" }
+
+  override predicate isSource(DataFlow::Node source) {
     exists(ObjectCreation oc | oc = source.asExpr() |
       oc.getType()
           .(RefType)
-          .hasFullyQualifiedName("System.Security.Cryptography.X509Certificates", "X509Store") and
+          .hasQualifiedName("System.Security.Cryptography.X509Certificates", "X509Store") and
       oc.getArgument(0).(Access).getTarget().hasName("Root")
     )
   }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSink(DataFlow::Node sink) {
     exists(MethodCall mc |
       (
         mc.getTarget()
-            .hasFullyQualifiedName("System.Security.Cryptography.X509Certificates", "X509Store",
-              "Add") or
+            .hasQualifiedName("System.Security.Cryptography.X509Certificates", "X509Store", "Add") or
         mc.getTarget()
-            .hasFullyQualifiedName("System.Security.Cryptography.X509Certificates", "X509Store",
+            .hasQualifiedName("System.Security.Cryptography.X509Certificates", "X509Store",
               "AddRange")
       ) and
       sink.asExpr() = mc.getQualifier()
@@ -39,8 +40,6 @@ module AddCertToRootStoreConfig implements DataFlow::ConfigSig {
   }
 }
 
-module AddCertToRootStore = DataFlow::Global<AddCertToRootStoreConfig>;
-
-from AddCertToRootStore::PathNode oc, AddCertToRootStore::PathNode mc
-where AddCertToRootStore::flowPath(oc, mc)
+from DataFlow::PathNode oc, DataFlow::PathNode mc, AddCertToRootStoreConfig config
+where config.hasFlowPath(oc, mc)
 select mc.getNode(), oc, mc, "This certificate is added to the root certificate store."

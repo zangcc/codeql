@@ -24,7 +24,7 @@ class NameQualifier extends NameQualifiableElement, @namequalifier {
    * Gets the expression ultimately qualified by the chain of name
    * qualifiers. For example, `f()` in `N1::N2::f()`.
    */
-  Expr getExpr() { result = this.getQualifiedElement+() }
+  Expr getExpr() { result = getQualifiedElement+() }
 
   /** Gets a location for this name qualifier. */
   override Location getLocation() { namequalifiers(underlyingElement(this), _, _, result) }
@@ -56,12 +56,12 @@ class NameQualifier extends NameQualifiableElement, @namequalifier {
       if nqe instanceof SpecialNameQualifyingElement
       then
         exists(Access a |
-          a = this.getQualifiedElement() and
+          a = getQualifiedElement() and
           result = a.getTarget().getDeclaringType()
         )
         or
         exists(FunctionCall c |
-          c = this.getQualifiedElement() and
+          c = getQualifiedElement() and
           result = c.getTarget().getDeclaringType()
         )
       else result = nqe
@@ -109,7 +109,7 @@ class NameQualifiableElement extends Element, @namequalifiableelement {
    * namespace.
    */
   predicate hasGlobalQualifiedName() {
-    this.getNameQualifier*().getQualifyingElement() instanceof GlobalNamespace
+    getNameQualifier*().getQualifyingElement() instanceof GlobalNamespace
   }
 
   /**
@@ -119,7 +119,7 @@ class NameQualifiableElement extends Element, @namequalifiableelement {
    */
   predicate hasSuperQualifiedName() {
     exists(NameQualifier nq, SpecialNameQualifyingElement snqe |
-      nq = this.getNameQualifier*() and
+      nq = getNameQualifier*() and
       namequalifiers(unresolveElement(nq), _, unresolveElement(snqe), _) and
       snqe.getName() = "__super"
     )
@@ -158,9 +158,10 @@ class NameQualifyingElement extends Element, @namequalifyingelement {
 /**
  * A special name-qualifying element. For example: `__super`.
  */
-class SpecialNameQualifyingElement extends NameQualifyingElement, @specialnamequalifyingelement {
+library class SpecialNameQualifyingElement extends NameQualifyingElement,
+  @specialnamequalifyingelement {
   /** Gets the name of this special qualifying element. */
   override string getName() { specialnamequalifyingelements(underlyingElement(this), result) }
 
-  override string toString() { result = this.getName() }
+  override string toString() { result = getName() }
 }

@@ -11,12 +11,10 @@
  */
 
 import semmle.code.java.security.PartialPathTraversalQuery
-import PartialPathTraversalFromRemoteFlow::PathGraph
+import DataFlow::PathGraph
 
-from
-  PartialPathTraversalFromRemoteFlow::PathNode source,
-  PartialPathTraversalFromRemoteFlow::PathNode sink
-where PartialPathTraversalFromRemoteFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink
+where any(PartialPathTraversalFromRemoteConfig config).hasFlowPath(source, sink)
 select sink.getNode(), source, sink,
   "Partial Path Traversal Vulnerability due to insufficient guard against path traversal from $@.",
   source, "user-supplied data"

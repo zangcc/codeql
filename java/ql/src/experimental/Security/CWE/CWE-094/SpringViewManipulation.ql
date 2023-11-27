@@ -12,11 +12,11 @@
 
 import java
 import SpringViewManipulationLib
-import SpringViewManipulationFlow::PathGraph
+import DataFlow::PathGraph
 
-from SpringViewManipulationFlow::PathNode source, SpringViewManipulationFlow::PathNode sink
+from DataFlow::PathNode source, DataFlow::PathNode sink, SpringViewManipulationConfig conf
 where
   thymeleafIsUsed() and
-  SpringViewManipulationFlow::flowPath(source, sink)
+  conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "Potential Spring Expression Language injection from $@.",
   source.getNode(), "this user input"

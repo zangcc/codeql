@@ -1,7 +1,7 @@
 import AliasAnalysis
-import semmle.code.cpp.Location
 import semmle.code.cpp.ir.internal.Overlap
 private import semmle.code.cpp.ir.internal.IRCppLanguage as Language
+private import semmle.code.cpp.Print
 private import semmle.code.cpp.ir.implementation.unaliased_ssa.IR
 private import semmle.code.cpp.ir.implementation.unaliased_ssa.internal.SSAConstruction as OldSsa
 private import semmle.code.cpp.ir.internal.IntegerConstant as Ints
@@ -95,9 +95,7 @@ private newtype TMemoryLocation =
  */
 abstract class MemoryLocation extends TMemoryLocation {
   final string toString() {
-    if this.isMayAccess()
-    then result = "?" + this.toStringInternal()
-    else result = this.toStringInternal()
+    if isMayAccess() then result = "?" + toStringInternal() else result = toStringInternal()
   }
 
   abstract string toStringInternal();
@@ -112,7 +110,7 @@ abstract class MemoryLocation extends TMemoryLocation {
 
   abstract Location getLocation();
 
-  final IRType getIRType() { result = this.getType().getIRType() }
+  final IRType getIRType() { result = getType().getIRType() }
 
   abstract predicate isMayAccess();
 
@@ -138,7 +136,7 @@ abstract class MemoryLocation extends TMemoryLocation {
   final predicate canReuseSsa() { none() }
 
   /** DEPRECATED: Alias for canReuseSsa */
-  deprecated predicate canReuseSSA() { this.canReuseSsa() }
+  deprecated predicate canReuseSSA() { canReuseSsa() }
 }
 
 /**
@@ -193,19 +191,19 @@ class VariableMemoryLocation extends TVariableMemoryLocation, AllocationMemoryLo
   }
 
   private string getIntervalString() {
-    if this.coversEntireVariable()
+    if coversEntireVariable()
     then result = ""
     else result = Interval::getIntervalString(startBitOffset, endBitOffset)
   }
 
   private string getTypeString() {
-    if this.coversEntireVariable() and type = var.getIRType()
+    if coversEntireVariable() and type = var.getIRType()
     then result = ""
     else result = "<" + languageType.toString() + ">"
   }
 
   final override string toStringInternal() {
-    result = var.toString() + this.getIntervalString() + this.getTypeString()
+    result = var.toString() + getIntervalString() + getTypeString()
   }
 
   final override Language::LanguageType getType() {
@@ -238,7 +236,7 @@ class VariableMemoryLocation extends TVariableMemoryLocation, AllocationMemoryLo
   /**
    * Holds if this memory location covers the entire variable.
    */
-  final predicate coversEntireVariable() { this.varIRTypeHasBitRange(startBitOffset, endBitOffset) }
+  final predicate coversEntireVariable() { varIRTypeHasBitRange(startBitOffset, endBitOffset) }
 
   pragma[noinline]
   private predicate varIRTypeHasBitRange(int start, int end) {
@@ -248,8 +246,7 @@ class VariableMemoryLocation extends TVariableMemoryLocation, AllocationMemoryLo
 }
 
 class EntireAllocationMemoryLocation extends TEntireAllocationMemoryLocation,
-  AllocationMemoryLocation
-{
+  AllocationMemoryLocation {
   EntireAllocationMemoryLocation() { this = TEntireAllocationMemoryLocation(var, isMayAccess) }
 
   final override string toStringInternal() { result = var.toString() }
@@ -264,7 +261,7 @@ class EntireAllocationMemoryLocation extends TEntireAllocationMemoryLocation,
 class EntireAllocationVirtualVariable extends EntireAllocationMemoryLocation, VirtualVariable {
   EntireAllocationVirtualVariable() {
     not allocationEscapes(var) and
-    not this.isMayAccess()
+    not isMayAccess()
   }
 }
 
@@ -277,8 +274,8 @@ class VariableVirtualVariable extends VariableMemoryLocation, VirtualVariable {
   VariableVirtualVariable() {
     not allocationEscapes(var) and
     type = var.getIRType() and
-    this.coversEntireVariable() and
-    not this.isMayAccess()
+    coversEntireVariable() and
+    not isMayAccess()
   }
 }
 
@@ -339,7 +336,7 @@ class AllNonLocalMemory extends TAllNonLocalMemory, MemoryLocation {
     // instruction, which provides the initial definition for all memory outside of the current
     // function's stack frame. This memory includes string literals and other read-only globals, so
     // we allow such an access to be the definition for a use of a read-only location.
-    not this.isMayAccess()
+    not isMayAccess()
   }
 }
 
@@ -362,7 +359,7 @@ class AllAliasedMemory extends TAllAliasedMemory, MemoryLocation {
 
   final override Location getLocation() { result = irFunc.getLocation() }
 
-  final override string getUniqueId() { result = " " + this.toString() }
+  final override string getUniqueId() { result = " " + toString() }
 
   final override VirtualVariable getVirtualVariable() { result = TAllAliasedMemory(irFunc, false) }
 
@@ -371,7 +368,7 @@ class AllAliasedMemory extends TAllAliasedMemory, MemoryLocation {
 
 /** A virtual variable that groups all escaped memory within a function. */
 class AliasedVirtualVariable extends AllAliasedMemory, VirtualVariable {
-  AliasedVirtualVariable() { not this.isMayAccess() }
+  AliasedVirtualVariable() { not isMayAccess() }
 }
 
 /**
@@ -576,6 +573,9 @@ private Overlap getVariableMemoryLocationOverlap(
  * iteration of the IR.
  */
 predicate canReuseSsaForOldResult(Instruction instr) { OldSsa::canReuseSsaForMemoryResult(instr) }
+
+/** DEPRECATED: Alias for canReuseSsaForOldResult */
+deprecated predicate canReuseSSAForOldResult = canReuseSsaForOldResult/1;
 
 bindingset[result, b]
 private boolean unbindBool(boolean b) { result != b.booleanNot() }

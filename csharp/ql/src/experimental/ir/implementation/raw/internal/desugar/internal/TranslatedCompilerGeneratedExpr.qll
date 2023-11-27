@@ -10,8 +10,7 @@ private import experimental.ir.implementation.raw.internal.common.TranslatedExpr
 private import experimental.ir.internal.IRCSharpLanguage as Language
 
 abstract class TranslatedCompilerGeneratedExpr extends TranslatedCompilerGeneratedElement,
-  TranslatedExprBase
-{
+  TranslatedExprBase {
   override string toString() { result = "compiler generated expr (" + generatedBy.toString() + ")" }
 
   abstract Type getResultType();

@@ -19,8 +19,7 @@ private import codeql.regex.MissingRegExpAnchor as MissingRegExpAnchor
 private import codeql.ruby.regexp.RegExpTreeView::RegexTreeView as TreeImpl
 
 private module Impl implements
-  MissingRegExpAnchor::MissingRegExpAnchorSig<TreeImpl, HostnameRegexp::Impl>
-{
+MissingRegExpAnchor::MissingRegExpAnchorSig<TreeImpl, HostnameRegexp::Impl> {
   predicate isUsedAsReplace(RegExpPatternSource pattern) {
     exists(DataFlow::CallNode mcn, DataFlow::Node arg, string name |
       name = mcn.getMethodName() and

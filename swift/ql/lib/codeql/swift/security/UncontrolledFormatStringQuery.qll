@@ -13,19 +13,18 @@ import codeql.swift.security.UncontrolledFormatStringExtensions
 /**
  * A taint configuration for tainted data that reaches a format string.
  */
-module TaintedFormatConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) { node instanceof FlowSource }
+class TaintedFormatConfiguration extends TaintTracking::Configuration {
+  TaintedFormatConfiguration() { this = "TaintedFormatConfiguration" }
 
-  predicate isSink(DataFlow::Node node) { node instanceof UncontrolledFormatStringSink }
+  override predicate isSource(DataFlow::Node node) { node instanceof FlowSource }
 
-  predicate isBarrier(DataFlow::Node barrier) { barrier instanceof UncontrolledFormatStringBarrier }
+  override predicate isSink(DataFlow::Node node) { node instanceof UncontrolledFormatStringSink }
 
-  predicate isAdditionalFlowStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
-    any(UncontrolledFormatStringAdditionalFlowStep s).step(nodeFrom, nodeTo)
+  override predicate isSanitizer(DataFlow::Node sanitizer) {
+    sanitizer instanceof UncontrolledFormatStringSanitizer
+  }
+
+  override predicate isAdditionalTaintStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
+    any(UncontrolledFormatStringAdditionalTaintStep s).step(nodeFrom, nodeTo)
   }
 }
-
-/**
- * Detect taint flow of tainted data that reaches a format string.
- */
-module TaintedFormatFlow = TaintTracking::Global<TaintedFormatConfig>;

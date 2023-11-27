@@ -38,6 +38,9 @@ class UrlConnectionGetInputStreamMethod extends Method {
   }
 }
 
+/** DEPRECATED: Alias for UrlConnectionGetInputStreamMethod */
+deprecated class URLConnectionGetInputStreamMethod = UrlConnectionGetInputStreamMethod;
+
 /** The method `java.net.Socket::getInputStream`. */
 class SocketGetInputStreamMethod extends Method {
   SocketGetInputStreamMethod() {

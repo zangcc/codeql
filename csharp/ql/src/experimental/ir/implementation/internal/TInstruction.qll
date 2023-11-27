@@ -19,9 +19,6 @@ newtype TInstruction =
   ) {
     IRConstruction::Raw::hasInstruction(tag1, tag2)
   } or
-  TRawUnreachedInstruction(IRFunctionBase irFunc) {
-    IRConstruction::hasUnreachedInstruction(irFunc)
-  } or
   TUnaliasedSsaPhiInstruction(
     TRawInstruction blockStartInstr, UnaliasedSsa::Ssa::MemoryLocation memoryLocation
   ) {
@@ -73,6 +70,9 @@ module UnaliasedSsaInstructions {
   }
 }
 
+/** DEPRECATED: Alias for UnaliasedSsaInstructions */
+deprecated module UnaliasedSSAInstructions = UnaliasedSsaInstructions;
+
 /**
  * Provides wrappers for the constructors of each branch of `TInstruction` that is used by the
  * aliased SSA stage.
@@ -104,3 +104,6 @@ module AliasedSsaInstructions {
     result = TAliasedSsaUnreachedInstruction(irFunc)
   }
 }
+
+/** DEPRECATED: Alias for AliasedSsaInstructions */
+deprecated module AliasedSSAInstructions = AliasedSsaInstructions;

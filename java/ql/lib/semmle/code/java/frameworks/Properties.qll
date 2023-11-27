@@ -7,30 +7,30 @@ private import semmle.code.java.dataflow.FlowSteps
  * The `java.util.Properties` class.
  */
 class TypeProperty extends Class {
-  TypeProperty() { this.hasQualifiedName("java.util", "Properties") }
+  TypeProperty() { hasQualifiedName("java.util", "Properties") }
 }
 
 /** The `getProperty` method of the class `java.util.Properties`. */
 class PropertiesGetPropertyMethod extends Method {
   PropertiesGetPropertyMethod() {
-    this.getDeclaringType() instanceof TypeProperty and
-    this.hasName("getProperty")
+    getDeclaringType() instanceof TypeProperty and
+    hasName("getProperty")
   }
 }
 
 /** The `get` method of the class `java.util.Properties`. */
 class PropertiesGetMethod extends Method {
   PropertiesGetMethod() {
-    this.getDeclaringType() instanceof TypeProperty and
-    this.hasName("get")
+    getDeclaringType() instanceof TypeProperty and
+    hasName("get")
   }
 }
 
 /** The `setProperty` method of the class `java.util.Properties`. */
 class PropertiesSetPropertyMethod extends Method {
   PropertiesSetPropertyMethod() {
-    this.getDeclaringType() instanceof TypeProperty and
-    this.hasName("setProperty")
+    getDeclaringType() instanceof TypeProperty and
+    hasName("setProperty")
   }
 }
 
@@ -39,7 +39,7 @@ class PropertiesSetPropertyMethod extends Method {
  */
 class PropertiesStoreMethod extends Method {
   PropertiesStoreMethod() {
-    this.getDeclaringType() instanceof TypeProperty and
-    (this.getName().matches("store%") or this.getName() = "save")
+    getDeclaringType() instanceof TypeProperty and
+    (getName().matches("store%") or getName() = "save")
   }
 }

@@ -39,22 +39,22 @@ class LockType extends RefType {
     result.hasName("isHeldByCurrentThread")
   }
 
-  MethodCall getLockAccess() {
+  MethodAccess getLockAccess() {
     result.getMethod() = this.getLockMethod() and
     // Not part of a Mockito verification call
-    not result instanceof MockitoVerifiedMethodCall
+    not result instanceof MockitoVerifiedMethodAccess
   }
 
-  MethodCall getUnlockAccess() {
+  MethodAccess getUnlockAccess() {
     result.getMethod() = this.getUnlockMethod() and
     // Not part of a Mockito verification call
-    not result instanceof MockitoVerifiedMethodCall
+    not result instanceof MockitoVerifiedMethodAccess
   }
 
-  MethodCall getIsHeldByCurrentThreadAccess() {
+  MethodAccess getIsHeldByCurrentThreadAccess() {
     result.getMethod() = this.getIsHeldByCurrentThreadMethod() and
     // Not part of a Mockito verification call
-    not result instanceof MockitoVerifiedMethodCall
+    not result instanceof MockitoVerifiedMethodAccess
   }
 }
 
@@ -147,7 +147,7 @@ predicate blockIsLocked(LockType t, BasicBlock src, BasicBlock b, int locks) {
   )
 }
 
-from Callable c, LockType t, BasicBlock src, BasicBlock exit, MethodCall lock
+from Callable c, LockType t, BasicBlock src, BasicBlock exit, MethodAccess lock
 where
   // Restrict results to those methods that actually attempt to unlock.
   t.getUnlockAccess().getEnclosingCallable() = c and

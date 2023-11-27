@@ -1,3 +1,6 @@
+
+using Microsoft.CodeAnalysis.Text;
+
 namespace Semmle.Extraction.Entities
 {
 #nullable disable warnings

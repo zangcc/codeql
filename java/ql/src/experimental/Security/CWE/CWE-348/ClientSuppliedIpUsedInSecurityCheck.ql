@@ -12,27 +12,30 @@
  */
 
 import java
-import semmle.code.java.dataflow.TaintTracking
-import semmle.code.java.dataflow.FlowSources
 import ClientSuppliedIpUsedInSecurityCheckLib
-import ClientSuppliedIpUsedInSecurityCheckFlow::PathGraph
+import semmle.code.java.dataflow.FlowSources
+import DataFlow::PathGraph
 
 /**
  * Taint-tracking configuration tracing flow from obtaining a client ip from an HTTP header to a sensitive use.
  */
-module ClientSuppliedIpUsedInSecurityCheckConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
+class ClientSuppliedIpUsedInSecurityCheckConfig extends TaintTracking::Configuration {
+  ClientSuppliedIpUsedInSecurityCheckConfig() { this = "ClientSuppliedIpUsedInSecurityCheckConfig" }
+
+  override predicate isSource(DataFlow::Node source) {
     source instanceof ClientSuppliedIpUsedInSecurityCheck
   }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof ClientSuppliedIpUsedInSecurityCheckSink }
+  override predicate isSink(DataFlow::Node sink) {
+    sink instanceof ClientSuppliedIpUsedInSecurityCheckSink
+  }
 
   /**
    * Splitting a header value by `,` and taking an entry other than the first is sanitizing, because
    * later entries may originate from more-trustworthy intermediate proxies, not the original client.
    */
-  predicate isBarrier(DataFlow::Node node) {
-    exists(ArrayAccess aa, MethodCall ma | aa.getArray() = ma |
+  override predicate isSanitizer(DataFlow::Node node) {
+    exists(ArrayAccess aa, MethodAccess ma | aa.getArray() = ma |
       ma.getQualifier() = node.asExpr() and
       ma.getMethod() instanceof SplitMethod and
       not aa.getIndexExpr().(CompileTimeConstantExpr).getIntValue() = 0
@@ -44,12 +47,8 @@ module ClientSuppliedIpUsedInSecurityCheckConfig implements DataFlow::ConfigSig 
   }
 }
 
-module ClientSuppliedIpUsedInSecurityCheckFlow =
-  TaintTracking::Global<ClientSuppliedIpUsedInSecurityCheckConfig>;
-
 from
-  ClientSuppliedIpUsedInSecurityCheckFlow::PathNode source,
-  ClientSuppliedIpUsedInSecurityCheckFlow::PathNode sink
-where ClientSuppliedIpUsedInSecurityCheckFlow::flowPath(source, sink)
+  DataFlow::PathNode source, DataFlow::PathNode sink, ClientSuppliedIpUsedInSecurityCheckConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "IP address spoofing might include code from $@.",
   source.getNode(), "this user input"

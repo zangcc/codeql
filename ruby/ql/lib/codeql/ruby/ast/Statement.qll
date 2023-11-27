@@ -3,7 +3,7 @@ private import codeql.ruby.CFG
 private import internal.AST
 private import internal.TreeSitter
 private import internal.Variable
-private import codeql.ruby.controlflow.internal.ControlFlowGraphImpl as CfgImpl
+private import codeql.ruby.controlflow.internal.ControlFlowGraphImpl
 
 /**
  * A statement.
@@ -12,13 +12,13 @@ private import codeql.ruby.controlflow.internal.ControlFlowGraphImpl as CfgImpl
  */
 class Stmt extends AstNode, TStmt {
   /** Gets a control-flow node for this statement, if any. */
-  CfgNodes::AstCfgNode getAControlFlowNode() { result.getAstNode() = this }
+  CfgNodes::AstCfgNode getAControlFlowNode() { result.getNode() = this }
 
   /** Gets a control-flow entry node for this statement, if any */
-  AstNode getAControlFlowEntryNode() { result = CfgImpl::getAControlFlowEntryNode(this) }
+  AstNode getAControlFlowEntryNode() { result = getAControlFlowEntryNode(this) }
 
   /** Gets the control-flow scope of this statement, if any. */
-  CfgScope getCfgScope() { result = CfgImpl::getCfgScope(this) }
+  CfgScope getCfgScope() { result = getCfgScope(this) }
 
   /** Gets the enclosing callable, if any. */
   Callable getEnclosingCallable() { result = this.getCfgScope() }

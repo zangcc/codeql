@@ -2,10 +2,12 @@ import java
 import semmle.code.java.security.ImplicitlyExportedAndroidComponent
 import TestUtilities.InlineExpectationsTest
 
-module ImplicitlyExportedAndroidComponentTest implements TestSig {
-  string getARelevantTag() { result = "hasImplicitExport" }
+class ImplicitlyExportedAndroidComponentTest extends InlineExpectationsTest {
+  ImplicitlyExportedAndroidComponentTest() { this = "ImplicitlyExportedAndroidComponentTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasImplicitExport" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasImplicitExport" and
     exists(ImplicitlyExportedAndroidComponent impExpAndroidComp |
       impExpAndroidComp.getLocation() = location and
@@ -14,5 +16,3 @@ module ImplicitlyExportedAndroidComponentTest implements TestSig {
     )
   }
 }
-
-import MakeTest<ImplicitlyExportedAndroidComponentTest>

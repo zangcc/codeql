@@ -9,10 +9,11 @@ private import python
 private import semmle.python.dataflow.new.DataFlow
 private import semmle.python.Concepts
 private import semmle.python.ApiGraphs
-private import semmle.python.frameworks.PEP249
 
 /** Provides models for the `aiopg` PyPI package. */
 private module Aiopg {
+  private import semmle.python.internal.Awaited
+
   /**
    * Gets a `ConnectionPool` that is created when the result of `aiopg.create_pool()` is awaited.
    * See https://aiopg.readthedocs.io/en/stable/core.html#pool
@@ -22,29 +23,49 @@ private module Aiopg {
   }
 
   /**
-   * A Connection that is created when
+   * Gets a `Connection` that is created when
    * - the result of `aiopg.connect()` is awaited.
    * - the result of calling `acquire` on a `ConnectionPool` is awaited.
-   * See
-   * - https://aiopg.readthedocs.io/en/stable/core.html#connection
-   * - https://aiopg.readthedocs.io/en/stable/core.html#aiopg.Pool.acquire
+   * See https://aiopg.readthedocs.io/en/stable/core.html#connection
    */
-  class AiopgConnection extends PEP249::AsyncDatabaseConnection {
-    AiopgConnection() {
-      this = API::moduleImport("aiopg").getMember("connect").getReturn().getAwaited()
-      or
-      this = connectionPool().getMember("acquire").getReturn().getAwaited()
-    }
+  API::Node connection() {
+    result = API::moduleImport("aiopg").getMember("connect").getReturn().getAwaited()
+    or
+    result = connectionPool().getMember("acquire").getReturn().getAwaited()
   }
 
   /**
-   * An additional cursor, that is created when
+   * Gets a `Cursor` that is created when
    * - the result of calling `cursor` on a `ConnectionPool` is awaited.
-   * See
-   * - https://aiopg.readthedocs.io/en/stable/core.html#aiopg.Pool.cursor
+   * - the result of calling `cursor` on a `Connection` is awaited.
+   * See https://aiopg.readthedocs.io/en/stable/core.html#cursor
    */
-  class AiopgCursor extends PEP249::AsyncDatabaseCursor {
-    AiopgCursor() { this = connectionPool().getMember("cursor").getReturn().getAwaited() }
+  API::Node cursor() {
+    result = connectionPool().getMember("cursor").getReturn().getAwaited()
+    or
+    result = connection().getMember("cursor").getReturn().getAwaited()
+  }
+
+  /**
+   * A query. Calling `execute` on a `Cursor` constructs a query.
+   * See https://aiopg.readthedocs.io/en/stable/core.html#aiopg.Cursor.execute
+   */
+  class CursorExecuteCall extends SqlConstruction::Range, API::CallNode {
+    CursorExecuteCall() { this = cursor().getMember("execute").getACall() }
+
+    override DataFlow::Node getSql() { result = this.getParameter(0, "operation").asSink() }
+  }
+
+  /**
+   * An awaited query. Awaiting the result of calling `execute` executes the query.
+   * See https://aiopg.readthedocs.io/en/stable/core.html#aiopg.Cursor.execute
+   */
+  class AwaitedCursorExecuteCall extends SqlExecution::Range {
+    CursorExecuteCall execute;
+
+    AwaitedCursorExecuteCall() { this = execute.getReturn().getAwaited().asSource() }
+
+    override DataFlow::Node getSql() { result = execute.getSql() }
   }
 
   /**

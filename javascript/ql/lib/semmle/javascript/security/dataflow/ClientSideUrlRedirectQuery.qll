@@ -33,7 +33,9 @@ class Configuration extends TaintTracking::Configuration {
     node instanceof Sanitizer
   }
 
-  override predicate isSanitizerOut(DataFlow::Node node) { hostnameSanitizingPrefixEdge(node, _) }
+  override predicate isSanitizerEdge(DataFlow::Node source, DataFlow::Node sink) {
+    hostnameSanitizingPrefixEdge(source, sink)
+  }
 
   override predicate isAdditionalFlowStep(
     DataFlow::Node pred, DataFlow::Node succ, DataFlow::FlowLabel f, DataFlow::FlowLabel g
@@ -46,12 +48,6 @@ class Configuration extends TaintTracking::Configuration {
     f instanceof DocumentUrl and
     g instanceof DocumentUrl and
     succ.(DataFlow::PropRead).accesses(pred, "href")
-    or
-    exists(HtmlSanitizerCall call |
-      pred = call.getInput() and
-      succ = call and
-      f = g
-    )
   }
 
   override predicate isSanitizerGuard(TaintTracking::SanitizerGuardNode guard) {

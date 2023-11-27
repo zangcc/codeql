@@ -14,10 +14,10 @@
 import java
 import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.dataflow.TaintTracking
-import NonConstantTimeComparisonFlow::PathGraph
+import DataFlow::PathGraph
 
 /** A static method that uses a non-constant-time algorithm for comparing inputs. */
-private class NonConstantTimeComparisonCall extends StaticMethodCall {
+private class NonConstantTimeComparisonCall extends StaticMethodAccess {
   NonConstantTimeComparisonCall() {
     this.getMethod()
         .hasQualifiedName("org.apache.commons.lang3", "StringUtils",
@@ -26,7 +26,7 @@ private class NonConstantTimeComparisonCall extends StaticMethodCall {
 }
 
 /** Methods that use a non-constant-time algorithm for comparing inputs. */
-private class NonConstantTimeEqualsCall extends MethodCall {
+private class NonConstantTimeEqualsCall extends MethodAccess {
   NonConstantTimeEqualsCall() {
     this.getMethod()
         .hasQualifiedName("java.lang", "String", ["equals", "contentEquals", "equalsIgnoreCase"])
@@ -43,7 +43,7 @@ private predicate isNonConstantComparisonCallArgument(Expr p) {
 
 class ClientSuppliedIpTokenCheck extends DataFlow::Node {
   ClientSuppliedIpTokenCheck() {
-    exists(MethodCall ma |
+    exists(MethodAccess ma |
       ma.getMethod().hasName("getHeader") and
       ma.getArgument(0).(CompileTimeConstantExpr).getStringValue().toLowerCase() in [
           "x-auth-token", "x-csrf-token", "http_x_csrf_token", "x-csrf-param", "x-csrf-header",
@@ -54,18 +54,20 @@ class ClientSuppliedIpTokenCheck extends DataFlow::Node {
   }
 }
 
-module NonConstantTimeComparisonConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ClientSuppliedIpTokenCheck }
+class NonConstantTimeComparisonConfig extends TaintTracking::Configuration {
+  NonConstantTimeComparisonConfig() { this = "NonConstantTimeComparisonConfig" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node source) {
+    source instanceof ClientSuppliedIpTokenCheck
+  }
+
+  override predicate isSink(DataFlow::Node sink) {
     isNonConstantEqualsCallArgument(sink.asExpr()) or
     isNonConstantComparisonCallArgument(sink.asExpr())
   }
 }
 
-module NonConstantTimeComparisonFlow = TaintTracking::Global<NonConstantTimeComparisonConfig>;
-
-from NonConstantTimeComparisonFlow::PathNode source, NonConstantTimeComparisonFlow::PathNode sink
-where NonConstantTimeComparisonFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, NonConstantTimeComparisonConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "Possible timing attack against $@ validation.",
   source.getNode(), "client-supplied token"

@@ -10,7 +10,7 @@ void m(int i, bool cond, int x, int y) {
 
     int seven = 7;
     if (mul % c2 == seven) {
-        mod(mul); // $ mod=0,3,42
+        mod(mul); // congruent 3 mod 42, 7 mod 43
     }
 
     int j = cond
@@ -19,11 +19,13 @@ void m(int i, bool cond, int x, int y) {
     mod(j); // $ mod=0,3,4
 
     if (x % c1 == 3 && y % c1 == 7) {
-        mod(x + y); // $ mod=0,10,42
+        // Need implies_v2
+        mod(x + y); // $ MISSING: 0,10,42
     }
 
     if (x % c1 == 3 && y % c1 == 7) {
-        mod(x - y); // $ mod=0,38,42
+        // Need implies_v2
+        mod(x - y); // $ MISSING: mod=0,38,42
     }
 
     if (cond) {

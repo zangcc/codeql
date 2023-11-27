@@ -34,24 +34,11 @@ module UnvalidatedDynamicMethodCall {
 
   /**
    * A sanitizer for unvalidated dynamic method calls.
+   * Override the `sanitizes` predicate to specify an edge that should be sanitized.
+   * The `this` value is not seen as a sanitizer.
    */
   abstract class Sanitizer extends DataFlow::Node {
-    /**
-     * Gets the flow label blocked by this sanitizer.
-     */
-    DataFlow::FlowLabel getFlowLabel() { result.isTaint() }
-
-    /**
-     * DEPRECATED. Use sanitizer nodes instead.
-     *
-     * This predicate no longer has any effect. The `this` value of `Sanitizer` is instead
-     * treated as a sanitizing node, that is, flow in and out of that node is prohibited.
-     */
-    deprecated predicate sanitizes(
-      DataFlow::Node source, DataFlow::Node sink, DataFlow::FlowLabel lbl
-    ) {
-      none()
-    }
+    abstract predicate sanitizes(DataFlow::Node source, DataFlow::Node sink, DataFlow::FlowLabel lbl);
   }
 
   /**

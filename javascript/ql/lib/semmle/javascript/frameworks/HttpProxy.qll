@@ -19,10 +19,10 @@ private module HttpProxy {
             .getACall()
     }
 
-    override DataFlow::Node getUrl() { result = this.getParameter(0).getMember("target").asSink() }
+    override DataFlow::Node getUrl() { result = getParameter(0).getMember("target").asSink() }
 
     override DataFlow::Node getHost() {
-      result = this.getParameter(0).getMember("target").getMember("host").asSink()
+      result = getParameter(0).getMember("target").getMember("host").asSink()
     }
 
     override DataFlow::Node getADataNode() { none() }
@@ -45,16 +45,14 @@ private module HttpProxy {
         or
         method = "ws" and optionsIndex = 3
       |
-        result = this.getParameter(optionsIndex)
+        result = getParameter(optionsIndex)
       )
     }
 
-    override DataFlow::Node getUrl() {
-      result = this.getOptionsObject().getMember("target").asSink()
-    }
+    override DataFlow::Node getUrl() { result = getOptionsObject().getMember("target").asSink() }
 
     override DataFlow::Node getHost() {
-      result = this.getOptionsObject().getMember("target").getMember("host").asSink()
+      result = getOptionsObject().getMember("target").getMember("host").asSink()
     }
 
     override DataFlow::Node getADataNode() { none() }
@@ -86,11 +84,11 @@ private module HttpProxy {
     }
 
     override DataFlow::ParameterNode getRequestParameter() {
-      exists(int req | routeHandlingEventHandler(event, req, _) | result = this.getParameter(req))
+      exists(int req | routeHandlingEventHandler(event, req, _) | result = getParameter(req))
     }
 
     override DataFlow::ParameterNode getResponseParameter() {
-      exists(int res | routeHandlingEventHandler(event, _, res) | result = this.getParameter(res))
+      exists(int res | routeHandlingEventHandler(event, _, res) | result = getParameter(res))
     }
   }
 }

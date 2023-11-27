@@ -4,14 +4,16 @@ import semmle.python.dataflow.new.internal.DataFlowDispatch as DataFlowDispatch
 import TestUtilities.InlineExpectationsTest
 private import semmle.python.dataflow.new.internal.PrintNode
 
-module DataFlowCallTest implements TestSig {
-  string getARelevantTag() {
+class DataFlowCallTest extends InlineExpectationsTest {
+  DataFlowCallTest() { this = "DataFlowCallTest" }
+
+  override string getARelevantTag() {
     result in ["call", "callType"]
     or
     result = "arg[" + any(DataFlowDispatch::ArgumentPosition pos).toString() + "]"
   }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(DataFlowDispatch::DataFlowCall call |
       location = call.getLocation() and
@@ -33,5 +35,3 @@ module DataFlowCallTest implements TestSig {
     )
   }
 }
-
-import MakeTest<DataFlowCallTest>

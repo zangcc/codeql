@@ -33,5 +33,5 @@ query predicate jumpStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
 
 query predicate essaFlowStep(DataFlow::Node nodeFrom, DataFlow::Node nodeTo) {
   os_import(nodeFrom) and
-  DataFlowPrivate::LocalFlow::localFlowStep(nodeFrom, nodeTo)
+  DataFlowPrivate::EssaFlow::essaFlowStep(nodeFrom, nodeTo)
 }

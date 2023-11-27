@@ -569,8 +569,7 @@ class BuiltInOperationBuiltInAddressOf extends UnaryOperation, BuiltInOperation,
  * ```
  */
 class BuiltInOperationIsTriviallyConstructible extends BuiltInOperation,
-  @istriviallyconstructibleexpr
-{
+  @istriviallyconstructibleexpr {
   override string toString() { result = "__is_trivially_constructible" }
 
   override string getAPrimaryQlClass() { result = "BuiltInOperationIsTriviallyConstructible" }
@@ -620,8 +619,7 @@ class BuiltInOperationIsNothrowDestructible extends BuiltInOperation, @isnothrow
  * bool v = __is_trivially_destructible(MyType);
  * ```
  */
-class BuiltInOperationIsTriviallyDestructible extends BuiltInOperation, @istriviallydestructibleexpr
-{
+class BuiltInOperationIsTriviallyDestructible extends BuiltInOperation, @istriviallydestructibleexpr {
   override string toString() { result = "__is_trivially_destructible" }
 
   override string getAPrimaryQlClass() { result = "BuiltInOperationIsTriviallyDestructible" }
@@ -740,8 +738,7 @@ class BuiltInOperationIsLiteralType extends BuiltInOperation, @isliteraltypeexpr
  * ```
  */
 class BuiltInOperationHasTrivialMoveConstructor extends BuiltInOperation,
-  @hastrivialmoveconstructorexpr
-{
+  @hastrivialmoveconstructorexpr {
   override string toString() { result = "__has_trivial_move_constructor" }
 
   override string getAPrimaryQlClass() { result = "BuiltInOperationHasTrivialMoveConstructor" }
@@ -1037,8 +1034,7 @@ class BuiltInOperationIsAggregate extends BuiltInOperation, @isaggregate {
  * ```
  */
 class BuiltInOperationHasUniqueObjectRepresentations extends BuiltInOperation,
-  @hasuniqueobjectrepresentations
-{
+  @hasuniqueobjectrepresentations {
   override string toString() { result = "__has_unique_object_representations" }
 
   override string getAPrimaryQlClass() { result = "BuiltInOperationHasUniqueObjectRepresentations" }
@@ -1111,8 +1107,7 @@ class BuiltInOperationIsLayoutCompatible extends BuiltInOperation, @islayoutcomp
  * ```
  */
 class BuiltInOperationIsPointerInterconvertibleBaseOf extends BuiltInOperation,
-  @ispointerinterconvertiblebaseof
-{
+  @ispointerinterconvertiblebaseof {
   override string toString() { result = "__is_pointer_interconvertible_base_of" }
 
   override string getAPrimaryQlClass() {
@@ -1546,22 +1541,4 @@ class BuiltInBitCast extends BuiltInOperation, @builtinbitcast {
   override string toString() { result = "__builtin_bit_cast" }
 
   override string getAPrimaryQlClass() { result = "BuiltInBitCast" }
-}
-
-/**
- * A C++ `__is_trivial` built-in operation (used by some implementations of the
- * `<type_traits>` header).
- *
- * Returns `true` if a type is a trivial type.
- * ```
- *  template<typename _Tp>
- *    struct is_trivial
- *    : public integral_constant<bool, __is_trivial(_Tp)>
- *    {};
- * ```
- */
-class BuiltInIsTrivial extends BuiltInOperation, @istrivialexpr {
-  override string toString() { result = "__is_trivial" }
-
-  override string getAPrimaryQlClass() { result = "BuiltInIsTrivial" }
 }

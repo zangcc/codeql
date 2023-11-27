@@ -3,12 +3,22 @@ import semmle.code.java.dataflow.TaintTracking
 import semmle.code.java.dataflow.FlowSources
 import TestUtilities.InlineFlowTest
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) { node instanceof ThreatModelFlowSource }
+class EnableLegacy extends EnableLegacyConfiguration {
+  EnableLegacy() { exists(this) }
+}
 
-  predicate isSink(DataFlow::Node node) {
-    exists(MethodCall ma | ma.getMethod().hasName("sink") | node.asExpr() = ma.getAnArgument())
+class Conf extends TaintTracking::Configuration {
+  Conf() { this = "qltest:frameworks:rabbitmq" }
+
+  override predicate isSource(DataFlow::Node node) { node instanceof RemoteFlowSource }
+
+  override predicate isSink(DataFlow::Node node) {
+    exists(MethodAccess ma | ma.getMethod().hasName("sink") | node.asExpr() = ma.getAnArgument())
   }
 }
 
-import TaintFlowTest<Config>
+class HasFlowTest extends InlineFlowTest {
+  override DataFlow::Configuration getValueFlowConfig() { none() }
+
+  override DataFlow::Configuration getTaintFlowConfig() { result = any(Conf c) }
+}

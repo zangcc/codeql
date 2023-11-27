@@ -4,15 +4,15 @@ private import codeql.swift.elements.UnknownLocation
 
 class Locatable extends Generated::Locatable {
   pragma[nomagic]
-  override Location getLocation() {
-    result = Generated::Locatable.super.getLocation()
+  override Location getImmediateLocation() {
+    result = Generated::Locatable.super.getImmediateLocation()
     or
-    not exists(Generated::Locatable.super.getLocation()) and
+    not exists(Generated::Locatable.super.getImmediateLocation()) and
     result instanceof UnknownLocation
   }
 
   /**
    * Gets the primary file where this element occurs.
    */
-  File getFile() { result = this.getLocation().getFile() }
+  File getFile() { result = getLocation().getFile() }
 }

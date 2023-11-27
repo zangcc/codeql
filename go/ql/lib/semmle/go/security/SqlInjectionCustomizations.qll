@@ -25,6 +25,13 @@ module SqlInjection {
    */
   abstract class Sanitizer extends DataFlow::Node { }
 
+  /**
+   * DEPRECATED: Use `Sanitizer` instead.
+   *
+   * A sanitizer guard for SQL-injection vulnerabilities.
+   */
+  abstract deprecated class SanitizerGuard extends DataFlow::BarrierGuard { }
+
   /** A source of untrusted data, considered as a taint source for SQL injection. */
   class UntrustedFlowAsSource extends Source instanceof UntrustedFlowSource { }
 
@@ -33,13 +40,4 @@ module SqlInjection {
 
   /** A NoSql query, considered as a taint sink for SQL injection. */
   class NoSqlQueryAsSink extends Sink instanceof NoSql::Query { }
-
-  /**
-   * A numeric- or boolean-typed node, considered a sanitizer for sql injection.
-   */
-  class NumericOrBooleanSanitizer extends Sanitizer {
-    NumericOrBooleanSanitizer() {
-      this.getType() instanceof NumericType or this.getType() instanceof BoolType
-    }
-  }
 }

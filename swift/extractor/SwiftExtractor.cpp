@@ -5,7 +5,6 @@
 #include <unordered_set>
 #include <queue>
 
-#include <picosha2.h>
 #include <swift/AST/SourceFile.h>
 #include <swift/AST/Builtins.h>
 
@@ -14,23 +13,19 @@
 #include "swift/extractor/infra/file/Path.h"
 #include "swift/extractor/infra/SwiftLocationExtractor.h"
 #include "swift/extractor/infra/SwiftBodyEmissionStrategy.h"
-#include "swift/logging/SwiftAssert.h"
+#include "swift/extractor/mangler/SwiftMangler.h"
 
 using namespace codeql;
 using namespace std::string_literals;
 namespace fs = std::filesystem;
 
-Logger& main_logger::logger() {
-  static Logger ret{"main"};
-  return ret;
-}
-
-using namespace main_logger;
-
 static void ensureDirectory(const char* label, const fs::path& dir) {
   std::error_code ec;
   fs::create_directories(dir, ec);
-  CODEQL_ASSERT(!ec, "Cannot create {} directory ({})", label, ec);
+  if (ec) {
+    std::cerr << "Cannot create " << label << " directory: " << ec.message() << "\n";
+    std::abort();
+  }
 }
 
 static void archiveFile(const SwiftExtractorConfiguration& config, swift::SourceFile& file) {
@@ -41,27 +36,11 @@ static void archiveFile(const SwiftExtractorConfiguration& config, swift::Source
 
   std::error_code ec;
   fs::copy(source, destination, fs::copy_options::overwrite_existing, ec);
-  if (ec) {
-    LOG_INFO(
-        "Cannot archive source file {} -> {}, probably a harmless race with another process ({})",
-        source, destination, ec);
-  }
-}
 
-static std::string mangledDeclName(const swift::Decl& decl) {
-  // SwiftRecursiveMangler mangled name cannot be used directly as it can be too long for file names
-  // so we build some minimal human readable info for debuggability and append a hash
-  auto ret = decl.getModuleContext()->getRealName().str().str();
-  ret += '/';
-  ret += swift::Decl::getKindName(decl.getKind());
-  ret += '_';
-  if (auto valueDecl = llvm::dyn_cast<swift::ValueDecl>(&decl); valueDecl && valueDecl->hasName()) {
-    ret += valueDecl->getBaseName().userFacingName();
-    ret += '_';
+  if (ec) {
+    std::cerr << "Cannot archive source file " << source << " -> " << destination << ": "
+              << ec.message() << "\n";
   }
-  SwiftRecursiveMangler mangler;
-  ret += mangler.mangleDecl(decl).hash();
-  return ret;
 }
 
 static fs::path getFilename(swift::ModuleDecl& module,
@@ -71,7 +50,8 @@ static fs::path getFilename(swift::ModuleDecl& module,
     return resolvePath(primaryFile->getFilename());
   }
   if (lazyDeclaration) {
-    return mangledDeclName(*lazyDeclaration);
+    SwiftMangler mangler;
+    return mangler.mangledName(*lazyDeclaration);
   }
   // PCM clang module
   if (module.isNonSwiftModule()) {
@@ -170,9 +150,6 @@ static std::unordered_set<swift::ModuleDecl*> extractDeclarations(
                        bodyEmissionStrategy);
   auto topLevelDecls = getTopLevelDecls(module, primaryFile, lazyDeclaration);
   for (auto decl : topLevelDecls) {
-    if (swift::AvailableAttr::isUnavailable(decl)) {
-      continue;
-    }
     visitor.extract(decl);
   }
   for (auto& comment : comments) {
@@ -184,12 +161,11 @@ static std::unordered_set<swift::ModuleDecl*> extractDeclarations(
 static std::unordered_set<std::string> collectInputFilenames(swift::CompilerInstance& compiler) {
   // The frontend can be called in many different ways.
   // At each invocation we only extract system and builtin modules and any input source files that
-  // are primary inputs, or all of them if there are no primary inputs (whole module optimization)
+  // have an output associated with them.
   std::unordered_set<std::string> sourceFiles;
-  const auto& inOuts = compiler.getInvocation().getFrontendOptions().InputsAndOutputs;
-  for (auto& input : inOuts.getAllInputs()) {
-    if (input.getType() == swift::file_types::TY_Swift &&
-        (!inOuts.hasPrimaryInputs() || input.isPrimary())) {
+  auto inputFiles = compiler.getInvocation().getFrontendOptions().InputsAndOutputs.getAllInputs();
+  for (auto& input : inputFiles) {
+    if (input.getType() == swift::file_types::TY_Swift && !input.outputFilename().empty()) {
       sourceFiles.insert(input.getFileName());
     }
   }
@@ -266,9 +242,11 @@ void codeql::extractExtractLazyDeclarations(SwiftExtractorState& state,
   // Just in case
   const int upperBound = 100;
   int iteration = 0;
-  while (!state.pendingDeclarations.empty()) {
-    CODEQL_ASSERT(iteration++ < upperBound,
-                  "Swift extractor reached upper bound while extracting lazy declarations");
+  while (!state.pendingDeclarations.empty() && iteration++ < upperBound) {
     extractLazy(state, compiler);
+  }
+  if (iteration >= upperBound) {
+    std::cerr << "Swift extractor reached upper bound while extracting lazy declarations\n";
+    abort();
   }
 }

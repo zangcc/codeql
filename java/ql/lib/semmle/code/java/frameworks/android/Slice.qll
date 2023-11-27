@@ -35,7 +35,6 @@ private class SliceProviderLifecycleStep extends AdditionalValueStep {
 }
 
 private class SliceActionsInheritTaint extends DataFlow::SyntheticFieldContent,
-  TaintInheritingContent
-{
+  TaintInheritingContent {
   SliceActionsInheritTaint() { this.getField() = "androidx.slice.Slice.action" }
 }

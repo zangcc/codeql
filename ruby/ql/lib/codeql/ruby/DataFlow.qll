@@ -10,8 +10,6 @@ import codeql.Locations
  * global (inter-procedural) data flow analyses.
  */
 module DataFlow {
-  private import codeql.ruby.dataflow.internal.DataFlowImplSpecific
-  private import codeql.dataflow.DataFlow
-  import DataFlowMake<RubyDataFlow>
+  import codeql.ruby.dataflow.internal.DataFlow
   import codeql.ruby.dataflow.internal.DataFlowImpl1
 }

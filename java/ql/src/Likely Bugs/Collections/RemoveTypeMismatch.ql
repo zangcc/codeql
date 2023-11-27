@@ -65,7 +65,7 @@ predicate containerModification(string package, string type, int p, string signa
   i = 0
 }
 
-class MismatchedContainerModification extends MethodCall {
+class MismatchedContainerModification extends MethodAccess {
   MismatchedContainerModification() {
     exists(string package, string type, int i |
       containerModification(package, type, _, this.getCallee().getSignature(), i)

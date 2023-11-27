@@ -28,6 +28,13 @@ module ZipSlip {
   abstract class Sanitizer extends DataFlow::Node { }
 
   /**
+   * DEPRECATED: Use `Sanitizer` instead.
+   *
+   * A sanitizer guard for zip-slip vulnerabilities.
+   */
+  abstract deprecated class SanitizerGuard extends DataFlow::BarrierGuard { }
+
+  /**
    * A tar file header, as a source for zip slip.
    */
   class TarHeaderSource extends Source, DataFlow::Node {
@@ -54,7 +61,7 @@ module ZipSlip {
   }
 
   /**
-   * A zipped file, excluded from for zip slip.
+   * Excludes zipped file data from consideration for zip slip.
    */
   class ZipFileOpen extends Sanitizer {
     ZipFileOpen() {

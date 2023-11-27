@@ -6,7 +6,7 @@ struct Magic {
   }
 };
 
-static int f() {
+int main() {
   static Magic m;
   return 0;
 }

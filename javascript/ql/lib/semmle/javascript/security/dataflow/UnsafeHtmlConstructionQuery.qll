@@ -9,14 +9,11 @@ private import semmle.javascript.security.dataflow.UnsafeJQueryPluginCustomizati
 import UnsafeHtmlConstructionCustomizations::UnsafeHtmlConstruction
 import semmle.javascript.security.TaintedObject
 
-/** DEPRECATED: Mis-spelled class name, alias for Configuration. */
-deprecated class Configration = Configuration;
-
 /**
  * A taint-tracking configuration for reasoning about unsafe HTML constructed from library input vulnerabilities.
  */
-class Configuration extends TaintTracking::Configuration {
-  Configuration() { this = "UnsafeHtmlConstruction" }
+class Configration extends TaintTracking::Configuration {
+  Configration() { this = "UnsafeHtmlConstruction" }
 
   override predicate isSource(DataFlow::Node source, DataFlow::FlowLabel label) {
     source instanceof Source and
@@ -34,8 +31,10 @@ class Configuration extends TaintTracking::Configuration {
     node instanceof DomBasedXss::Sanitizer
     or
     node instanceof UnsafeJQueryPlugin::Sanitizer
-    or
-    DomBasedXss::isOptionallySanitizedNode(node)
+  }
+
+  override predicate isSanitizerEdge(DataFlow::Node pred, DataFlow::Node succ) {
+    DomBasedXss::isOptionallySanitizedEdge(pred, succ)
   }
 
   // override to require that there is a path without unmatched return steps
@@ -72,7 +71,6 @@ private class QuoteGuard extends TaintTracking::SanitizerGuardNode, Shared::Quot
   QuoteGuard() { this = this }
 }
 
-private class ContainsHtmlGuard extends TaintTracking::SanitizerGuardNode, Shared::ContainsHtmlGuard
-{
+private class ContainsHtmlGuard extends TaintTracking::SanitizerGuardNode, Shared::ContainsHtmlGuard {
   ContainsHtmlGuard() { this = this }
 }

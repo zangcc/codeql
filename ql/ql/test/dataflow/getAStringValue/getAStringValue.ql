@@ -2,10 +2,12 @@ import ql
 import codeql_ql.dataflow.DataFlow
 import TestUtilities.InlineExpectationsTest
 
-module GetAStringValueTest implements TestSig {
-  string getARelevantTag() { result = "getAStringValue" }
+class GetAStringValueTest extends InlineExpectationsTest {
+  GetAStringValueTest() { this = "getAStringValue" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "getAStringValue" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(Expr e |
       e = any(Call c).getAnArgument() and
       tag = "getAStringValue" and
@@ -15,5 +17,3 @@ module GetAStringValueTest implements TestSig {
     )
   }
 }
-
-import MakeTest<GetAStringValueTest>

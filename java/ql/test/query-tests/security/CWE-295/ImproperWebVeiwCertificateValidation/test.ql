@@ -2,10 +2,12 @@ import java
 import semmle.code.java.security.AndroidWebViewCertificateValidationQuery
 import TestUtilities.InlineExpectationsTest
 
-module WebViewTest implements TestSig {
-  string getARelevantTag() { result = "hasResult" }
+class WebViewTest extends InlineExpectationsTest {
+  WebViewTest() { this = "WebViewTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasResult" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(OnReceivedSslErrorMethod m |
       trustsAllCerts(m) and
       location = m.getLocation() and
@@ -15,5 +17,3 @@ module WebViewTest implements TestSig {
     )
   }
 }
-
-import MakeTest<WebViewTest>

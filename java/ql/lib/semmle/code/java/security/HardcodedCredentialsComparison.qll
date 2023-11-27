@@ -8,17 +8,16 @@ import HardcodedCredentials
 /**
  * A call to a method that is or overrides `java.lang.Object.equals`.
  */
-class EqualsCall extends MethodCall {
-  EqualsCall() { this.getMethod() instanceof EqualsMethod }
+class EqualsAccess extends MethodAccess {
+  EqualsAccess() { getMethod() instanceof EqualsMethod }
 }
-
-/** DEPRECATED: Alias for `EqualsCall`. */
-deprecated class EqualsAccess = EqualsCall;
 
 /**
  * Holds if `sink` compares password `p` against a hardcoded expression `source`.
  */
-predicate isHardcodedCredentialsComparison(EqualsCall sink, HardcodedExpr source, PasswordVariable p) {
+predicate isHardcodedCredentialsComparison(
+  EqualsAccess sink, HardcodedExpr source, PasswordVariable p
+) {
   source = sink.getQualifier() and
   p.getAnAccess() = sink.getArgument(0)
   or

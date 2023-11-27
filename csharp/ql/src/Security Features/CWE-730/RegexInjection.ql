@@ -16,11 +16,11 @@
 import csharp
 import semmle.code.csharp.security.dataflow.RegexInjectionQuery
 import semmle.code.csharp.frameworks.system.text.RegularExpressions
-import RegexInjection::PathGraph
+import semmle.code.csharp.dataflow.DataFlow::DataFlow::PathGraph
 
-from RegexInjection::PathNode source, RegexInjection::PathNode sink
+from TaintTrackingConfiguration c, DataFlow::PathNode source, DataFlow::PathNode sink
 where
-  RegexInjection::flowPath(source, sink) and
+  c.hasFlowPath(source, sink) and
   // No global timeout set
   not exists(RegexGlobalTimeout r)
 select sink.getNode(), source, sink, "This regular expression is constructed from a $@.",

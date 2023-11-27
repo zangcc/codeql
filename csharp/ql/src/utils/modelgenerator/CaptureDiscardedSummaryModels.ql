@@ -6,10 +6,10 @@
 
 import semmle.code.csharp.dataflow.internal.FlowSummaryImpl as FlowSummaryImpl
 import internal.CaptureModels
-import internal.CaptureSummaryFlowQuery
+import internal.CaptureSummaryFlow
 
 from DataFlowTargetApi api, string flow
 where
   flow = captureFlow(api) and
-  api.(FlowSummaryImpl::Public::SummarizedCallable).applyManualModel()
+  api.(FlowSummaryImpl::Public::SummarizedCallable).isManual()
 select flow order by flow

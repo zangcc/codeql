@@ -1,6 +1,7 @@
 import java
 import semmle.code.java.dataflow.DataFlow
 import semmle.code.java.dataflow.FlowSources
+import DataFlow::PathGraph
 
 /** Json string type data. */
 abstract class JsonStringSource extends DataFlow::Node { }
@@ -13,7 +14,7 @@ abstract class JsonStringSource extends DataFlow::Node { }
  */
 private class GsonString extends JsonStringSource {
   GsonString() {
-    exists(MethodCall ma, Method m | ma.getMethod() = m |
+    exists(MethodAccess ma, Method m | ma.getMethod() = m |
       m.hasName("toJson") and
       m.getDeclaringType().getAnAncestor().hasQualifiedName("com.google.gson", "Gson") and
       this.asExpr() = ma
@@ -29,7 +30,7 @@ private class GsonString extends JsonStringSource {
  */
 private class FastjsonString extends JsonStringSource {
   FastjsonString() {
-    exists(MethodCall ma, Method m | ma.getMethod() = m |
+    exists(MethodAccess ma, Method m | ma.getMethod() = m |
       m.hasName("toJSONString") and
       m.getDeclaringType().getAnAncestor().hasQualifiedName("com.alibaba.fastjson", "JSON") and
       this.asExpr() = ma
@@ -45,7 +46,7 @@ private class FastjsonString extends JsonStringSource {
  */
 private class JacksonString extends JsonStringSource {
   JacksonString() {
-    exists(MethodCall ma, Method m | ma.getMethod() = m |
+    exists(MethodAccess ma, Method m | ma.getMethod() = m |
       m.hasName("writeValueAsString") and
       m.getDeclaringType()
           .getAnAncestor()

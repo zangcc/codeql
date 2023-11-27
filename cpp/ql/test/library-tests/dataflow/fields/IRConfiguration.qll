@@ -1,21 +1,10 @@
 private import semmle.code.cpp.ir.dataflow.DataFlow
 private import DataFlow
 
-private class TestAdditionalCallTarget extends AdditionalCallTarget {
-  override Function viableTarget(Call call) {
-    // To test that call targets specified by `AdditionalCallTarget` are
-    // resolved correctly this subclass resolves all calls to
-    // `call_template_argument<f>(x)` as if the user had written `f(x)`.
-    exists(FunctionTemplateInstantiation inst |
-      inst.getTemplate().hasName("call_template_argument") and
-      call.getTarget() = inst and
-      result = inst.getTemplateArgument(0).(FunctionAccess).getTarget()
-    )
-  }
-}
+class IRConf extends Configuration {
+  IRConf() { this = "IRFieldFlowConf" }
 
-module IRConfig implements ConfigSig {
-  predicate isSource(Node src) {
+  override predicate isSource(Node src) {
     src.asExpr() instanceof NewExpr
     or
     src.asExpr().(Call).getTarget().hasName("user_input")
@@ -26,14 +15,14 @@ module IRConfig implements ConfigSig {
     )
   }
 
-  predicate isSink(Node sink) {
+  override predicate isSink(Node sink) {
     exists(Call c |
       c.getTarget().hasName("sink") and
-      c.getAnArgument() = [sink.asExpr(), sink.asIndirectExpr(), sink.asConvertedExpr()]
+      c.getAnArgument() = [sink.asExpr(), sink.asConvertedExpr()]
     )
   }
 
-  predicate isAdditionalFlowStep(Node a, Node b) {
+  override predicate isAdditionalFlowStep(Node a, Node b) {
     b.asPartialDefinition() =
       any(Call c | c.getTarget().hasName("insert") and c.getAnArgument() = a.asExpr())
           .getQualifier()
@@ -41,5 +30,3 @@ module IRConfig implements ConfigSig {
     b.asExpr().(AddressOfExpr).getOperand() = a.asExpr()
   }
 }
-
-module IRFlow = Global<IRConfig>;

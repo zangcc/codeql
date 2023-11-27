@@ -8,10 +8,12 @@ import TestUtilities.InlineExpectationsTest
 import semmle.python.dataflow.new.SensitiveDataSources
 private import semmle.python.ApiGraphs
 
-module SensitiveDataSourcesTest implements TestSig {
-  string getARelevantTag() { result in ["SensitiveDataSource", "SensitiveUse"] }
+class SensitiveDataSourcesTest extends InlineExpectationsTest {
+  SensitiveDataSourcesTest() { this = "SensitiveDataSourcesTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result in ["SensitiveDataSource", "SensitiveUse"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(SensitiveDataSource source |
       location = source.getLocation() and
@@ -29,8 +31,6 @@ module SensitiveDataSourcesTest implements TestSig {
     )
   }
 }
-
-import MakeTest<SensitiveDataSourcesTest>
 
 class SensitiveUseConfiguration extends TaintTracking::Configuration {
   SensitiveUseConfiguration() { this = "SensitiveUseConfiguration" }

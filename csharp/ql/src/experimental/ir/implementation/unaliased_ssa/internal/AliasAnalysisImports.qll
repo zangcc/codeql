@@ -33,6 +33,12 @@ module AliasModels {
     predicate isParameter(ParameterIndex index) { none() }
 
     /**
+     * Holds if this is the input value of the parameter with index `index`.
+     * DEPRECATED: Use `isParameter(index)` instead.
+     */
+    deprecated final predicate isInParameter(ParameterIndex index) { this.isParameter(index) }
+
+    /**
      * Holds if this is the input value pointed to by a pointer parameter to a function, or the input
      * value referred to by a reference parameter to a function, where the parameter has index
      * `index`.
@@ -64,6 +70,13 @@ module AliasModels {
      *   (with type `C const`) on entry to the function.
      */
     predicate isQualifierObject() { none() }
+
+    /**
+     * Holds if this is the input value pointed to by the `this` pointer of an instance member
+     * function.
+     * DEPRECATED: Use `isQualifierObject()` instead.
+     */
+    deprecated final predicate isInQualifier() { this.isQualifierObject() }
 
     /**
      * Holds if this is the input value of the `this` pointer of an instance member function.
@@ -170,6 +183,13 @@ module AliasModels {
     predicate isQualifierObject() { none() }
 
     /**
+     * Holds if this is the output value pointed to by the `this` pointer of an instance member
+     * function.
+     * DEPRECATED: Use `isQualifierObject()` instead.
+     */
+    deprecated final predicate isOutQualifier() { this.isQualifierObject() }
+
+    /**
      * Holds if this is the value returned by a function.
      *
      * Example:
@@ -187,6 +207,12 @@ module AliasModels {
      *   `float`.
      */
     predicate isReturnValue() { none() }
+
+    /**
+     * Holds if this is the value returned by a function.
+     * DEPRECATED: Use `isReturnValue()` instead.
+     */
+    deprecated final predicate isOutReturnValue() { this.isReturnValue() }
 
     /**
      * Holds if this is the output value pointed to by the return value of a function, if the function
@@ -207,6 +233,14 @@ module AliasModels {
      *   return type of `getInt()` is neither a pointer nor a reference.
      */
     predicate isReturnValueDeref() { none() }
+
+    /**
+     * Holds if this is the output value pointed to by the return value of a function, if the function
+     * returns a pointer, or the output value referred to by the return value of a function, if the
+     * function returns a reference.
+     * DEPRECATED: Use `isReturnValueDeref()` instead.
+     */
+    deprecated final predicate isOutReturnPointer() { this.isReturnValueDeref() }
 
     /**
      * Holds if `i >= 0` and `isParameterDeref(i)` holds for this is the value, or

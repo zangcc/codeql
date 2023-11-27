@@ -1,14 +1,16 @@
 import go
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node nd) {
+class MyConfiguration extends DataFlow::Configuration {
+  MyConfiguration() { this = "MyConfiguration" }
+
+  override predicate isSource(DataFlow::Node nd) {
     exists(ValueEntity v, Write w |
       v.getName().matches("source%") and
       w.writes(v, nd)
     )
   }
 
-  predicate isSink(DataFlow::Node nd) {
+  override predicate isSink(DataFlow::Node nd) {
     exists(ValueEntity v, Write w |
       v.getName().matches("sink%") and
       w.writes(v, nd)
@@ -16,8 +18,6 @@ module Config implements DataFlow::ConfigSig {
   }
 }
 
-module Flow = DataFlow::Global<Config>;
-
-from DataFlow::Node source, DataFlow::Node sink
-where Flow::flow(source, sink)
+from MyConfiguration cfg, DataFlow::Node source, DataFlow::Node sink
+where cfg.hasFlow(source, sink)
 select source, sink

@@ -23,8 +23,10 @@
 private import python
 import semmle.python.dataflow.new.DataFlow
 
-module TestConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) {
+class TestConfiguration extends DataFlow::Configuration {
+  TestConfiguration() { this = "TestConfiguration" }
+
+  override predicate isSource(DataFlow::Node node) {
     node.(DataFlow::CfgNode).getNode().(NameNode).getId() = "SOURCE"
     or
     node.(DataFlow::CfgNode).getNode().getNode().(StrConst).getS() = "source"
@@ -35,7 +37,7 @@ module TestConfig implements DataFlow::ConfigSig {
     // No support for complex numbers
   }
 
-  predicate isSink(DataFlow::Node node) {
+  override predicate isSink(DataFlow::Node node) {
     exists(DataFlow::CallCfgNode call |
       call.getFunction().asCfgNode().(NameNode).getId() in ["SINK", "SINK_F"] and
       (node = call.getArg(_) or node = call.getArgByName(_)) and
@@ -43,7 +45,7 @@ module TestConfig implements DataFlow::ConfigSig {
     )
   }
 
-  predicate isBarrierIn(DataFlow::Node node) { isSource(node) }
-}
+  override predicate isBarrierIn(DataFlow::Node node) { this.isSource(node) }
 
-module TestFlow = DataFlow::Global<TestConfig>;
+  override int explorationLimit() { result = 5 }
+}

@@ -3,18 +3,20 @@
  */
 
 import csharp
-import Taint::PathGraph
+import DataFlow::PathGraph
 
-module TaintConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source.asExpr().(Expr).getValue() = "tainted" }
+class DataflowConfiguration extends TaintTracking::Configuration {
+  DataflowConfiguration() { this = "taint tracking configuration" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node source) {
+    source.asExpr().(Expr).getValue() = "tainted"
+  }
+
+  override predicate isSink(DataFlow::Node sink) {
     exists(LocalVariable v | sink.asExpr() = v.getInitializer())
   }
 }
 
-module Taint = TaintTracking::Global<TaintConfig>;
-
-from Taint::PathNode source, Taint::PathNode sink
-where Taint::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, DataflowConfiguration conf
+where conf.hasFlowPath(source, sink)
 select source, source, sink, "$@", sink, sink.toString()

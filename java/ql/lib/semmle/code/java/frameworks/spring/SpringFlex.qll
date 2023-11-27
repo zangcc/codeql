@@ -57,6 +57,11 @@ class SpringRemotingDestinationClass extends Class {
    */
   SpringRemotingDestination getRemotingDestinationXml() { this = result.getSpringBean().getClass() }
 
+  /** DEPRECATED: Alias for getRemotingDestinationXml */
+  deprecated SpringRemotingDestination getRemotingDestinationXML() {
+    result = this.getRemotingDestinationXml()
+  }
+
   /**
    * Holds if the class is operating on an "include" or "exclude" basis.
    *

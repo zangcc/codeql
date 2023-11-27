@@ -23,8 +23,8 @@ Expr getSystemProperty(string propertyName) {
   result = getSystemPropertyFromSpringProperties(propertyName)
 }
 
-private MethodCall getSystemPropertyFromSystem(string propertyName) {
-  result.(MethodCallSystemGetProperty).hasCompileTimeConstantGetPropertyName(propertyName)
+private MethodAccess getSystemPropertyFromSystem(string propertyName) {
+  result.(MethodAccessSystemGetProperty).hasCompileTimeConstantGetPropertyName(propertyName)
   or
   result.getMethod().hasName("lineSeparator") and propertyName = "line.separator"
 }
@@ -34,7 +34,7 @@ private MethodCall getSystemPropertyFromSystem(string propertyName) {
  *  - `System.getProperties().getProperty(...)`
  *  - `System.getProperties().get(...)`
  */
-private MethodCall getSystemPropertyFromSystemGetProperties(string propertyName) {
+private MethodAccess getSystemPropertyFromSystemGetProperties(string propertyName) {
   exists(Method getMethod |
     getMethod instanceof PropertiesGetMethod
     or
@@ -42,7 +42,7 @@ private MethodCall getSystemPropertyFromSystemGetProperties(string propertyName)
     result.getMethod() = getMethod
   ) and
   result.getArgument(0).(CompileTimeConstantExpr).getStringValue() = propertyName and
-  localExprFlowPlusInitializers(any(MethodCall m |
+  localExprFlowPlusInitializers(any(MethodAccess m |
       m.getMethod().getDeclaringType() instanceof TypeSystem and
       m.getMethod().hasName("getProperties")
     ), result.getQualifier())
@@ -156,7 +156,7 @@ private FieldAccess getSystemPropertyFromApacheSystemUtils(string propertyName) 
   )
 }
 
-private MethodCall getSystemPropertyFromApacheFileUtils(string propertyName) {
+private MethodAccess getSystemPropertyFromApacheFileUtils(string propertyName) {
   exists(Method m |
     result.getMethod() = m and
     m.getDeclaringType().hasQualifiedName("org.apache.commons.io", "FileUtils")
@@ -167,7 +167,7 @@ private MethodCall getSystemPropertyFromApacheFileUtils(string propertyName) {
   )
 }
 
-private MethodCall getSystemPropertyFromGuava(string propertyName) {
+private MethodAccess getSystemPropertyFromGuava(string propertyName) {
   exists(EnumConstant ec |
     ec.getDeclaringType().hasQualifiedName("com.google.common.base", "StandardSystemProperty") and
     // Example: `StandardSystemProperty.JAVA_IO_TMPDIR.value()`
@@ -177,10 +177,10 @@ private MethodCall getSystemPropertyFromGuava(string propertyName) {
     )
     or
     // Example: `System.getProperty(StandardSystemProperty.JAVA_IO_TMPDIR.key())`
-    exists(MethodCall keyMa |
+    exists(MethodAccess keyMa |
       localExprFlowPlusInitializers(ec.getAnAccess(), keyMa.getQualifier()) and
       keyMa.getMethod().hasName("key") and
-      localExprFlowPlusInitializers(keyMa, result.(MethodCallSystemGetProperty).getArgument(0))
+      localExprFlowPlusInitializers(keyMa, result.(MethodAccessSystemGetProperty).getArgument(0))
     )
   |
     ec.hasName("JAVA_VERSION") and propertyName = "java.version"
@@ -241,7 +241,7 @@ private MethodCall getSystemPropertyFromGuava(string propertyName) {
   )
 }
 
-private MethodCall getSystemPropertyFromOperatingSystemMXBean(string propertyName) {
+private MethodAccess getSystemPropertyFromOperatingSystemMXBean(string propertyName) {
   exists(Method m |
     m = result.getMethod() and
     m.getDeclaringType().hasQualifiedName("java.lang.management", "OperatingSystemMXBean")
@@ -254,7 +254,7 @@ private MethodCall getSystemPropertyFromOperatingSystemMXBean(string propertyNam
   )
 }
 
-private MethodCall getSystemPropertyFromSpringProperties(string propertyName) {
+private MethodAccess getSystemPropertyFromSpringProperties(string propertyName) {
   exists(Method m |
     m = result.getMethod() and
     m.getDeclaringType().hasQualifiedName("org.springframework.core", "SpringProperties") and

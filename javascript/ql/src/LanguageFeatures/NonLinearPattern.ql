@@ -23,8 +23,8 @@ class RootDestructuringPattern extends DestructuringPattern {
   /** Holds if this pattern has multiple bindings for `name`. */
   predicate hasConflictingBindings(string name) {
     exists(VarRef v, VarRef w |
-      v = this.getABindingVarRef() and
-      w = this.getABindingVarRef() and
+      v = getABindingVarRef() and
+      w = getABindingVarRef() and
       name = v.getName() and
       name = w.getName() and
       v != w
@@ -33,10 +33,10 @@ class RootDestructuringPattern extends DestructuringPattern {
 
   /** Gets the first occurrence of the conflicting binding `name`. */
   VarDecl getFirstClobberedVarDecl(string name) {
-    this.hasConflictingBindings(name) and
+    hasConflictingBindings(name) and
     result =
       min(VarDecl decl |
-        decl = this.getABindingVarRef() and decl.getName() = name
+        decl = getABindingVarRef() and decl.getName() = name
       |
         decl order by decl.getLocation().getStartLine(), decl.getLocation().getStartColumn()
       )
@@ -44,11 +44,11 @@ class RootDestructuringPattern extends DestructuringPattern {
 
   /** Holds if variables in this pattern may resemble type annotations. */
   predicate resemblesTypeAnnotation() {
-    this.hasConflictingBindings(_) and // Restrict size of predicate.
+    hasConflictingBindings(_) and // Restrict size of predicate.
     this instanceof Parameter and
     this instanceof ObjectPattern and
-    not exists(this.getTypeAnnotation()) and
-    this.getFile().getFileType().isTypeScript()
+    not exists(getTypeAnnotation()) and
+    getFile().getFileType().isTypeScript()
   }
 }
 

@@ -10,6 +10,12 @@ class RealmSwiftObject {
 
 typealias Object = RealmSwiftObject
 
+class MyRealmSwiftObject : RealmSwiftObject {
+	override init() { data = "" }
+
+	var data: String
+}
+
 class Realm {
 	func add(_ object: Object, update: UpdatePolicy = .error) {}
 
@@ -21,20 +27,7 @@ class Realm {
 
 // --- tests ---
 
-class MyRealmSwiftObject : RealmSwiftObject {
-	override init() { data = "" }
-
-	var data: String
-}
-
-class MyRealmSwiftObject2 : Object {
-	override init() { password = "" }
-
-	var harmless: String?
-	var password: String?
-}
-
-func test1(realm : Realm, myHarmless: String, myPassword : String, myHashedPassword : String) {
+func test1(realm : Realm, myPassword : String, myHashedPassword : String) {
 	// add objects (within a transaction) ...
 
 	let a = MyRealmSwiftObject()
@@ -65,13 +58,6 @@ func test1(realm : Realm, myHarmless: String, myPassword : String, myHashedPassw
 	g.data = "" // GOOD (not sensitive)
 	g.data = myPassword // BAD
 	g.data = "" // GOOD (not sensitive)
-
-	// MyRealmSwiftObject2...
-
-	let h = MyRealmSwiftObject2()
-	h.harmless = myHarmless // GOOD (not sensitive)
-	h.password = myPassword // BAD
-	realm.add(h)
 }
 
 // limitation: its possible to configure a Realm DB to be stored encrypted, if this is done correctly

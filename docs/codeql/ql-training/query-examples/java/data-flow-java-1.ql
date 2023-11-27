@@ -4,7 +4,7 @@ class StringConcat extends AddExpr {
   StringConcat() { getType() instanceof TypeString }
 }
 
-from MethodCall ma
+from MethodAccess ma
 where
   ma.getMethod().getName().matches("sparql%Query") and
   ma.getArgument(0) instanceof StringConcat

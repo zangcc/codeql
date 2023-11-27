@@ -2,15 +2,17 @@ import codeql.ruby.AST
 import codeql.ruby.Concepts
 import TestUtilities.InlineExpectationsTest
 
-module CryptographicOperationTest implements TestSig {
-  string getARelevantTag() {
+class CryptographicOperationTest extends InlineExpectationsTest {
+  CryptographicOperationTest() { this = "CryptographicOperationTest" }
+
+  override string getARelevantTag() {
     result in [
         "CryptographicOperation", "CryptographicOperationInput", "CryptographicOperationAlgorithm",
         "CryptographicOperationBlockMode"
       ]
   }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(Cryptography::CryptographicOperation cryptoOperation |
       location = cryptoOperation.getLocation() and
       (
@@ -29,5 +31,3 @@ module CryptographicOperationTest implements TestSig {
     )
   }
 }
-
-import MakeTest<CryptographicOperationTest>

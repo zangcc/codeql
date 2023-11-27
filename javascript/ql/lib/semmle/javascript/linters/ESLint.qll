@@ -10,12 +10,10 @@ module ESLint {
    */
   abstract class Configuration extends Locatable {
     /** Gets the folder in which this configuration file is located. */
-    private Folder getEnclosingFolder() { result = this.getFile().getParentContainer() }
+    private Folder getEnclosingFolder() { result = getFile().getParentContainer() }
 
     /** Holds if this configuration file applies to the code in `tl`. */
-    predicate appliesTo(TopLevel tl) {
-      tl.getFile().getParentContainer+() = this.getEnclosingFolder()
-    }
+    predicate appliesTo(TopLevel tl) { tl.getFile().getParentContainer+() = getEnclosingFolder() }
 
     /** Gets the `globals` configuration object of this file, if any. */
     abstract ConfigurationObject getGlobals();
@@ -41,11 +39,11 @@ module ESLint {
   /** An `.eslintrc.json` file. */
   private class EslintrcJson extends JsonConfiguration {
     EslintrcJson() {
-      this.isTopLevel() and
-      exists(string n | n = this.getFile().getBaseName() | n = ".eslintrc.json" or n = ".eslintrc")
+      isTopLevel() and
+      exists(string n | n = getFile().getBaseName() | n = ".eslintrc.json" or n = ".eslintrc")
     }
 
-    override ConfigurationObject getGlobals() { result = this.getPropValue("globals") }
+    override ConfigurationObject getGlobals() { result = getPropValue("globals") }
   }
 
   /** An ESLint configuration object in JSON format. */
@@ -53,7 +51,7 @@ module ESLint {
     override Configuration getConfiguration() { this = result.(JsonConfiguration).getPropValue(_) }
 
     override boolean getBooleanProperty(string p) {
-      exists(string v | v = this.getPropValue(p).(JsonBoolean).getValue() |
+      exists(string v | v = getPropValue(p).(JsonBoolean).getValue() |
         v = "true" and result = true
         or
         v = "false" and result = false
@@ -62,24 +60,22 @@ module ESLint {
   }
 
   /** An `.eslintrc.yaml` file. */
-  private class EslintrcYaml extends Configuration instanceof YamlMapping, YamlDocument {
+  private class EslintrcYaml extends Configuration, YamlDocument, YamlMapping {
     EslintrcYaml() {
-      exists(string n | n = this.(Locatable).getFile().getBaseName() |
+      exists(string n | n = getFile().getBaseName() |
         n = ".eslintrc.yaml" or n = ".eslintrc.yml" or n = ".eslintrc"
       )
     }
 
-    override ConfigurationObject getGlobals() { result = super.lookup("globals") }
+    override ConfigurationObject getGlobals() { result = lookup("globals") }
   }
 
   /** An ESLint configuration object in YAML format. */
-  private class YamlConfigurationObject extends ConfigurationObject instanceof YamlMapping {
-    override Configuration getConfiguration() {
-      this = result.(EslintrcYaml).(YamlMapping).getValue(_)
-    }
+  private class YamlConfigurationObject extends ConfigurationObject, YamlMapping {
+    override Configuration getConfiguration() { this = result.(EslintrcYaml).getValue(_) }
 
     override boolean getBooleanProperty(string p) {
-      exists(string v | v = super.lookup(p).(YamlBool).getValue() |
+      exists(string v | v = lookup(p).(YamlBool).getValue() |
         v = "true" and result = true
         or
         v = "false" and result = false
@@ -93,7 +89,7 @@ module ESLint {
       exists(PackageJson pkg | this = pkg.getPropValue("eslintConfig"))
     }
 
-    override ConfigurationObject getGlobals() { result = this.getPropValue("globals") }
+    override ConfigurationObject getGlobals() { result = getPropValue("globals") }
   }
 
   /** An ESLint `globals` configuration object. */
@@ -101,12 +97,10 @@ module ESLint {
     GlobalsConfigurationObject() { this = any(Configuration cfg).getGlobals() }
 
     override predicate declaresGlobal(string name, boolean writable) {
-      this.getBooleanProperty(name) = writable
+      getBooleanProperty(name) = writable
     }
 
-    override predicate appliesTo(ExprOrStmt s) {
-      this.getConfiguration().appliesTo(s.getTopLevel())
-    }
+    override predicate appliesTo(ExprOrStmt s) { getConfiguration().appliesTo(s.getTopLevel()) }
 
     abstract override Configuration getConfiguration();
 

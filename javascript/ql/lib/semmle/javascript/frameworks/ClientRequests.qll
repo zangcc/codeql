@@ -631,6 +631,9 @@ module ClientRequest {
     }
   }
 
+  /** DEPRECATED: Alias for XmlHttpRequest */
+  deprecated class XMLHttpRequest = XmlHttpRequest;
+
   /**
    * A model of a URL request made using the `XhrIo` class from the closure library.
    */
@@ -810,6 +813,9 @@ module ClientRequest {
 
     override DataFlow::Node getADataNode() { none() }
   }
+
+  /** DEPRECATED: Alias for JSDomFromUrl */
+  deprecated class JSDOMFromUrl = JSDomFromUrl;
 
   /**
    * Classes and predicates modeling the `apollo-client` library.

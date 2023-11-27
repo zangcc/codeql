@@ -41,7 +41,7 @@ abstract class ConstructedGeneric extends Generic {
   UnboundGeneric getUnboundGeneric() { none() }
 
   /** Gets the total number of type arguments. */
-  final int getNumberOfTypeArguments() { result = count(int i | exists(this.getTypeArgument(i))) }
+  int getNumberOfTypeArguments() { result = count(int i | exists(this.getTypeArgument(i))) }
 }
 
 /**

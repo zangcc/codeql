@@ -32,9 +32,9 @@ class LTWideningComparison extends WideningComparison {
     leftWidth(this) < rightWidth(this)
   }
 
-  override Expr getNarrower() { result = this.getLeftOperand() }
+  override Expr getNarrower() { result = getLeftOperand() }
 
-  override Expr getWider() { result = this.getRightOperand() }
+  override Expr getWider() { result = getRightOperand() }
 }
 
 class GTWideningComparison extends WideningComparison {
@@ -43,9 +43,9 @@ class GTWideningComparison extends WideningComparison {
     leftWidth(this) > rightWidth(this)
   }
 
-  override Expr getNarrower() { result = this.getRightOperand() }
+  override Expr getNarrower() { result = getRightOperand() }
 
-  override Expr getWider() { result = this.getLeftOperand() }
+  override Expr getWider() { result = getLeftOperand() }
 }
 
 from WideningComparison c, LoopStmt l

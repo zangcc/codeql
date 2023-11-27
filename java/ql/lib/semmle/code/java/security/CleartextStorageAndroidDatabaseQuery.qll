@@ -12,9 +12,9 @@ private class LocalDatabaseCleartextStorageSink extends CleartextStorageSink {
 }
 
 /** The creation of an object that can be used to store data in a local database. */
-class LocalDatabaseOpenMethodCall extends Storable, Call {
-  LocalDatabaseOpenMethodCall() {
-    exists(Method m | this.(MethodCall).getMethod() = m |
+class LocalDatabaseOpenMethodAccess extends Storable, Call {
+  LocalDatabaseOpenMethodAccess() {
+    exists(Method m | this.(MethodAccess).getMethod() = m |
       m.getDeclaringType().getASupertype*() instanceof TypeSQLiteOpenHelper and
       m.hasName("getWritableDatabase")
       or
@@ -29,22 +29,19 @@ class LocalDatabaseOpenMethodCall extends Storable, Call {
   }
 
   override Expr getAnInput() {
-    exists(DataFlow::Node database |
+    exists(LocalDatabaseFlowConfig config, DataFlow::Node database |
       localDatabaseInput(database, result) and
-      LocalDatabaseFlow::flow(DataFlow::exprNode(this), database)
+      config.hasFlow(DataFlow::exprNode(this), database)
     )
   }
 
   override Expr getAStore() {
-    exists(DataFlow::Node database |
+    exists(LocalDatabaseFlowConfig config, DataFlow::Node database |
       localDatabaseStore(database, result) and
-      LocalDatabaseFlow::flow(DataFlow::exprNode(this), database)
+      config.hasFlow(DataFlow::exprNode(this), database)
     )
   }
 }
-
-/** DEPRECATED: Alias for `LocalDatabaseOpenMethodCall`. */
-deprecated class LocalDatabaseOpenMethodAccess = LocalDatabaseOpenMethodCall;
 
 /** A method that is both a database input and a database store. */
 private class LocalDatabaseInputStoreMethod extends Method {
@@ -80,7 +77,7 @@ private predicate localDatabaseInput(DataFlow::Node database, Argument input) {
  * either through the use of prepared statements, via the `ContentValues` class, or
  * directly executing a raw SQL query.
  */
-private predicate localDatabaseStore(DataFlow::Node database, MethodCall store) {
+private predicate localDatabaseStore(DataFlow::Node database, MethodAccess store) {
   exists(Method m | store.getMethod() = m |
     m instanceof LocalDatabaseInputStoreMethod and
     database.asExpr() = store.getQualifier()
@@ -96,17 +93,19 @@ private predicate localDatabaseStore(DataFlow::Node database, MethodCall store) 
   )
 }
 
-private module LocalDatabaseFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
-    source.asExpr() instanceof LocalDatabaseOpenMethodCall
+private class LocalDatabaseFlowConfig extends DataFlow::Configuration {
+  LocalDatabaseFlowConfig() { this = "LocalDatabaseFlowConfig" }
+
+  override predicate isSource(DataFlow::Node source) {
+    source.asExpr() instanceof LocalDatabaseOpenMethodAccess
   }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSink(DataFlow::Node sink) {
     localDatabaseInput(sink, _) or
     localDatabaseStore(sink, _)
   }
 
-  predicate isAdditionalFlowStep(DataFlow::Node n1, DataFlow::Node n2) {
+  override predicate isAdditionalFlowStep(DataFlow::Node n1, DataFlow::Node n2) {
     // Adds a step for tracking databases through field flow, that is, a database is opened and
     // assigned to a field, and then an input or store method is called on that field elsewhere.
     exists(Field f |
@@ -116,5 +115,3 @@ private module LocalDatabaseFlowConfig implements DataFlow::ConfigSig {
     )
   }
 }
-
-private module LocalDatabaseFlow = DataFlow::Global<LocalDatabaseFlowConfig>;

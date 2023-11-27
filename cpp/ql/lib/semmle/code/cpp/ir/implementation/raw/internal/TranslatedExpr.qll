@@ -1,5 +1,4 @@
 private import cpp
-private import semmle.code.cpp.internal.ExtractorVersion
 private import semmle.code.cpp.ir.implementation.IRType
 private import semmle.code.cpp.ir.implementation.Opcode
 private import semmle.code.cpp.ir.implementation.internal.OperandTag
@@ -77,7 +76,10 @@ abstract class TranslatedExpr extends TranslatedElement {
 
   final override Locatable getAst() { result = expr }
 
-  final override Declaration getFunction() { result = getEnclosingDeclaration(expr) }
+  /** DEPRECATED: Alias for getAst */
+  deprecated override Locatable getAST() { result = this.getAst() }
+
+  final override Declaration getFunction() { result = expr.getEnclosingDeclaration() }
 
   /**
    * Gets the expression from which this `TranslatedExpr` is generated.
@@ -88,55 +90,10 @@ abstract class TranslatedExpr extends TranslatedElement {
    * Gets the `TranslatedFunction` containing this expression.
    */
   final TranslatedRootElement getEnclosingFunction() {
-    result = getTranslatedFunction(getEnclosingFunction(expr))
+    result = getTranslatedFunction(expr.getEnclosingFunction())
     or
-    result = getTranslatedVarInit(getEnclosingVariable(expr))
+    result = getTranslatedVarInit(expr.getEnclosingVariable())
   }
-}
-
-Function getEnclosingFunction(Expr e) {
-  not exists(getEnclosingVariable(e)) and
-  result = e.getEnclosingFunction()
-}
-
-Declaration getEnclosingDeclaration0(Expr e) {
-  result = getEnclosingDeclaration0(e.getParentWithConversions())
-  or
-  exists(Initializer i, Variable v |
-    i.getExpr().getFullyConverted() = e and
-    v = i.getDeclaration()
-  |
-    if v instanceof StaticInitializedStaticLocalVariable or v instanceof GlobalOrNamespaceVariable
-    then result = v
-    else result = e.getEnclosingDeclaration()
-  )
-}
-
-Declaration getEnclosingDeclaration(Expr e) {
-  result = getEnclosingDeclaration0(e)
-  or
-  not exists(getEnclosingDeclaration0(e)) and
-  result = e.getEnclosingDeclaration()
-}
-
-Variable getEnclosingVariable0(Expr e) {
-  result = getEnclosingVariable0(e.getParentWithConversions())
-  or
-  exists(Initializer i, Variable v |
-    i.getExpr().getFullyConverted() = e and
-    v = i.getDeclaration()
-  |
-    if v instanceof StaticInitializedStaticLocalVariable or v instanceof GlobalOrNamespaceVariable
-    then result = v
-    else result = e.getEnclosingVariable()
-  )
-}
-
-Variable getEnclosingVariable(Expr e) {
-  result = getEnclosingVariable0(e)
-  or
-  not exists(getEnclosingVariable0(e)) and
-  result = e.getEnclosingVariable()
 }
 
 /**
@@ -174,8 +131,7 @@ abstract class TranslatedCoreExpr extends TranslatedExpr {
 }
 
 class TranslatedConditionValue extends TranslatedCoreExpr, ConditionContext,
-  TTranslatedConditionValue
-{
+  TTranslatedConditionValue {
   TranslatedConditionValue() { this = TTranslatedConditionValue(expr) }
 
   override TranslatedElement getChild(int id) { id = 0 and result = this.getCondition() }
@@ -370,8 +326,7 @@ class TranslatedLoad extends TranslatedValueCategoryAdjustment, TTranslatedLoad 
  * from the AST.
  */
 class TranslatedSyntheticTemporaryObject extends TranslatedValueCategoryAdjustment,
-  TTranslatedSyntheticTemporaryObject
-{
+  TTranslatedSyntheticTemporaryObject {
   TranslatedSyntheticTemporaryObject() { this = TTranslatedSyntheticTemporaryObject(expr) }
 
   override string toString() { result = "Temporary materialization of " + expr.toString() }
@@ -650,9 +605,7 @@ class TranslatedPrefixCrementOperation extends TranslatedCrementOperation {
   override PrefixCrementOperation expr;
 
   override Instruction getResult() {
-    // The following distinction is needed to work around extractor limitations
-    // in old versions of the extractor.
-    if expr.isPRValueCategory() and not isExtractorFrontendVersion65OrHigher()
+    if expr.isPRValueCategory()
     then
       // If this is C, then the result of a prefix crement is a prvalue for the
       // new value assigned to the operand. If this is C++, then the result is
@@ -888,19 +841,8 @@ class TranslatedNonFieldVariableAccess extends TranslatedVariableAccess {
 
   override IRVariable getInstructionVariable(InstructionTag tag) {
     tag = OnlyInstructionTag() and
-    exists(Declaration d, Variable v |
-      accessHasEnclosingDeclarationAndVariable(d, v, expr) and
-      result = getIRUserVariable(d, v)
-    )
+    result = getIRUserVariable(expr.getEnclosingDeclaration(), expr.getTarget())
   }
-}
-
-pragma[nomagic]
-private predicate accessHasEnclosingDeclarationAndVariable(
-  Declaration d, Variable v, VariableAccess va
-) {
-  d = getEnclosingDeclaration(va) and
-  v = va.getTarget()
 }
 
 class TranslatedFieldAccess extends TranslatedVariableAccess {
@@ -994,19 +936,9 @@ class TranslatedStructuredBindingVariableAccess extends TranslatedNonConstantExp
 class TranslatedFunctionAccess extends TranslatedNonConstantExpr {
   override FunctionAccess expr;
 
-  override TranslatedElement getChild(int id) {
-    id = 0 and result = this.getQualifier() // Might not exist
-  }
+  override TranslatedElement getChild(int id) { none() }
 
-  final TranslatedExpr getQualifier() {
-    result = getTranslatedExpr(expr.getQualifier().getFullyConverted())
-  }
-
-  override Instruction getFirstInstruction() {
-    if exists(this.getQualifier())
-    then result = this.getQualifier().getFirstInstruction()
-    else result = this.getInstruction(OnlyInstructionTag())
-  }
+  override Instruction getFirstInstruction() { result = this.getInstruction(OnlyInstructionTag()) }
 
   override Instruction getResult() { result = this.getInstruction(OnlyInstructionTag()) }
 
@@ -1027,9 +959,7 @@ class TranslatedFunctionAccess extends TranslatedNonConstantExpr {
     result = expr.getTarget()
   }
 
-  override Instruction getChildSuccessor(TranslatedElement child) {
-    child = this.getQualifier() and result = this.getInstruction(OnlyInstructionTag())
-  }
+  override Instruction getChildSuccessor(TranslatedElement child) { none() }
 }
 
 /**
@@ -1507,9 +1437,7 @@ class TranslatedAssignExpr extends TranslatedNonConstantExpr {
   }
 
   final override Instruction getResult() {
-    // The following distinction is needed to work around extractor limitations
-    // in old versions of the extractor.
-    if expr.isPRValueCategory() and not isExtractorFrontendVersion65OrHigher()
+    if expr.isPRValueCategory()
     then
       // If this is C, then the result of an assignment is a prvalue for the new
       // value assigned to the left operand. If this is C++, then the result is
@@ -1647,9 +1575,7 @@ class TranslatedAssignOperation extends TranslatedNonConstantExpr {
   }
 
   final override Instruction getResult() {
-    // The following distinction is needed to work around extractor limitations
-    // in old versions of the extractor.
-    if expr.isPRValueCategory() and not isExtractorFrontendVersion65OrHigher()
+    if expr.isPRValueCategory()
     then
       // If this is C, then the result of an assignment is a prvalue for the new
       // value assigned to the left operand. If this is C++, then the result is
@@ -1913,10 +1839,8 @@ class TranslatedNonConstantAllocationSize extends TranslatedAllocationSize {
   final override predicate hasInstruction(Opcode opcode, InstructionTag tag, CppType resultType) {
     resultType = getTypeForPRValue(expr.getAllocator().getParameter(0).getType()) and
     (
-      this.extentNeedsConversion() and
       // Convert the extent to `size_t`, because the AST doesn't do this already.
-      tag = AllocationExtentConvertTag() and
-      opcode instanceof Opcode::Convert
+      tag = AllocationExtentConvertTag() and opcode instanceof Opcode::Convert
       or
       tag = AllocationElementSizeTag() and opcode instanceof Opcode::Constant
       or
@@ -1927,7 +1851,6 @@ class TranslatedNonConstantAllocationSize extends TranslatedAllocationSize {
   final override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) {
     kind instanceof GotoEdge and
     (
-      this.extentNeedsConversion() and
       tag = AllocationExtentConvertTag() and
       result = this.getInstruction(AllocationElementSizeTag())
       or
@@ -1943,9 +1866,7 @@ class TranslatedNonConstantAllocationSize extends TranslatedAllocationSize {
 
   final override Instruction getChildSuccessor(TranslatedElement child) {
     child = this.getExtent() and
-    if this.extentNeedsConversion()
-    then result = this.getInstruction(AllocationExtentConvertTag())
-    else result = this.getInstruction(AllocationElementSizeTag())
+    result = this.getInstruction(AllocationExtentConvertTag())
   }
 
   final override string getInstructionConstantValue(InstructionTag tag) {
@@ -1957,31 +1878,19 @@ class TranslatedNonConstantAllocationSize extends TranslatedAllocationSize {
     tag = AllocationSizeTag() and
     (
       operandTag instanceof LeftOperandTag and
-      (
-        if this.extentNeedsConversion()
-        then result = this.getInstruction(AllocationExtentConvertTag())
-        else result = this.getExtent().getResult()
-      )
+      result = this.getInstruction(AllocationExtentConvertTag())
       or
       operandTag instanceof RightOperandTag and
       result = this.getInstruction(AllocationElementSizeTag())
     )
     or
-    this.extentNeedsConversion() and
     tag = AllocationExtentConvertTag() and
     operandTag instanceof UnaryOperandTag and
     result = this.getExtent().getResult()
   }
 
-  TranslatedExpr getExtent() { result = getTranslatedExpr(expr.getExtent().getFullyConverted()) }
-
-  /**
-   * Holds if the result of `expr.getExtent()` does not have the same type as
-   * the allocator's size parameter.
-   */
-  private predicate extentNeedsConversion() {
-    expr.getExtent().getFullyConverted().getUnspecifiedType() !=
-      expr.getAllocator().getParameter(0).getUnspecifiedType()
+  private TranslatedExpr getExtent() {
+    result = getTranslatedExpr(expr.getExtent().getFullyConverted())
   }
 }
 
@@ -2042,66 +1951,6 @@ TranslatedAllocatorCall getTranslatedAllocatorCall(NewOrNewArrayExpr newExpr) {
 }
 
 /**
- * The IR translation of a `delete` or `delete[]`
- * expression.
- */
-class TranslatedDeleteOrDeleteArrayExpr extends TranslatedNonConstantExpr, TranslatedCall {
-  override DeleteOrDeleteArrayExpr expr;
-
-  final override Instruction getFirstCallTargetInstruction() {
-    result = this.getInstruction(CallTargetTag())
-  }
-
-  final override Instruction getCallTargetResult() { result = this.getInstruction(CallTargetTag()) }
-
-  override predicate hasInstruction(Opcode opcode, InstructionTag tag, CppType resultType) {
-    TranslatedCall.super.hasInstruction(opcode, tag, resultType)
-    or
-    tag = CallTargetTag() and
-    resultType = getFunctionGLValueType() and
-    if exists(expr.getDeallocator())
-    then opcode instanceof Opcode::FunctionAddress
-    else opcode instanceof Opcode::VirtualDeleteFunctionAddress
-  }
-
-  override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) {
-    result = TranslatedCall.super.getInstructionSuccessor(tag, kind)
-    or
-    tag = CallTargetTag() and
-    kind instanceof GotoEdge and
-    result = this.getFirstArgumentOrCallInstruction()
-  }
-
-  override Function getInstructionFunction(InstructionTag tag) {
-    tag = CallTargetTag() and result = expr.getDeallocator()
-  }
-
-  final override Type getCallResultType() { result = expr.getType() }
-
-  final override TranslatedExpr getQualifier() { none() }
-
-  final override predicate hasArguments() {
-    // All deallocator calls have at least one argument.
-    any()
-  }
-
-  final override int getNumberOfArguments() {
-    // We ignore the other arguments for now as we would have to synthesize them.
-    result = 1
-  }
-
-  final override TranslatedExpr getArgument(int index) {
-    // The only argument we define is the pointer to be deallocated.
-    index = 0 and
-    result = getTranslatedExpr(expr.getExpr().getFullyConverted())
-  }
-}
-
-TranslatedDeleteOrDeleteArrayExpr getTranslatedDeleteOrDeleteArray(DeleteOrDeleteArrayExpr newExpr) {
-  result.getAst() = newExpr
-}
-
-/**
  * Abstract class implemented by any `TranslatedElement` that has a child
  * expression that is a call to a constructor or destructor, in order to
  * provide a pointer to the object being constructed or destroyed.
@@ -2149,7 +1998,7 @@ class TranslatedDestructorFieldDestruction extends TranslatedNonConstantExpr, St
   final override Instruction getInstructionRegisterOperand(InstructionTag tag, OperandTag operandTag) {
     tag = OnlyInstructionTag() and
     operandTag instanceof UnaryOperandTag and
-    result = getTranslatedFunction(getEnclosingFunction(expr)).getInitializeThisInstruction()
+    result = getTranslatedFunction(expr.getEnclosingFunction()).getInitializeThisInstruction()
   }
 
   final override Field getInstructionField(InstructionTag tag) {
@@ -2198,16 +2047,8 @@ abstract class TranslatedConditionalExpr extends TranslatedNonConstantExpr {
         not this.elseIsVoid() and tag = ConditionValueFalseStoreTag()
       ) and
       opcode instanceof Opcode::Store and
-      if isExtractorFrontendVersion65OrHigher()
-      then
-        not expr.hasLValueToRValueConversion() and
-        resultType = this.getResultType()
-        or
-        expr.hasLValueToRValueConversion() and
-        resultType = getTypeForPRValue(expr.getType())
-      else resultType = this.getResultType()
+      resultType = this.getResultType()
       or
-      (not expr.hasLValueToRValueConversion() or not isExtractorFrontendVersion65OrHigher()) and
       tag = ConditionValueResultLoadTag() and
       opcode instanceof Opcode::Load and
       resultType = this.getResultType()
@@ -2237,16 +2078,8 @@ abstract class TranslatedConditionalExpr extends TranslatedNonConstantExpr {
       )
       or
       tag = ConditionValueResultTempAddressTag() and
-      if isExtractorFrontendVersion65OrHigher()
-      then
-        not expr.hasLValueToRValueConversion() and
-        result = this.getInstruction(ConditionValueResultLoadTag())
-        or
-        expr.hasLValueToRValueConversion() and
-        result = this.getParent().getChildSuccessor(this)
-      else result = this.getInstruction(ConditionValueResultLoadTag())
+      result = this.getInstruction(ConditionValueResultLoadTag())
       or
-      (not expr.hasLValueToRValueConversion() or not isExtractorFrontendVersion65OrHigher()) and
       tag = ConditionValueResultLoadTag() and
       result = this.getParent().getChildSuccessor(this)
     )
@@ -2275,24 +2108,18 @@ abstract class TranslatedConditionalExpr extends TranslatedNonConstantExpr {
         result = this.getElse().getResult()
       )
       or
-      (not expr.hasLValueToRValueConversion() or not isExtractorFrontendVersion65OrHigher()) and
       tag = ConditionValueResultLoadTag() and
-      operandTag instanceof AddressOperandTag and
-      result = this.getInstruction(ConditionValueResultTempAddressTag())
+      (
+        operandTag instanceof AddressOperandTag and
+        result = this.getInstruction(ConditionValueResultTempAddressTag())
+      )
     )
   }
 
   final override predicate hasTempVariable(TempVariableTag tag, CppType type) {
     not this.resultIsVoid() and
     tag = ConditionValueTempVar() and
-    if isExtractorFrontendVersion65OrHigher()
-    then
-      not expr.hasLValueToRValueConversion() and
-      type = this.getResultType()
-      or
-      expr.hasLValueToRValueConversion() and
-      type = getTypeForPRValue(expr.getType())
-    else type = this.getResultType()
+    type = this.getResultType()
   }
 
   final override IRVariable getInstructionVariable(InstructionTag tag) {
@@ -2307,14 +2134,7 @@ abstract class TranslatedConditionalExpr extends TranslatedNonConstantExpr {
 
   final override Instruction getResult() {
     not this.resultIsVoid() and
-    if isExtractorFrontendVersion65OrHigher()
-    then
-      expr.hasLValueToRValueConversion() and
-      result = this.getInstruction(ConditionValueResultTempAddressTag())
-      or
-      not expr.hasLValueToRValueConversion() and
-      result = this.getInstruction(ConditionValueResultLoadTag())
-    else result = this.getInstruction(ConditionValueResultLoadTag())
+    result = this.getInstruction(ConditionValueResultLoadTag())
   }
 
   override Instruction getChildSuccessor(TranslatedElement child) {
@@ -2482,8 +2302,7 @@ class TranslatedBinaryConditionalExpr extends TranslatedConditionalExpr {
  * its initializer.
  */
 class TranslatedTemporaryObjectExpr extends TranslatedNonConstantExpr,
-  TranslatedVariableInitialization
-{
+  TranslatedVariableInitialization {
   override TemporaryObjectExpr expr;
 
   final override predicate hasTempVariable(TempVariableTag tag, CppType type) {
@@ -3068,6 +2887,78 @@ class TranslatedNewArrayExpr extends TranslatedNewOrNewArrayExpr {
 }
 
 /**
+ * A placeholder for the translation of a `delete[]` expression.
+ *
+ * Proper translation is not yet implemented, but this stub implementation
+ * ensures that code following a `delete[]` is not unreachable.
+ */
+class TranslatedDeleteArrayExprPlaceHolder extends TranslatedSingleInstructionExpr {
+  override DeleteArrayExpr expr;
+
+  final override Instruction getFirstInstruction() {
+    result = this.getOperand().getFirstInstruction()
+  }
+
+  final override TranslatedElement getChild(int id) { id = 0 and result = this.getOperand() }
+
+  final override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) {
+    tag = OnlyInstructionTag() and
+    result = this.getParent().getChildSuccessor(this) and
+    kind instanceof GotoEdge
+  }
+
+  final override Instruction getChildSuccessor(TranslatedElement child) {
+    child = this.getOperand() and result = this.getInstruction(OnlyInstructionTag())
+  }
+
+  final override Instruction getInstructionRegisterOperand(InstructionTag tag, OperandTag operandTag) {
+    none()
+  }
+
+  final override Opcode getOpcode() { result instanceof Opcode::NoOp }
+
+  private TranslatedExpr getOperand() {
+    result = getTranslatedExpr(expr.getExpr().getFullyConverted())
+  }
+}
+
+/**
+ * A placeholder for the translation of a `delete` expression.
+ *
+ * Proper translation is not yet implemented, but this stub implementation
+ * ensures that code following a `delete` is not unreachable.
+ */
+class TranslatedDeleteExprPlaceHolder extends TranslatedSingleInstructionExpr {
+  override DeleteExpr expr;
+
+  final override Instruction getFirstInstruction() {
+    result = this.getOperand().getFirstInstruction()
+  }
+
+  final override TranslatedElement getChild(int id) { id = 0 and result = this.getOperand() }
+
+  final override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) {
+    tag = OnlyInstructionTag() and
+    result = this.getParent().getChildSuccessor(this) and
+    kind instanceof GotoEdge
+  }
+
+  final override Instruction getChildSuccessor(TranslatedElement child) {
+    child = this.getOperand() and result = this.getInstruction(OnlyInstructionTag())
+  }
+
+  final override Instruction getInstructionRegisterOperand(InstructionTag tag, OperandTag operandTag) {
+    none()
+  }
+
+  final override Opcode getOpcode() { result instanceof Opcode::NoOp }
+
+  private TranslatedExpr getOperand() {
+    result = getTranslatedExpr(expr.getExpr().getFullyConverted())
+  }
+}
+
+/**
  * The IR translation of a `ConditionDeclExpr`, which represents the value of the declared variable
  * after conversion to `bool` in code such as:
  * ```
@@ -3274,18 +3165,10 @@ predicate exprNeedsCopyIfNotLoaded(Expr expr) {
     expr instanceof AssignExpr
     or
     expr instanceof AssignOperation and
-    (
-      not expr.isPRValueCategory() // is C++
-      or
-      isExtractorFrontendVersion65OrHigher()
-    )
+    not expr.isPRValueCategory() // is C++
     or
     expr instanceof PrefixCrementOperation and
-    (
-      not expr.isPRValueCategory() // is C++
-      or
-      isExtractorFrontendVersion65OrHigher()
-    )
+    not expr.isPRValueCategory() // is C++
     or
     // Because the load is on the `e` in `e++`.
     expr instanceof PostfixCrementOperation

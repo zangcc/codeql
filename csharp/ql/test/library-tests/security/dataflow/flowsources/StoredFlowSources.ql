@@ -1,13 +1,13 @@
 import semmle.code.csharp.security.dataflow.flowsources.Stored
 
-module StoredConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node s) { s instanceof StoredFlowSource }
+class StoredConfig extends TaintTracking::Configuration {
+  StoredConfig() { this = "stored" }
 
-  predicate isSink(DataFlow::Node s) { s.asExpr().fromSource() }
+  override predicate isSource(DataFlow::Node s) { s instanceof StoredFlowSource }
+
+  override predicate isSink(DataFlow::Node s) { s.asExpr().fromSource() }
 }
 
-module Stored = TaintTracking::Global<StoredConfig>;
-
-from DataFlow::Node sink
-where Stored::flow(any(StoredFlowSource sfs), sink)
+from StoredConfig s, DataFlow::Node sink
+where s.hasFlow(any(StoredFlowSource sfs), sink)
 select sink

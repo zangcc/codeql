@@ -1,6 +1,11 @@
 using System;
-using System.Text;
-using System.Collections.Generic;
+class HashSet<T>
+{
+    public bool Add(T t)
+    {
+        return true;
+    }
+}
 
 class C1
 {
@@ -25,6 +30,11 @@ class C1
     }
 }
 
+class StringBuilder
+{
+    public StringBuilder Append(string s) { return this; }
+}
+
 class C2
 {
     static void Main(string[] args)
@@ -46,6 +56,20 @@ class C2
         .Append("")
         .Append("")
         .Append("");
+    }
+}
+
+namespace System.IO
+{
+    public abstract class Stream
+    {
+        public abstract int Read(byte[] buffer, int offset, int count);
+        public virtual int ReadByte() { return 0; }
+    }
+
+    public class MemoryStream : Stream
+    {
+        public override int Read(byte[] buffer, int offset, int count) { return 0; }
     }
 }
 

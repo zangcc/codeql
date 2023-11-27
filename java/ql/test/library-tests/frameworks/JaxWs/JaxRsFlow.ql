@@ -3,14 +3,22 @@ import semmle.code.java.dataflow.TaintTracking
 import semmle.code.java.dataflow.FlowSources
 import TestUtilities.InlineFlowTest
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) {
-    DefaultFlowConfig::isSource(node)
-    or
-    node instanceof ThreatModelFlowSource
-  }
-
-  predicate isSink = DefaultFlowConfig::isSink/1;
+class EnableLegacy extends EnableLegacyConfiguration {
+  EnableLegacy() { exists(this) }
 }
 
-import FlowTest<Config, Config>
+class TaintFlowConf extends DefaultTaintFlowConf {
+  override predicate isSource(DataFlow::Node n) {
+    super.isSource(n)
+    or
+    n instanceof RemoteFlowSource
+  }
+}
+
+class ValueFlowConf extends DefaultValueFlowConf {
+  override predicate isSource(DataFlow::Node n) {
+    super.isSource(n)
+    or
+    n instanceof RemoteFlowSource
+  }
+}

@@ -17,7 +17,7 @@ public class TypeScriptExtractor implements IExtractor {
   }
 
   @Override
-  public ParseResultInfo extract(TextualExtractor textualExtractor) {
+  public LoCInfo extract(TextualExtractor textualExtractor) {
     LocationManager locationManager = textualExtractor.getLocationManager();
     String source = textualExtractor.getSource();
     File sourceFile = textualExtractor.getExtractedFile();

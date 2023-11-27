@@ -14,6 +14,9 @@ class MyBatisMapperXmlFile extends XmlFile {
   }
 }
 
+/** DEPRECATED: Alias for MyBatisMapperXmlFile */
+deprecated class MyBatisMapperXMLFile = MyBatisMapperXmlFile;
+
 /**
  * An XML element in a `MyBatisMapperXMLFile`.
  */
@@ -32,6 +35,9 @@ class MyBatisMapperXmlElement extends XmlElement {
     result.getQualifiedName() = this.getAttribute("namespace").getValue()
   }
 }
+
+/** DEPRECATED: Alias for MyBatisMapperXmlElement */
+deprecated class MyBatisMapperXMLElement = MyBatisMapperXmlElement;
 
 /**
  * An MyBatis Mapper sql operation element.

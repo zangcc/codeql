@@ -7,19 +7,17 @@ private import internal.ValueNumberingImports
 class ValueNumber extends TValueNumber {
   final string toString() { result = "GVN" }
 
-  final string getDebugString() {
-    result = strictconcat(this.getAnInstruction().getResultId(), ", ")
-  }
+  final string getDebugString() { result = strictconcat(getAnInstruction().getResultId(), ", ") }
 
   final Language::Location getLocation() {
     if
       exists(Instruction i |
-        i = this.getAnInstruction() and not i.getLocation() instanceof Language::UnknownLocation
+        i = getAnInstruction() and not i.getLocation() instanceof Language::UnknownLocation
       )
     then
       result =
         min(Language::Location l |
-          l = this.getAnInstruction().getLocation() and not l instanceof Language::UnknownLocation
+          l = getAnInstruction().getLocation() and not l instanceof Language::UnknownLocation
         |
           l
           order by
@@ -42,7 +40,7 @@ class ValueNumber extends TValueNumber {
   final Instruction getExampleInstruction() {
     result =
       min(Instruction instr |
-        instr = this.getAnInstruction()
+        instr = getAnInstruction()
       |
         instr order by instr.getBlock().getDisplayIndex(), instr.getDisplayIndexInBlock()
       )

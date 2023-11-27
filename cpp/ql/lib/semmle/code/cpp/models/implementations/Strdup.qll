@@ -13,7 +13,7 @@ import semmle.code.cpp.models.interfaces.Taint
  */
 private class StrdupFunction extends AllocationFunction, ArrayFunction, DataFlowFunction {
   StrdupFunction() {
-    this.hasGlobalName([
+    hasGlobalName([
         // --- C library allocation
         "strdup", // strdup(str)
         "strdupa", // strdupa(str) - returns stack allocated buffer
@@ -33,7 +33,7 @@ private class StrdupFunction extends AllocationFunction, ArrayFunction, DataFlow
     output.isReturnValueDeref()
   }
 
-  override predicate requiresDealloc() { not this.hasGlobalName("strdupa") }
+  override predicate requiresDealloc() { not hasGlobalName("strdupa") }
 }
 
 /**
@@ -41,7 +41,7 @@ private class StrdupFunction extends AllocationFunction, ArrayFunction, DataFlow
  */
 private class StrndupFunction extends AllocationFunction, ArrayFunction, DataFlowFunction {
   StrndupFunction() {
-    this.hasGlobalName([
+    hasGlobalName([
         // -- C library allocation
         "strndup", // strndup(str, maxlen)
         "strndupa" // strndupa(str, maxlen) -- returns stack allocated buffer
@@ -60,5 +60,5 @@ private class StrndupFunction extends AllocationFunction, ArrayFunction, DataFlo
     output.isReturnValueDeref()
   }
 
-  override predicate requiresDealloc() { not this.hasGlobalName("strndupa") }
+  override predicate requiresDealloc() { not hasGlobalName("strndupa") }
 }

@@ -1,0 +1,16 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "jsxattribute.ql"
+dbscheme: "4d00210ca570d55c4833af11d3372b774dbc63f2"
+stages:
+- cached: "46d60abd4b900489a90dc421d46dc2674d86d203"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+- cached: "82fe4895a1eb5cf6dd2afc82e4da7f5e37cddf6c"
+  debugInfo: "fecaa121855b37cb5060daceb1adc2e02056f801"
+results:
+  '#select':
+    resultArranger: "1\"a\"ei12"
+inputsDigest: "9a2033b54890199349cd4623ccf49f5201a52029"

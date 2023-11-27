@@ -25,18 +25,12 @@ class Namespace extends Declaration, @namespace {
    * For example if the qualified name is `System.Collections.Generic`, then
    * `qualifier`=`System.Collections` and `name`=`Generic`.
    */
-  deprecated override predicate hasQualifiedName(string qualifier, string name) {
-    namespaceHasQualifiedName(this, qualifier, name)
-  }
-
-  /**
-   * Holds if this namespace has the qualified name `qualifier`.`name`.
-   *
-   * For example if the qualified name is `System.Collections.Generic`, then
-   * `qualifier`=`System.Collections` and `name`=`Generic`.
-   */
-  override predicate hasFullyQualifiedName(string qualifier, string name) {
-    namespaceHasQualifiedName(this, qualifier, name)
+  override predicate hasQualifiedName(string qualifier, string name) {
+    exists(string pqualifier, string pname |
+      this.getParentNamespace().hasQualifiedName(pqualifier, pname) and
+      qualifier = getQualifiedName(pqualifier, pname)
+    ) and
+    name = this.getName()
   }
 
   /** Gets a textual representation of this namespace. */
@@ -57,7 +51,7 @@ class Namespace extends Declaration, @namespace {
    */
   string getFullName() {
     exists(string namespace, string name |
-      namespaceHasQualifiedName(this, namespace, name) and
+      this.hasQualifiedName(namespace, name) and
       result = getQualifiedName(namespace, name)
     )
   }
@@ -66,4 +60,8 @@ class Namespace extends Declaration, @namespace {
 /** The global namespace. */
 class GlobalNamespace extends Namespace {
   GlobalNamespace() { this.getName() = "" }
+
+  override predicate hasQualifiedName(string qualifier, string name) {
+    qualifier = "" and name = ""
+  }
 }

@@ -77,8 +77,7 @@ query predicate newArrayExprDeallocators(
 }
 
 query predicate deleteExprs(
-  DeleteExpr expr, string type, string sig, int size, int alignment, string form,
-  boolean hasDeallocatorCall
+  DeleteExpr expr, string type, string sig, int size, int alignment, string form
 ) {
   exists(Function deallocator, Type deletedType |
     expr.getDeallocator() = deallocator and
@@ -91,10 +90,7 @@ query predicate deleteExprs(
       (if expr.hasAlignedDeallocation() then aligned = "aligned" else aligned = "") and
       (if expr.hasSizedDeallocation() then sized = "sized" else sized = "") and
       form = sized + " " + aligned
-    ) and
-    if exists(expr.getDeallocatorCall())
-    then hasDeallocatorCall = true
-    else hasDeallocatorCall = false
+    )
   )
 }
 

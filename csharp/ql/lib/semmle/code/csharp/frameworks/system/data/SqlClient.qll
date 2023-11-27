@@ -19,7 +19,7 @@ class SystemDataSqlClientClass extends Class {
 /** The `System.Data.SqlClient.SqlDataAdapter` class. */
 class SystemDataSqlClientSqlDataAdapterClass extends SystemDataSqlClientClass {
   SystemDataSqlClientSqlDataAdapterClass() {
-    this.hasFullyQualifiedName("System.Data.SqlClient", "SqlDataAdapter")
+    this.hasQualifiedName("System.Data.SqlClient", "SqlDataAdapter")
   }
 }
 

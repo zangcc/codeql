@@ -18,10 +18,12 @@ private class ImmediateModuleRef extends DataFlow::Node {
   string getAsname() { result = alias }
 }
 
-module ImportTest implements TestSig {
-  string getARelevantTag() { result = "imports" }
+class ImportTest extends InlineExpectationsTest {
+  ImportTest() { this = "ImportTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "imports" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(ImmediateModuleRef ref |
       tag = "imports" and
       location = ref.getLocation() and
@@ -31,10 +33,12 @@ module ImportTest implements TestSig {
   }
 }
 
-module AliasTest implements TestSig {
-  string getARelevantTag() { result = "as" }
+class AliasTest extends InlineExpectationsTest {
+  AliasTest() { this = "AliasTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "as" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(ImmediateModuleRef ref |
       tag = "as" and
       location = ref.getLocation() and
@@ -43,5 +47,3 @@ module AliasTest implements TestSig {
     )
   }
 }
-
-import MakeTest<MergeTests<ImportTest, AliasTest>>

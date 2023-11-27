@@ -66,26 +66,26 @@ private class JxBrowserSafeLoadHandler extends RefType {
  * Models flow from the source `new Browser()` to a sink `browser.setLoadHandler(loadHandler)` where `loadHandler`
  * has been determined to be safe.
  */
-private module JxBrowserFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) {
+private class JxBrowserFlowConfiguration extends DataFlow::Configuration {
+  JxBrowserFlowConfiguration() { this = "JxBrowserFlowConfiguration" }
+
+  override predicate isSource(DataFlow::Node src) {
     exists(ClassInstanceExpr newJxBrowser | newJxBrowser.getConstructedType() instanceof JxBrowser |
       newJxBrowser = src.asExpr()
     )
   }
 
-  predicate isSink(DataFlow::Node sink) {
-    exists(MethodCall ma | ma.getMethod() instanceof JxBrowserSetLoadHandler |
+  override predicate isSink(DataFlow::Node sink) {
+    exists(MethodAccess ma | ma.getMethod() instanceof JxBrowserSetLoadHandler |
       ma.getArgument(0).getType() instanceof JxBrowserSafeLoadHandler and
       ma.getQualifier() = sink.asExpr()
     )
   }
 }
 
-private module JxBrowserFlow = DataFlow::Global<JxBrowserFlowConfig>;
-
-from DataFlow::Node src
+from JxBrowserFlowConfiguration cfg, DataFlow::Node src
 where
-  JxBrowserFlowConfig::isSource(src) and
-  not JxBrowserFlow::flow(src, _) and
+  cfg.isSource(src) and
+  not cfg.hasFlow(src, _) and
   not isSafeJxBrowserVersion()
 select src, "This JxBrowser instance may not check HTTPS certificates."

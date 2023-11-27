@@ -197,11 +197,6 @@ svnchurn(
  * C++ dbscheme
  */
 
-extractor_version(
-    string codeql_version: string ref,
-    string frontend_version: string ref
-)
-
 @location = @location_stmt | @location_expr | @location_default ;
 
 /**
@@ -613,18 +608,10 @@ case @builtintype.kind of
 | 47 = @std_float64           // _Float64
 | 48 = @float64x              // _Float64x
 | 49 = @std_float128          // _Float128
-// ... 50 _Float128x
+| 50 = @float128x             // _Float128x
 | 51 = @char8_t
 | 52 = @float16               // _Float16
 | 53 = @complex_float16       // _Complex _Float16
-| 54 = @fp16                  // __fp16
-| 55 = @std_bfloat16          // __bf16
-| 56 = @std_float16           // std::float16_t
-| 57 = @complex_std_float32   // _Complex _Float32
-| 58 = @complex_float32x      // _Complex _Float32x
-| 59 = @complex_std_float64   // _Complex _Float64
-| 60 = @complex_float64x      // _Complex _Float64x
-| 61 = @complex_std_float128  // _Complex _Float128
 ;
 
 builtintypes(
@@ -1334,16 +1321,11 @@ funbind(
                      | @assignxorexpr
                      | @assignlshiftexpr
                      | @assignrshiftexpr
-                     ;
-
-@assign_pointer_expr = @assignpaddexpr
+                     | @assignpaddexpr
                      | @assignpsubexpr
                      ;
 
-@assign_op_expr = @assign_arith_expr
-                | @assign_bitwise_expr
-                | @assign_pointer_expr
-                ;
+@assign_op_expr = @assign_arith_expr | @assign_bitwise_expr
 
 @assign_expr = @assignexpr | @assign_op_expr | @blockassignexpr
 
@@ -1773,7 +1755,6 @@ case @expr.kind of
             | @istriviallydestructibleexpr
             | @istriviallyassignableexpr
             | @isnothrowassignableexpr
-            | @istrivialexpr
             | @isstandardlayoutexpr
             | @istriviallycopyableexpr
             | @isliteraltypeexpr
@@ -1839,26 +1820,24 @@ new_array_allocated_type(
 
 /**
  * The field being initialized by an initializer expression within an aggregate
- * initializer for a class/struct/union. Position is used to sort repeated initializers.
+ * initializer for a class/struct/union.
  */
-#keyset[aggregate, position]
+#keyset[aggregate, field]
 aggregate_field_init(
     int aggregate: @aggregateliteral ref,
     int initializer: @expr ref,
-    int field: @membervariable ref,
-    int position: int ref
+    int field: @membervariable ref
 );
 
 /**
  * The index of the element being initialized by an initializer expression
- * within an aggregate initializer for an array. Position is used to sort repeated initializers.
+ * within an aggregate initializer for an array.
  */
-#keyset[aggregate, position]
+#keyset[aggregate, element_index]
 aggregate_array_init(
     int aggregate: @aggregateliteral ref,
     int initializer: @expr ref,
-    int element_index: int ref,
-    int position: int ref
+    int element_index: int ref
 );
 
 @ctorinit = @ctordirectinit

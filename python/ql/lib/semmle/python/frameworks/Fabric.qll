@@ -43,21 +43,12 @@ private module FabricV1 {
        * - https://docs.fabfile.org/en/1.14/api/core/operations.html#fabric.operations.run
        * - https://docs.fabfile.org/en/1.14/api/core/operations.html#fabric.operations.sudo
        */
-      private class FabricApiLocalRunSudoCall extends SystemCommandExecution::Range, API::CallNode {
+      private class FabricApiLocalRunSudoCall extends SystemCommandExecution::Range,
+        DataFlow::CallCfgNode {
         FabricApiLocalRunSudoCall() { this = api().getMember(["local", "run", "sudo"]).getACall() }
 
         override DataFlow::Node getCommand() {
           result = [this.getArg(0), this.getArgByName("command")]
-        }
-
-        override predicate isShellInterpreted(DataFlow::Node arg) {
-          arg = this.getCommand() and
-          // defaults to running in a shell
-          not this.getParameter(1, "shell")
-              .getAValueReachingSink()
-              .asExpr()
-              .(ImmutableLiteral)
-              .booleanValue() = false
         }
       }
     }
@@ -162,8 +153,7 @@ private module FabricV2 {
      * - https://docs.fabfile.org/en/2.5/api/connection.html#fabric.connection.Connection.local
      */
     private class FabricConnectionRunSudoLocalCall extends SystemCommandExecution::Range,
-      DataFlow::CallCfgNode
-    {
+      DataFlow::CallCfgNode {
       FabricConnectionRunSudoLocalCall() {
         this.getFunction() = Fabric::Connection::ConnectionClass::instanceRunMethods()
       }
@@ -171,8 +161,6 @@ private module FabricV2 {
       override DataFlow::Node getCommand() {
         result = [this.getArg(0), this.getArgByName("command")]
       }
-
-      override predicate isShellInterpreted(DataFlow::Node arg) { arg = this.getCommand() }
     }
 
     // -------------------------------------------------------------------------
@@ -188,8 +176,7 @@ private module FabricV2 {
     }
 
     class FabricTaskFirstParamConnectionInstance extends Fabric::Connection::ConnectionClass::InstanceSource,
-      DataFlow::ParameterNode
-    {
+      DataFlow::ParameterNode {
       FabricTaskFirstParamConnectionInstance() {
         exists(Function func |
           func.getADecorator() = Fabric::Tasks::task().getAValueReachableFromSource().asExpr() and
@@ -256,8 +243,6 @@ private module FabricV2 {
         override DataFlow::Node getCommand() {
           result = [this.getArg(0), this.getArgByName("command")]
         }
-
-        override predicate isShellInterpreted(DataFlow::Node arg) { arg = this.getCommand() }
       }
 
       /**

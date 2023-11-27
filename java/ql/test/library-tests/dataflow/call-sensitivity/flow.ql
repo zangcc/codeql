@@ -4,21 +4,21 @@
 
 import java
 import semmle.code.java.dataflow.DataFlow
-import Flow::PathGraph
+import DataFlow::PathGraph
 
-module Config implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src.asExpr() instanceof ClassInstanceExpr }
+class Conf extends DataFlow::Configuration {
+  Conf() { this = "CallSensitiveFlowConf" }
 
-  predicate isSink(DataFlow::Node sink) {
-    exists(MethodCall ma |
+  override predicate isSource(DataFlow::Node src) { src.asExpr() instanceof ClassInstanceExpr }
+
+  override predicate isSink(DataFlow::Node sink) {
+    exists(MethodAccess ma |
       ma.getMethod().hasName("sink") and
       ma.getAnArgument() = sink.asExpr()
     )
   }
 }
 
-module Flow = DataFlow::Global<Config>;
-
-from Flow::PathNode source, Flow::PathNode sink
-where Flow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, Conf conf
+where conf.hasFlowPath(source, sink)
 select source, source, sink, "$@", sink, sink.toString()

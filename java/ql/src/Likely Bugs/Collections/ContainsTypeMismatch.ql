@@ -95,7 +95,7 @@ predicate containerAccess(string package, string type, int p, string signature, 
   i = 0
 }
 
-class MismatchedContainerAccess extends MethodCall {
+class MismatchedContainerAccess extends MethodAccess {
   MismatchedContainerAccess() {
     exists(string package, string type, int i |
       containerAccess(package, type, _, this.getCallee().getSignature(), i)

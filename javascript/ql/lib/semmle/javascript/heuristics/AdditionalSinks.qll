@@ -22,8 +22,7 @@ private import HeuristicSinks as Sinks
 class HeuristicSink = Sinks::HeuristicSink;
 
 private class HeuristicCodeInjectionSink extends Sinks::HeuristicCodeInjectionSink,
-  CodeInjection::Sink
-{ }
+  CodeInjection::Sink { }
 
 private class HeuristicCommandInjectionSink extends HeuristicSink, CommandInjection::Sink {
   HeuristicCommandInjectionSink() {

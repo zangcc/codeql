@@ -32,7 +32,7 @@ predicate hasTypeTest(Variable v) {
   or
   any(ClassExpr c).getExpr() = v.getAnAccess()
   or
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     ma.getMethod().getName() = "getClass" and
     ma.getQualifier() = v.getAnAccess()
   )
@@ -71,7 +71,7 @@ where
     not hasTypeTest(p) and
     // If the parameter is passed to a method for which we don't have the source
     // we assume it's ok
-    not exists(MethodCall ma |
+    not exists(MethodAccess ma |
       not exists(ma.getMethod().getBody()) and
       ma.getAnArgument() = p.getAnAccess()
     )

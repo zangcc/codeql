@@ -8,34 +8,6 @@ private import semmle.javascript.internal.CachedStages
 private import Expressions.ExprHasNoEffect
 
 /**
- * Companion module to the `AmdModuleDefinition` class.
- */
-module AmdModuleDefinition {
-  /**
-   * A class that can be extended to treat calls as instances of `AmdModuleDefinition`.
-   *
-   * Subclasses should not depend on imports or `DataFlow::Node`.
-   */
-  abstract class Range extends CallExpr { }
-
-  private class DefaultRange extends Range {
-    DefaultRange() {
-      inVoidContext(this) and
-      this.getCallee().(GlobalVarAccess).getName() = "define" and
-      exists(int n | n = this.getNumArgument() |
-        n = 1
-        or
-        n = 2 and this.getArgument(0) instanceof ArrayExpr
-        or
-        n = 3 and
-        this.getArgument(0) instanceof ConstantString and
-        this.getArgument(1) instanceof ArrayExpr
-      )
-    }
-  }
-}
-
-/**
  * An AMD `define` call.
  *
  * Example:
@@ -53,20 +25,32 @@ module AmdModuleDefinition {
  * where the first argument is the module name, the second argument an
  * array of dependencies, and the third argument a factory method or object.
  */
-class AmdModuleDefinition extends CallExpr instanceof AmdModuleDefinition::Range {
+class AmdModuleDefinition extends CallExpr {
+  AmdModuleDefinition() {
+    inVoidContext(this) and
+    getCallee().(GlobalVarAccess).getName() = "define" and
+    exists(int n | n = getNumArgument() |
+      n = 1
+      or
+      n = 2 and getArgument(0) instanceof ArrayExpr
+      or
+      n = 3 and getArgument(0) instanceof ConstantString and getArgument(1) instanceof ArrayExpr
+    )
+  }
+
   /** Gets the array of module dependencies, if any. */
   ArrayExpr getDependencies() {
-    result = this.getArgument(0) or
-    result = this.getArgument(1)
+    result = getArgument(0) or
+    result = getArgument(1)
   }
 
   /** Gets the `i`th dependency of this module definition. */
-  PathExpr getDependency(int i) { result = this.getDependencies().getElement(i) }
+  PathExpr getDependency(int i) { result = getDependencies().getElement(i) }
 
   /** Gets a dependency of this module definition. */
   PathExpr getADependency() {
-    result = this.getDependency(_) or
-    result = this.getARequireCall().getAnArgument()
+    result = getDependency(_) or
+    result = getARequireCall().getAnArgument()
   }
 
   /**
@@ -74,19 +58,19 @@ class AmdModuleDefinition extends CallExpr instanceof AmdModuleDefinition::Range
    */
   pragma[nomagic]
   DataFlow::SourceNode getFactoryNode() {
-    result = this.getFactoryNodeInternal() and
+    result = getFactoryNodeInternal() and
     result instanceof DataFlow::ValueNode
   }
 
   private DataFlow::Node getFactoryNodeInternal() {
     // To avoid recursion, this should not depend on `SourceNode`.
-    result = DataFlow::valueNode(this.getLastArgument()) or
-    result = this.getFactoryNodeInternal().getAPredecessor()
+    result = DataFlow::valueNode(getLastArgument()) or
+    result = getFactoryNodeInternal().getAPredecessor()
   }
 
   /** Gets the expression defining this module. */
   Expr getModuleExpr() {
-    exists(DataFlow::Node f | f = this.getFactoryNode() |
+    exists(DataFlow::Node f | f = getFactoryNode() |
       if f instanceof DataFlow::FunctionNode
       then
         exists(ReturnStmt ret | ret.getContainer() = f.(DataFlow::FunctionNode).getAstNode() |
@@ -97,15 +81,15 @@ class AmdModuleDefinition extends CallExpr instanceof AmdModuleDefinition::Range
   }
 
   /** Gets a source node whose value becomes the definition of this module. */
-  DataFlow::SourceNode getAModuleSource() { result.flowsToExpr(this.getModuleExpr()) }
+  DataFlow::SourceNode getAModuleSource() { result.flowsToExpr(getModuleExpr()) }
 
   /**
    * Holds if `p` is the parameter corresponding to dependency `dep`.
    */
   predicate dependencyParameter(PathExpr dep, Parameter p) {
     exists(int i |
-      dep = this.getDependency(i) and
-      p = this.getFactoryParameter(i)
+      dep = getDependency(i) and
+      p = getFactoryParameter(i)
     )
   }
 
@@ -123,7 +107,7 @@ class AmdModuleDefinition extends CallExpr instanceof AmdModuleDefinition::Range
    */
   Parameter getDependencyParameter(string name) {
     exists(PathExpr dep |
-      this.dependencyParameter(dep, result) and
+      dependencyParameter(dep, result) and
       dep.getValue() = name
     )
   }
@@ -132,40 +116,40 @@ class AmdModuleDefinition extends CallExpr instanceof AmdModuleDefinition::Range
    * Gets the `i`th parameter of the factory function of this module.
    */
   private Parameter getFactoryParameter(int i) {
-    this.getFactoryNodeInternal().asExpr().(Function).getParameter(i) = result
+    getFactoryNodeInternal().asExpr().(Function).getParameter(i) = result
   }
 
   /**
    * Gets the parameter corresponding to the pseudo-dependency `require`.
    */
   Parameter getRequireParameter() {
-    result = this.getDependencyParameter("require")
+    result = getDependencyParameter("require")
     or
     // if no dependencies are listed, the first parameter is assumed to be `require`
-    not exists(this.getDependencies()) and result = this.getFactoryParameter(0)
+    not exists(getDependencies()) and result = getFactoryParameter(0)
   }
 
   pragma[noinline]
-  private Variable getRequireVariable() { result = this.getRequireParameter().getVariable() }
+  private Variable getRequireVariable() { result = getRequireParameter().getVariable() }
 
   /**
    * Gets the parameter corresponding to the pseudo-dependency `exports`.
    */
   Parameter getExportsParameter() {
-    result = this.getDependencyParameter("exports")
+    result = getDependencyParameter("exports")
     or
     // if no dependencies are listed, the second parameter is assumed to be `exports`
-    not exists(this.getDependencies()) and result = this.getFactoryParameter(1)
+    not exists(getDependencies()) and result = getFactoryParameter(1)
   }
 
   /**
    * Gets the parameter corresponding to the pseudo-dependency `module`.
    */
   Parameter getModuleParameter() {
-    result = this.getDependencyParameter("module")
+    result = getDependencyParameter("module")
     or
     // if no dependencies are listed, the third parameter is assumed to be `module`
-    not exists(this.getDependencies()) and result = this.getFactoryParameter(2)
+    not exists(getDependencies()) and result = getFactoryParameter(2)
   }
 
   /**
@@ -173,13 +157,13 @@ class AmdModuleDefinition extends CallExpr instanceof AmdModuleDefinition::Range
    * into this module's `module.exports` property.
    */
   DefiniteAbstractValue getAModuleExportsValue() {
-    result = [this.getAnImplicitExportsValue(), this.getAnExplicitExportsValue()]
+    result = [getAnImplicitExportsValue(), getAnExplicitExportsValue()]
   }
 
   pragma[noinline, nomagic]
   private AbstractValue getAnImplicitExportsValue() {
     // implicit exports: anything that is returned from the factory function
-    result = this.getModuleExpr().analyze().getAValue()
+    result = getModuleExpr().analyze().getAValue()
   }
 
   pragma[noinline]
@@ -198,7 +182,7 @@ class AmdModuleDefinition extends CallExpr instanceof AmdModuleDefinition::Range
    * Gets a call to `require` inside this module.
    */
   CallExpr getARequireCall() {
-    result.getCallee().getUnderlyingValue() = this.getRequireVariable().getAnAccess()
+    result.getCallee().getUnderlyingValue() = getRequireVariable().getAnAccess()
   }
 }
 
@@ -216,7 +200,7 @@ private class AmdDependencyPath extends PathExprCandidate {
 private class ConstantAmdDependencyPathElement extends PathExpr, ConstantString {
   ConstantAmdDependencyPathElement() { this = any(AmdDependencyPath amd).getAPart() }
 
-  override string getValue() { result = this.getStringValue() }
+  override string getValue() { result = getStringValue() }
 }
 
 /**
@@ -255,7 +239,7 @@ private class AmdDependencyImport extends Import {
    */
   private File guessTarget() {
     exists(PathString imported, string abspath, string dirname, string basename |
-      this.targetCandidate(result, abspath, imported, dirname, basename)
+      targetCandidate(result, abspath, imported, dirname, basename)
     |
       abspath.regexpMatch(".*/\\Q" + imported + "\\E")
       or
@@ -278,7 +262,7 @@ private class AmdDependencyImport extends Import {
   private predicate targetCandidate(
     File f, string abspath, PathString imported, string dirname, string basename
   ) {
-    imported = this.getImportedPath().getValue() and
+    imported = getImportedPath().getValue() and
     f.getStem() = imported.getStem() and
     f.getAbsolutePath() = abspath and
     dirname = imported.getDirName() and
@@ -289,14 +273,14 @@ private class AmdDependencyImport extends Import {
    * Gets the module whose absolute path matches this import, if there is only a single such module.
    */
   private Module resolveByAbsolutePath() {
-    result.getFile() = unique(File file | file = this.guessTarget())
+    result.getFile() = unique(File file | file = guessTarget())
   }
 
   override Module getImportedModule() {
     result = super.getImportedModule()
     or
     not exists(super.getImportedModule()) and
-    result = this.resolveByAbsolutePath()
+    result = resolveByAbsolutePath()
   }
 
   override DataFlow::Node getImportedModuleNode() {
@@ -330,7 +314,7 @@ class AmdModule extends Module {
 
   override DataFlow::Node getAnExportedValue(string name) {
     exists(DataFlow::PropWrite pwn | result = pwn.getRhs() |
-      pwn.getBase().analyze().getAValue() = this.getDefine().getAModuleExportsValue() and
+      pwn.getBase().analyze().getAValue() = getDefine().getAModuleExportsValue() and
       name = pwn.getPropertyName()
     )
   }
@@ -345,6 +329,6 @@ class AmdModule extends Module {
     )
     or
     // Returned from factory function
-    result = this.getDefine().getModuleExpr().flow()
+    result = getDefine().getModuleExpr().flow()
   }
 }

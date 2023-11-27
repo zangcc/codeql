@@ -4,4 +4,3 @@ groups:
   - examples
 dependencies:
   codeql/ruby-all: ${workspace}
-warnOnImplicitThis: true

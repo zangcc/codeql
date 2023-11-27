@@ -1,0 +1,26 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "function_call.ql"
+dbscheme: "a5bb28ed29f73855d64cc5f939cef977fa8fd19a"
+stages:
+- cached: "6400e9ccf96cf3f3d9c5bfbc6fc03b621153afe2"
+  debugInfo: "61c2fd199591ed52e9acd33d0778fdf68a11972c"
+- cached: "c219e56d7c5a4d81c019ac5a268fefa227e85c18"
+  debugInfo: "538a78714128283b500f8d597129e70bc2ea44be"
+- cached: "17679d8a97d178b355d5fa1b675e94ccfa6ac6dd"
+  debugInfo: "27756815b1ca426acc98def7d5a0da4828a6778f"
+- cached: "2072c056f08fb0aa4fbde527aab6943dbf3ef07e"
+  debugInfo: "ffa3126fbda15ca03f114046689a3e93a59f1676"
+- cached: "5e5cf3e67a725b16b6d01a2023ba55e65b6322d1"
+  debugInfo: "c1789f6cf79512c515f2cba7b5e59f6d99857b7d"
+- cached: "2fc82c9483d77b14679de08faecb0c46d3861ebc"
+  debugInfo: "3cf59fd67003496815467011d6b9641c84e2ed8f"
+- cached: "71a06eb9bc84a39d2196f56218feb5a5d6852498"
+  debugInfo: "feba2f81388a4b36e344f1edf2724124f0e4b6d0"
+results:
+  '#select':
+    resultArranger: "1\"call\"ei12"
+inputsDigest: "3afe06024145f1a3910d3d592f907a93ebaa4a11"

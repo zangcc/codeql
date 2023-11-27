@@ -1,6 +1,6 @@
 extensions:
   - addsTo:
-      pack: codeql/java-all
+      pack: codeql/java-tests
       extensible: summaryModel
     data:
       - ["my.qltest.synth", "A", False, "storeInArray", "(String)", "", "Argument[0]", "SyntheticGlobal[db1].ArrayElement", "value", "manual"]

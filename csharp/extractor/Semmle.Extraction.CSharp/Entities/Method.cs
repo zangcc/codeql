@@ -1,11 +1,11 @@
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Semmle.Extraction.CSharp.Populators;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
 
 namespace Semmle.Extraction.CSharp.Entities
 {
@@ -243,12 +243,7 @@ namespace Semmle.Extraction.CSharp.Entities
             if (methodKind == MethodKind.ExplicitInterfaceImplementation)
             {
                 // Retrieve the original method kind
-                if (methodDecl.ExplicitInterfaceImplementations.IsEmpty)
-                {
-                    throw new InternalError(methodDecl, "Couldn't get the original method kind for an explicit interface implementation");
-                }
-
-                methodKind = methodDecl.ExplicitInterfaceImplementations.Select(m => m.MethodKind).First();
+                methodKind = methodDecl.ExplicitInterfaceImplementations.Select(m => m.MethodKind).FirstOrDefault();
             }
 
             switch (methodKind)

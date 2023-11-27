@@ -1,14 +1,14 @@
 import java
 import semmle.code.java.dataflow.TaintTracking
 
-module TaintedOgnlConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { /* TBD */ }
+class TaintedOGNLConfig extends TaintTracking::Configuration {
+  TaintedOGNLConfig() { this = "TaintedOGNLConfig" }
 
-  predicate isSink(DataFlow::Node sink) { /* TBD */ }
+  override predicate isSource(DataFlow::Node source) { /* TBD */ }
+
+  override predicate isSink(DataFlow::Node sink) { /* TBD */ }
 }
 
-module TaintedOgnlFlow = TaintTracking::Global<TaintedOgnlConfig>;
-
-from DataFlow::Node source, DataFlow::Node sink
-where TaintedOgnlFlow::flow(source, sink)
+from TaintedOGNLConfig cfg, DataFlow::Node source, DataFlow::Node sink
+where cfg.hasFlow(source, sink)
 select source, "This untrusted input is evaluated as an OGNL expression $@.", sink, "here"

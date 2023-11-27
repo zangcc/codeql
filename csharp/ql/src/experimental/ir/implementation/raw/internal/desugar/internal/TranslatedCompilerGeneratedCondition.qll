@@ -9,8 +9,7 @@ private import TranslatedCompilerGeneratedElement
 private import experimental.ir.internal.IRCSharpLanguage as Language
 
 abstract class TranslatedCompilerGeneratedValueCondition extends TranslatedCompilerGeneratedElement,
-  ValueConditionBase
-{
+  ValueConditionBase {
   final override string toString() {
     result = "compiler generated condition (" + generatedBy.toString() + ")"
   }

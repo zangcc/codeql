@@ -15,10 +15,10 @@
 
 import csharp
 import semmle.code.csharp.security.cryptography.HardcodedSymmetricEncryptionKey::HardcodedSymmetricEncryptionKey
-import HardCodedSymmetricEncryption::PathGraph
+import DataFlow::PathGraph
 
-from HardCodedSymmetricEncryption::PathNode source, HardCodedSymmetricEncryption::PathNode sink
-where HardCodedSymmetricEncryption::flowPath(source, sink)
+from TaintTrackingConfiguration c, DataFlow::PathNode source, DataFlow::PathNode sink
+where c.hasFlowPath(source, sink)
 select sink.getNode(), source, sink,
   "Hard-coded symmetric $@ is used in symmetric algorithm in " +
     sink.getNode().(Sink).getDescription() + ".", source.getNode(), "key"

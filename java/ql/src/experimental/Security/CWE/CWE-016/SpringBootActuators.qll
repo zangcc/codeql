@@ -40,7 +40,7 @@ class TypeEndpointRequest extends Class {
 }
 
 /** A call to `EndpointRequest.toAnyEndpoint` method. */
-class ToAnyEndpointCall extends MethodCall {
+class ToAnyEndpointCall extends MethodAccess {
   ToAnyEndpointCall() {
     this.getMethod().hasName("toAnyEndpoint") and
     this.getMethod().getDeclaringType() instanceof TypeEndpointRequest
@@ -50,7 +50,7 @@ class ToAnyEndpointCall extends MethodCall {
 /**
  * A call to `HttpSecurity.requestMatcher` method with argument `RequestMatcher.toAnyEndpoint()`.
  */
-class RequestMatcherCall extends MethodCall {
+class RequestMatcherCall extends MethodAccess {
   RequestMatcherCall() {
     this.getMethod().hasName("requestMatcher") and
     this.getMethod().getDeclaringType() instanceof TypeHttpSecurity and
@@ -62,7 +62,7 @@ class RequestMatcherCall extends MethodCall {
  * A call to `HttpSecurity.requestMatchers` method with lambda argument
  * `RequestMatcher.toAnyEndpoint()`.
  */
-class RequestMatchersCall extends MethodCall {
+class RequestMatchersCall extends MethodAccess {
   RequestMatchersCall() {
     this.getMethod().hasName("requestMatchers") and
     this.getMethod().getDeclaringType() instanceof TypeHttpSecurity and
@@ -71,7 +71,7 @@ class RequestMatchersCall extends MethodCall {
 }
 
 /** A call to `HttpSecurity.authorizeRequests` method. */
-class AuthorizeRequestsCall extends MethodCall {
+class AuthorizeRequestsCall extends MethodAccess {
   AuthorizeRequestsCall() {
     this.getMethod().hasName("authorizeRequests") and
     this.getMethod().getDeclaringType() instanceof TypeHttpSecurity
@@ -79,7 +79,7 @@ class AuthorizeRequestsCall extends MethodCall {
 }
 
 /** A call to `AuthorizedUrl.permitAll` method. */
-class PermitAllCall extends MethodCall {
+class PermitAllCall extends MethodAccess {
   PermitAllCall() {
     this.getMethod().hasName("permitAll") and
     this.getMethod().getDeclaringType() instanceof TypeAuthorizedUrl
@@ -135,7 +135,7 @@ class PermitAllCall extends MethodCall {
 }
 
 /** A call to `AbstractRequestMatcherRegistry.anyRequest` method. */
-class AnyRequestCall extends MethodCall {
+class AnyRequestCall extends MethodAccess {
   AnyRequestCall() {
     this.getMethod().hasName("anyRequest") and
     this.getMethod().getDeclaringType() instanceof TypeAbstractRequestMatcherRegistry
@@ -146,7 +146,7 @@ class AnyRequestCall extends MethodCall {
  * A call to `AbstractRequestMatcherRegistry.requestMatchers` method with an argument
  * `RequestMatcher.toAnyEndpoint()`.
  */
-class RegistryRequestMatchersCall extends MethodCall {
+class RegistryRequestMatchersCall extends MethodAccess {
   RegistryRequestMatchersCall() {
     this.getMethod().hasName("requestMatchers") and
     this.getMethod().getDeclaringType() instanceof TypeAbstractRequestMatcherRegistry and

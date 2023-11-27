@@ -1,12 +1,13 @@
 package srcarchive
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 )
 
 func mkProjectLayout(projectLayoutSource string, t *testing.T) (*ProjectLayout, error) {
-	pt, err := os.CreateTemp("", "path-transformer")
+	pt, err := ioutil.TempFile("", "path-transformer")
 	if err != nil {
 		t.Fatalf("Unable to create temporary file for project layout: %s", err.Error())
 	}

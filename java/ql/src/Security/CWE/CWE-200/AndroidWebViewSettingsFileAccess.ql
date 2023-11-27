@@ -13,7 +13,7 @@
 import java
 import semmle.code.java.frameworks.android.WebView
 
-from MethodCall ma
+from MethodAccess ma
 where
   ma.getMethod() instanceof CrossOriginAccessMethod and
   ma.getArgument(0).(CompileTimeConstantExpr).getBooleanValue() = true

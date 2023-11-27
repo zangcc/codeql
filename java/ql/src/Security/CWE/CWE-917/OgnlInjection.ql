@@ -13,9 +13,9 @@
 
 import java
 import semmle.code.java.security.OgnlInjectionQuery
-import OgnlInjectionFlow::PathGraph
+import DataFlow::PathGraph
 
-from OgnlInjectionFlow::PathNode source, OgnlInjectionFlow::PathNode sink
-where OgnlInjectionFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, OgnlInjectionFlowConfig conf
+where conf.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "OGNL Expression Language statement depends on a $@.",
   source.getNode(), "user-provided value"

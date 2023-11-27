@@ -12,9 +12,9 @@
 
 import csharp
 import RequestForgery::RequestForgery
-import RequestForgeryFlow::PathGraph
+import semmle.code.csharp.dataflow.DataFlow::DataFlow::PathGraph
 
-from RequestForgeryFlow::PathNode source, RequestForgeryFlow::PathNode sink
-where RequestForgeryFlow::flowPath(source, sink)
+from RequestForgeryConfiguration c, DataFlow::PathNode source, DataFlow::PathNode sink
+where c.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "The URL of this request depends on a $@.", source.getNode(),
   "user-provided value"

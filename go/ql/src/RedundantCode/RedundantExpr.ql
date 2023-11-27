@@ -19,7 +19,7 @@ import Clones
  */
 abstract class PotentiallyRedundantExpr extends BinaryExpr, HashRoot {
   predicate operands(Expr left, Expr right) {
-    left = this.getLeftOperand() and right = this.getRightOperand()
+    left = getLeftOperand() and right = getRightOperand()
   }
 }
 
@@ -40,9 +40,9 @@ class IdemnecantExpr extends PotentiallyRedundantExpr {
       this instanceof XorExpr or
       this instanceof AndNotExpr
     ) and
-    this.getLeftOperand().getKind() = this.getRightOperand().getKind() and
+    getLeftOperand().getKind() = getRightOperand().getKind() and
     // exclude trivial cases like `1-1`
-    not this.getLeftOperand().stripParens() instanceof BasicLit
+    not getLeftOperand().stripParens() instanceof BasicLit
   }
 }
 
@@ -56,7 +56,7 @@ class IdempotentExpr extends PotentiallyRedundantExpr {
       this instanceof BitAndExpr or
       this instanceof BitOrExpr
     ) and
-    this.getLeftOperand().getKind() = this.getRightOperand().getKind()
+    getLeftOperand().getKind() = getRightOperand().getKind()
   }
 }
 
@@ -68,12 +68,12 @@ class AverageExpr extends PotentiallyRedundantExpr, AddExpr {
     exists(DivExpr div |
       this = div.getLeftOperand().stripParens() and
       div.getRightOperand().getNumericValue() = 2 and
-      this.getLeftOperand().getKind() = this.getRightOperand().getKind()
+      getLeftOperand().getKind() = getRightOperand().getKind()
     )
   }
 
   override predicate operands(Expr left, Expr right) {
-    left = this.getLeftOperand() and right = this.getRightOperand()
+    left = getLeftOperand() and right = getRightOperand()
   }
 }
 

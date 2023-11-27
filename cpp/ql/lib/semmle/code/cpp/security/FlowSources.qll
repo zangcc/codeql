@@ -6,7 +6,6 @@ import cpp
 import semmle.code.cpp.ir.dataflow.DataFlow
 private import semmle.code.cpp.ir.IR
 import semmle.code.cpp.models.interfaces.FlowSource
-private import semmle.code.cpp.ir.dataflow.internal.ModelUtil
 
 /** A data flow source of user input, whether local or remote. */
 abstract class FlowSource extends DataFlow::Node {
@@ -20,28 +19,68 @@ abstract class RemoteFlowSource extends FlowSource { }
 /** A data flow source of local user input. */
 abstract class LocalFlowSource extends FlowSource { }
 
-private class RemoteModelSource extends RemoteFlowSource {
+private class RemoteReturnSource extends RemoteFlowSource {
   string sourceType;
 
-  RemoteModelSource() {
-    exists(CallInstruction call, RemoteFlowSourceFunction func, FunctionOutput output |
-      call.getStaticCallTarget() = func and
+  RemoteReturnSource() {
+    exists(RemoteFlowSourceFunction func, CallInstruction instr, FunctionOutput output |
+      this.asInstruction() = instr and
+      instr.getStaticCallTarget() = func and
       func.hasRemoteFlowSource(output, sourceType) and
-      this = callOutput(call, output)
+      (
+        output.isReturnValue()
+        or
+        output.isReturnValueDeref()
+      )
     )
   }
 
   override string getSourceType() { result = sourceType }
 }
 
-private class LocalModelSource extends LocalFlowSource {
+private class RemoteParameterSource extends RemoteFlowSource {
   string sourceType;
 
-  LocalModelSource() {
-    exists(CallInstruction call, LocalFlowSourceFunction func, FunctionOutput output |
-      call.getStaticCallTarget() = func and
+  RemoteParameterSource() {
+    exists(RemoteFlowSourceFunction func, WriteSideEffectInstruction instr, FunctionOutput output |
+      this.asInstruction() = instr and
+      instr.getPrimaryInstruction().(CallInstruction).getStaticCallTarget() = func and
+      func.hasRemoteFlowSource(output, sourceType) and
+      output.isParameterDerefOrQualifierObject(instr.getIndex())
+    )
+  }
+
+  override string getSourceType() { result = sourceType }
+}
+
+private class LocalReturnSource extends LocalFlowSource {
+  string sourceType;
+
+  LocalReturnSource() {
+    exists(LocalFlowSourceFunction func, CallInstruction instr, FunctionOutput output |
+      this.asInstruction() = instr and
+      instr.getStaticCallTarget() = func and
       func.hasLocalFlowSource(output, sourceType) and
-      this = callOutput(call, output)
+      (
+        output.isReturnValue()
+        or
+        output.isReturnValueDeref()
+      )
+    )
+  }
+
+  override string getSourceType() { result = sourceType }
+}
+
+private class LocalParameterSource extends LocalFlowSource {
+  string sourceType;
+
+  LocalParameterSource() {
+    exists(LocalFlowSourceFunction func, WriteSideEffectInstruction instr, FunctionOutput output |
+      this.asInstruction() = instr and
+      instr.getPrimaryInstruction().(CallInstruction).getStaticCallTarget() = func and
+      func.hasLocalFlowSource(output, sourceType) and
+      output.isParameterDerefOrQualifierObject(instr.getIndex())
     )
   }
 
@@ -53,7 +92,7 @@ private class ArgvSource extends LocalFlowSource {
     exists(Function main, Parameter argv |
       main.hasGlobalName("main") and
       main.getParameter(1) = argv and
-      this.asParameter(2) = argv
+      this.asParameter() = argv
     )
   }
 
@@ -70,10 +109,18 @@ private class RemoteParameterSink extends RemoteFlowSink {
   string sourceType;
 
   RemoteParameterSink() {
-    exists(CallInstruction call, RemoteFlowSinkFunction func, FunctionInput input |
-      call.getStaticCallTarget() = func and
-      func.hasRemoteFlowSink(input, sourceType) and
-      this = callInput(call, input)
+    exists(RemoteFlowSinkFunction func, FunctionInput input, CallInstruction call, int index |
+      func.hasRemoteFlowSink(input, sourceType) and call.getStaticCallTarget() = func
+    |
+      exists(ReadSideEffectInstruction read |
+        call = read.getPrimaryInstruction() and
+        read.getIndex() = index and
+        this.asOperand() = read.getSideEffectOperand() and
+        input.isParameterDerefOrQualifierObject(index)
+      )
+      or
+      input.isParameterOrQualifierAddress(index) and
+      this.asOperand() = call.getArgumentOperand(index)
     )
   }
 

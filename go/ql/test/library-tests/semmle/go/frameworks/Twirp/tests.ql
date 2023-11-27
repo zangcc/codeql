@@ -67,7 +67,9 @@ query predicate passingPositiveTests(string res, string expectation, InlineTest 
     exists(Twirp::ServerConstructor n | t.inEntity(n))
     or
     expectation = "ssrf" and
-    exists(DataFlow::Node sink | RequestForgery::Flow::flowTo(sink) and t.inNode(sink))
+    exists(RequestForgery::Configuration cfg, DataFlow::Node sink |
+      cfg.hasFlow(_, sink) and t.inNode(sink)
+    )
   )
 }
 
@@ -103,7 +105,9 @@ query predicate failingPositiveTests(string res, string expectation, InlineTest 
     not exists(Twirp::ServerConstructor n | t.inEntity(n))
     or
     expectation = "ssrf" and
-    not exists(DataFlow::Node sink | RequestForgery::Flow::flowTo(sink) and t.inNode(sink))
+    not exists(RequestForgery::Configuration cfg, DataFlow::Node sink |
+      cfg.hasFlow(_, sink) and t.inNode(sink)
+    )
   )
 }
 
@@ -139,7 +143,9 @@ query predicate passingNegativeTests(string res, string expectation, InlineTest 
     not exists(Twirp::ServerConstructor n | t.inEntity(n))
     or
     expectation = "!ssrf" and
-    not exists(DataFlow::Node sink | RequestForgery::Flow::flowTo(sink) and t.inNode(sink))
+    not exists(RequestForgery::Configuration cfg, DataFlow::Node sink |
+      cfg.hasFlow(_, sink) and t.inNode(sink)
+    )
   )
 }
 
@@ -175,6 +181,8 @@ query predicate failingNegativeTests(string res, string expectation, InlineTest 
     exists(Twirp::ServerConstructor n | t.inEntity(n))
     or
     expectation = "!ssrf" and
-    exists(DataFlow::Node sink | RequestForgery::Flow::flowTo(sink) and t.inNode(sink))
+    exists(RequestForgery::Configuration cfg, DataFlow::Node sink |
+      cfg.hasFlow(_, sink) and t.inNode(sink)
+    )
   )
 }

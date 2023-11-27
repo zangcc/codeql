@@ -4,7 +4,7 @@ import TestUtils
 
 from
   ConcreteVarDecl x, ModuleDecl getModule, int getNumberOfMembers, Type getInterfaceType,
-  int getNumberOfAccessors, string getName, Type getType, string hasAttachedPropertyWrapperType,
+  int getNumberOfAccessorDecls, string getName, Type getType, string hasAttachedPropertyWrapperType,
   string hasParentPattern, string hasParentInitializer, string hasPropertyWrapperBackingVarBinding,
   string hasPropertyWrapperBackingVar, string hasPropertyWrapperProjectionVarBinding,
   string hasPropertyWrapperProjectionVar, int getIntroducerInt
@@ -14,7 +14,7 @@ where
   getModule = x.getModule() and
   getNumberOfMembers = x.getNumberOfMembers() and
   getInterfaceType = x.getInterfaceType() and
-  getNumberOfAccessors = x.getNumberOfAccessors() and
+  getNumberOfAccessorDecls = x.getNumberOfAccessorDecls() and
   getName = x.getName() and
   getType = x.getType() and
   (
@@ -46,9 +46,9 @@ where
   ) and
   getIntroducerInt = x.getIntroducerInt()
 select x, "getModule:", getModule, "getNumberOfMembers:", getNumberOfMembers, "getInterfaceType:",
-  getInterfaceType, "getNumberOfAccessors:", getNumberOfAccessors, "getName:", getName, "getType:",
-  getType, "hasAttachedPropertyWrapperType:", hasAttachedPropertyWrapperType, "hasParentPattern:",
-  hasParentPattern, "hasParentInitializer:", hasParentInitializer,
+  getInterfaceType, "getNumberOfAccessorDecls:", getNumberOfAccessorDecls, "getName:", getName,
+  "getType:", getType, "hasAttachedPropertyWrapperType:", hasAttachedPropertyWrapperType,
+  "hasParentPattern:", hasParentPattern, "hasParentInitializer:", hasParentInitializer,
   "hasPropertyWrapperBackingVarBinding:", hasPropertyWrapperBackingVarBinding,
   "hasPropertyWrapperBackingVar:", hasPropertyWrapperBackingVar,
   "hasPropertyWrapperProjectionVarBinding:", hasPropertyWrapperProjectionVarBinding,

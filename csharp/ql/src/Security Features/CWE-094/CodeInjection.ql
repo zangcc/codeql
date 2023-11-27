@@ -15,9 +15,9 @@
 
 import csharp
 import semmle.code.csharp.security.dataflow.CodeInjectionQuery
-import CodeInjection::PathGraph
+import semmle.code.csharp.dataflow.DataFlow::DataFlow::PathGraph
 
-from CodeInjection::PathNode source, CodeInjection::PathNode sink
-where CodeInjection::flowPath(source, sink)
+from TaintTrackingConfiguration c, DataFlow::PathNode source, DataFlow::PathNode sink
+where c.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This code compilation depends on a $@.", source.getNode(),
   "user-provided value"

@@ -9,7 +9,7 @@ import semmle.code.java.frameworks.MyBatis
 import semmle.code.java.frameworks.Properties
 
 private predicate propertiesKey(DataFlow::Node prop, string key) {
-  exists(MethodCall m |
+  exists(MethodAccess m |
     m.getMethod() instanceof PropertiesSetPropertyMethod and
     key = m.getArgument(0).(CompileTimeConstantExpr).getStringValue() and
     prop.asExpr() = m.getQualifier()
@@ -17,23 +17,23 @@ private predicate propertiesKey(DataFlow::Node prop, string key) {
 }
 
 /** A data flow configuration tracing flow from ibatis `Configuration.getVariables()` to a store into a `Properties` object. */
-private module PropertiesFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) {
-    exists(MethodCall ma | ma.getMethod() instanceof IbatisConfigurationGetVariablesMethod |
+private class PropertiesFlowConfig extends DataFlow2::Configuration {
+  PropertiesFlowConfig() { this = "PropertiesFlowConfig" }
+
+  override predicate isSource(DataFlow::Node src) {
+    exists(MethodAccess ma | ma.getMethod() instanceof IbatisConfigurationGetVariablesMethod |
       src.asExpr() = ma
     )
   }
 
-  predicate isSink(DataFlow::Node sink) { propertiesKey(sink, _) }
+  override predicate isSink(DataFlow::Node sink) { propertiesKey(sink, _) }
 }
-
-private module PropertiesFlow = DataFlow::Global<PropertiesFlowConfig>;
 
 /** Gets a `Properties` key that may map onto a Mybatis `Configuration` variable. */
 string getAMybatisConfigurationVariableKey() {
-  exists(DataFlow::Node n |
+  exists(PropertiesFlowConfig conf, DataFlow::Node n |
     propertiesKey(n, result) and
-    PropertiesFlow::flowTo(n)
+    conf.hasFlowTo(n)
   )
 }
 
@@ -55,6 +55,9 @@ predicate myBatisMapperXmlElementFromMethod(Method method, MyBatisMapperXmlEleme
     )
   )
 }
+
+/** DEPRECATED: Alias for myBatisMapperXmlElementFromMethod */
+deprecated predicate myBatisMapperXMLElementFromMethod = myBatisMapperXmlElementFromMethod/2;
 
 /** Holds if the specified `method` has Ibatis Sql operation annotation `isoa`. */
 predicate myBatisSqlOperationAnnotationFromMethod(Method method, IbatisSqlOperationAnnotation isoa) {
@@ -81,7 +84,7 @@ string getAMybatisAnnotationSqlValue(IbatisSqlOperationAnnotation isoa) {
  */
 bindingset[unsafeExpression]
 predicate isMybatisCollectionTypeSqlInjection(
-  DataFlow::Node node, MethodCall ma, string unsafeExpression
+  DataFlow::Node node, MethodAccess ma, string unsafeExpression
 ) {
   not unsafeExpression.regexpMatch("\\$\\{\\s*" + getAMybatisConfigurationVariableKey() + "\\s*\\}") and
   // The parameter type of the MyBatis method parameter is Map or List or Array.
@@ -115,7 +118,7 @@ predicate isMybatisCollectionTypeSqlInjection(
  */
 bindingset[unsafeExpression]
 predicate isMybatisXmlOrAnnotationSqlInjection(
-  DataFlow::Node node, MethodCall ma, string unsafeExpression
+  DataFlow::Node node, MethodAccess ma, string unsafeExpression
 ) {
   not unsafeExpression.regexpMatch("\\$\\{\\s*" + getAMybatisConfigurationVariableKey() + "\\s*\\}") and
   (

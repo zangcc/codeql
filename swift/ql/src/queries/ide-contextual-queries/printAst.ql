@@ -9,7 +9,7 @@
 
 import swift
 import codeql.swift.printast.PrintAst
-import codeql.IDEContextual
+import IDEContextual
 import codeql.swift.generated.ParentChild
 
 /**

@@ -4,6 +4,8 @@
 
 import java
 import semmle.code.java.dataflow.DataFlow
+import semmle.code.java.dataflow.DataFlow2
+import semmle.code.java.dataflow.DataFlow3
 
 /**
  * The class `org.yaml.snakeyaml.constructor.SafeConstructor`.
@@ -28,32 +30,32 @@ class Yaml extends RefType {
   Yaml() { this.getAnAncestor().hasQualifiedName("org.yaml.snakeyaml", "Yaml") }
 }
 
-private DataFlow::ExprNode yamlClassInstanceExprArgument(ClassInstanceExpr cie) {
-  cie.getConstructedType() instanceof Yaml and
-  result.getExpr() = cie.getArgument(0)
-}
+private class SafeYamlConstructionFlowConfig extends DataFlow3::Configuration {
+  SafeYamlConstructionFlowConfig() { this = "SnakeYaml::SafeYamlConstructionFlowConfig" }
 
-private module SafeYamlConstructionFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src.asExpr() instanceof SafeSnakeYamlConstruction }
-
-  predicate isSink(DataFlow::Node sink) { sink = yamlClassInstanceExprArgument(_) }
-
-  additional ClassInstanceExpr getSafeYaml() {
-    SafeYamlConstructionFlow::flowTo(yamlClassInstanceExprArgument(result))
+  override predicate isSource(DataFlow::Node src) {
+    src.asExpr() instanceof SafeSnakeYamlConstruction
   }
-}
 
-private module SafeYamlConstructionFlow = DataFlow::Global<SafeYamlConstructionFlowConfig>;
+  override predicate isSink(DataFlow::Node sink) { sink = this.yamlClassInstanceExprArgument(_) }
+
+  private DataFlow::ExprNode yamlClassInstanceExprArgument(ClassInstanceExpr cie) {
+    cie.getConstructedType() instanceof Yaml and
+    result.getExpr() = cie.getArgument(0)
+  }
+
+  ClassInstanceExpr getSafeYaml() { this.hasFlowTo(this.yamlClassInstanceExprArgument(result)) }
+}
 
 /**
  * An instance of `Yaml` that does not allow arbitrary constructor to be called.
  */
 private class SafeYaml extends ClassInstanceExpr {
-  SafeYaml() { SafeYamlConstructionFlowConfig::getSafeYaml() = this }
+  SafeYaml() { exists(SafeYamlConstructionFlowConfig conf | conf.getSafeYaml() = this) }
 }
 
 /** A call to a parse method of `Yaml`. */
-private class SnakeYamlParse extends MethodCall {
+private class SnakeYamlParse extends MethodAccess {
   SnakeYamlParse() {
     exists(Method m |
       m.getDeclaringType() instanceof Yaml and
@@ -63,25 +65,23 @@ private class SnakeYamlParse extends MethodCall {
   }
 }
 
-private module SafeYamlFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src.asExpr() instanceof SafeYaml }
+private class SafeYamlFlowConfig extends DataFlow2::Configuration {
+  SafeYamlFlowConfig() { this = "SnakeYaml::SafeYamlFlowConfig" }
 
-  predicate isSink(DataFlow::Node sink) { sink = yamlParseQualifier(_) }
+  override predicate isSource(DataFlow::Node src) { src.asExpr() instanceof SafeYaml }
 
-  additional DataFlow::ExprNode yamlParseQualifier(SnakeYamlParse syp) {
+  override predicate isSink(DataFlow::Node sink) { sink = this.yamlParseQualifier(_) }
+
+  private DataFlow::ExprNode yamlParseQualifier(SnakeYamlParse syp) {
     result.getExpr() = syp.getQualifier()
   }
 
-  additional SnakeYamlParse getASafeSnakeYamlParse() {
-    SafeYamlFlow::flowTo(yamlParseQualifier(result))
-  }
+  SnakeYamlParse getASafeSnakeYamlParse() { this.hasFlowTo(this.yamlParseQualifier(result)) }
 }
-
-private module SafeYamlFlow = DataFlow::Global<SafeYamlFlowConfig>;
 
 /**
  * A call to a parse method of `Yaml` that allows arbitrary constructor to be called.
  */
 class UnsafeSnakeYamlParse extends SnakeYamlParse {
-  UnsafeSnakeYamlParse() { not SafeYamlFlowConfig::getASafeSnakeYamlParse() = this }
+  UnsafeSnakeYamlParse() { not exists(SafeYamlFlowConfig sy | sy.getASafeSnakeYamlParse() = this) }
 }

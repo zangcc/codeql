@@ -55,7 +55,6 @@ private newtype TOpcode =
   TVariableAddress() or
   TFieldAddress() or
   TFunctionAddress() or
-  TVirtualDeleteFunctionAddress() or
   TElementsAddress() or
   TConstant() or
   TStringConstant() or
@@ -136,11 +135,11 @@ class Opcode extends TOpcode {
    * Holds if the instruction must have an operand with the specified `OperandTag`.
    */
   final predicate hasOperand(OperandTag tag) {
-    this.hasOperandInternal(tag)
+    hasOperandInternal(tag)
     or
-    this.hasAddressOperand() and tag instanceof AddressOperandTag
+    hasAddressOperand() and tag instanceof AddressOperandTag
     or
-    this.hasBufferSizeOperand() and tag instanceof BufferSizeOperandTag
+    hasBufferSizeOperand() and tag instanceof BufferSizeOperandTag
   }
 
   /**
@@ -889,15 +888,6 @@ module Opcode {
   }
 
   /**
-   * The `Opcode` for a `VirtualDeleteFunctionAddress`.
-   *
-   * See the `VirtualDeleteFunctionAddressInstruction` documentation for more details.
-   */
-  class VirtualDeleteFunctionAddress extends Opcode, TVirtualDeleteFunctionAddress {
-    final override string toString() { result = "VirtualDeleteFunctionAddress" }
-  }
-
-  /**
    * The `Opcode` for a `ConstantInstruction`.
    *
    * See the `ConstantInstruction` documentation for more details.
@@ -1092,8 +1082,7 @@ module Opcode {
    * See the `CallSideEffectInstruction` documentation for more details.
    */
   class CallSideEffect extends WriteSideEffectOpcode, EscapedWriteOpcode, MayWriteOpcode,
-    ReadSideEffectOpcode, EscapedReadOpcode, MayReadOpcode, TCallSideEffect
-  {
+    ReadSideEffectOpcode, EscapedReadOpcode, MayReadOpcode, TCallSideEffect {
     final override string toString() { result = "CallSideEffect" }
   }
 
@@ -1103,8 +1092,7 @@ module Opcode {
    * See the `CallReadSideEffectInstruction` documentation for more details.
    */
   class CallReadSideEffect extends ReadSideEffectOpcode, EscapedReadOpcode, MayReadOpcode,
-    TCallReadSideEffect
-  {
+    TCallReadSideEffect {
     final override string toString() { result = "CallReadSideEffect" }
   }
 
@@ -1114,8 +1102,7 @@ module Opcode {
    * See the `IndirectReadSideEffectInstruction` documentation for more details.
    */
   class IndirectReadSideEffect extends ReadSideEffectOpcode, IndirectReadOpcode,
-    TIndirectReadSideEffect
-  {
+    TIndirectReadSideEffect {
     final override string toString() { result = "IndirectReadSideEffect" }
   }
 
@@ -1125,8 +1112,7 @@ module Opcode {
    * See the `IndirectMustWriteSideEffectInstruction` documentation for more details.
    */
   class IndirectMustWriteSideEffect extends WriteSideEffectOpcode, IndirectWriteOpcode,
-    TIndirectMustWriteSideEffect
-  {
+    TIndirectMustWriteSideEffect {
     final override string toString() { result = "IndirectMustWriteSideEffect" }
   }
 
@@ -1136,8 +1122,7 @@ module Opcode {
    * See the `IndirectMayWriteSideEffectInstruction` documentation for more details.
    */
   class IndirectMayWriteSideEffect extends WriteSideEffectOpcode, IndirectWriteOpcode,
-    MayWriteOpcode, TIndirectMayWriteSideEffect
-  {
+    MayWriteOpcode, TIndirectMayWriteSideEffect {
     final override string toString() { result = "IndirectMayWriteSideEffect" }
   }
 
@@ -1147,8 +1132,7 @@ module Opcode {
    * See the `BufferReadSideEffectInstruction` documentation for more details.
    */
   class BufferReadSideEffect extends ReadSideEffectOpcode, UnsizedBufferReadOpcode,
-    TBufferReadSideEffect
-  {
+    TBufferReadSideEffect {
     final override string toString() { result = "BufferReadSideEffect" }
   }
 
@@ -1158,8 +1142,7 @@ module Opcode {
    * See the `BufferMustWriteSideEffectInstruction` documentation for more details.
    */
   class BufferMustWriteSideEffect extends WriteSideEffectOpcode, UnsizedBufferWriteOpcode,
-    TBufferMustWriteSideEffect
-  {
+    TBufferMustWriteSideEffect {
     final override string toString() { result = "BufferMustWriteSideEffect" }
   }
 
@@ -1169,8 +1152,7 @@ module Opcode {
    * See the `BufferMayWriteSideEffectInstruction` documentation for more details.
    */
   class BufferMayWriteSideEffect extends WriteSideEffectOpcode, UnsizedBufferWriteOpcode,
-    MayWriteOpcode, TBufferMayWriteSideEffect
-  {
+    MayWriteOpcode, TBufferMayWriteSideEffect {
     final override string toString() { result = "BufferMayWriteSideEffect" }
   }
 
@@ -1180,8 +1162,7 @@ module Opcode {
    * See the `SizedBufferReadSideEffectInstruction` documentation for more details.
    */
   class SizedBufferReadSideEffect extends ReadSideEffectOpcode, SizedBufferReadOpcode,
-    TSizedBufferReadSideEffect
-  {
+    TSizedBufferReadSideEffect {
     final override string toString() { result = "SizedBufferReadSideEffect" }
   }
 
@@ -1191,8 +1172,7 @@ module Opcode {
    * See the `SizedBufferMustWriteSideEffectInstruction` documentation for more details.
    */
   class SizedBufferMustWriteSideEffect extends WriteSideEffectOpcode, SizedBufferWriteOpcode,
-    TSizedBufferMustWriteSideEffect
-  {
+    TSizedBufferMustWriteSideEffect {
     final override string toString() { result = "SizedBufferMustWriteSideEffect" }
   }
 
@@ -1202,8 +1182,7 @@ module Opcode {
    * See the `SizedBufferMayWriteSideEffectInstruction` documentation for more details.
    */
   class SizedBufferMayWriteSideEffect extends WriteSideEffectOpcode, SizedBufferWriteOpcode,
-    MayWriteOpcode, TSizedBufferMayWriteSideEffect
-  {
+    MayWriteOpcode, TSizedBufferMayWriteSideEffect {
     final override string toString() { result = "SizedBufferMayWriteSideEffect" }
   }
 
@@ -1213,8 +1192,7 @@ module Opcode {
    * See the `InitializeDynamicAllocationInstruction` documentation for more details.
    */
   class InitializeDynamicAllocation extends SideEffectOpcode, EntireAllocationWriteOpcode,
-    TInitializeDynamicAllocation
-  {
+    TInitializeDynamicAllocation {
     final override string toString() { result = "InitializeDynamicAllocation" }
   }
 
@@ -1243,8 +1221,7 @@ module Opcode {
    * See the `InlineAsmInstruction` documentation for more details.
    */
   class InlineAsm extends Opcode, EscapedWriteOpcode, MayWriteOpcode, EscapedReadOpcode,
-    MayReadOpcode, TInlineAsm
-  {
+    MayReadOpcode, TInlineAsm {
     final override string toString() { result = "InlineAsm" }
 
     final override predicate hasOperandInternal(OperandTag tag) {

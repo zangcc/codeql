@@ -1,3 +1,5 @@
+// semmle-extractor-options: ${testdir}/../../resources/stubs/System.Web.cs /r:System.Threading.Tasks.dll /r:System.Collections.Specialized.dll /r:System.Runtime.dll /r:System.Private.Uri.dll
+
 using System;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -34,5 +36,23 @@ namespace RequestForgery.Controllers
 
             return View();
         }
+    }
+}
+// Missing stubs:
+namespace System.Net.Http
+{
+    public class HttpClient
+    {
+        public async Task SendAsync(HttpRequestMessage request) => throw null;
+    }
+
+    public class HttpRequestMessage
+    {
+        public HttpRequestMessage(HttpMethod method, string requestUri) => throw null;
+    }
+
+    public class HttpMethod
+    {
+        public static readonly HttpMethod Get;
     }
 }

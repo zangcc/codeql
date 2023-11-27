@@ -32,21 +32,13 @@ module UnsafeJQueryPlugin {
   abstract class Sanitizer extends DataFlow::Node { }
 
   /**
-   * The receiver of a function, seen as a sanitizer.
-   *
-   * Plugins often do `$(this)` to coerce an existing DOM element to a jQuery object.
-   */
-  private class ThisSanitizer extends Sanitizer instanceof DataFlow::ThisNode { }
-
-  /**
    * An argument that may act as an HTML fragment rather than a CSS selector, as a sink for remote unsafe jQuery plugins.
    */
   class AmbiguousHtmlOrSelectorArgument extends DataFlow::Node,
-    DomBasedXss::JQueryHtmlOrSelectorArgument
-  {
+    DomBasedXss::JQueryHtmlOrSelectorArgument {
     AmbiguousHtmlOrSelectorArgument() {
       // any fixed prefix makes the call unambiguous
-      not exists(this.getAPrefix())
+      not exists(getAPrefix())
     }
   }
 
@@ -91,12 +83,12 @@ module UnsafeJQueryPlugin {
         if method.getAParameter().getName().regexpMatch(optionsPattern)
         then (
           // use the last parameter named something like "options" if it exists ...
-          this.getName().regexpMatch(optionsPattern) and
+          getName().regexpMatch(optionsPattern) and
           this = method.getAParameter()
         ) else (
           // ... otherwise, use the last parameter, unless it looks like a DOM node
           this = method.getLastParameter() and
-          not this.getName().regexpMatch("(?i)(e(l(em(ent(s)?)?)?)?)")
+          not getName().regexpMatch("(?i)(e(l(em(ent(s)?)?)?)?)")
         )
       )
     }
@@ -113,13 +105,13 @@ module UnsafeJQueryPlugin {
   class IsElementSanitizer extends TaintTracking::SanitizerGuardNode, DataFlow::CallNode {
     IsElementSanitizer() {
       // common ad hoc sanitizing calls
-      exists(string name | this.getCalleeName() = name |
+      exists(string name | getCalleeName() = name |
         name = "isElement" or name = "isDocument" or name = "isWindow"
       )
     }
 
     override predicate sanitizes(boolean outcome, Expr e) {
-      outcome = true and e = this.getArgument(0).asExpr()
+      outcome = true and e = getArgument(0).asExpr()
     }
   }
 
@@ -183,8 +175,7 @@ module UnsafeJQueryPlugin {
   /**
    * An argument that may act as an HTML fragment rather than a CSS selector, as a sink for remote unsafe jQuery plugins.
    */
-  class AmbiguousHtmlOrSelectorArgumentAsSink extends Sink instanceof AmbiguousHtmlOrSelectorArgument
-  {
+  class AmbiguousHtmlOrSelectorArgumentAsSink extends Sink instanceof AmbiguousHtmlOrSelectorArgument {
     AmbiguousHtmlOrSelectorArgumentAsSink() { not isLikelyIntentionalHtmlSink(this) }
   }
 

@@ -2,10 +2,12 @@ import java
 import semmle.code.java.security.HardcodedCredentialsComparison
 import TestUtilities.InlineExpectationsTest
 
-module HardcodedCredentialsComparisonTest implements TestSig {
-  string getARelevantTag() { result = "HardcodedCredentialsComparison" }
+class HardcodedCredentialsComparisonTest extends InlineExpectationsTest {
+  HardcodedCredentialsComparisonTest() { this = "HardcodedCredentialsComparisonTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "HardcodedCredentialsComparison" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "HardcodedCredentialsComparison" and
     exists(Expr sink | isHardcodedCredentialsComparison(sink, _, _) |
       sink.getLocation() = location and
@@ -14,5 +16,3 @@ module HardcodedCredentialsComparisonTest implements TestSig {
     )
   }
 }
-
-import MakeTest<HardcodedCredentialsComparisonTest>

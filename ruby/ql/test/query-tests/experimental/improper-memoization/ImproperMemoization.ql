@@ -2,10 +2,12 @@ import codeql.ruby.AST
 import TestUtilities.InlineExpectationsTest
 import codeql.ruby.security.ImproperMemoizationQuery
 
-module ImproperMemoizationTest implements TestSig {
-  string getARelevantTag() { result = "result" }
+class ImproperMemoizationTest extends InlineExpectationsTest {
+  ImproperMemoizationTest() { this = "ImproperMemoizationTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "result" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "result" and
     value = "BAD" and
     exists(Expr e |
@@ -15,8 +17,6 @@ module ImproperMemoizationTest implements TestSig {
     )
   }
 }
-
-import MakeTest<ImproperMemoizationTest>
 
 from Method m, Parameter p, AssignLogicalOrExpr s
 where isImproperMemoizationMethod(m, p, s)

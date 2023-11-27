@@ -1,0 +1,30 @@
+ #      Precompiled CodeQL query
+---
+format:
+- 202210190
+creator: "2.12.3"
+name: "01-log-sensitive-string.ql"
+dbscheme: "4d00210ca570d55c4833af11d3372b774dbc63f2"
+stages:
+- cached: "149463b1d29ee6c1121e724b007b49160684ba7b"
+  debugInfo: "b1716db3dbf9fab78762a0e1bb913859d7be3689"
+- cached: "0787736f422cfae89795f631cd176ce7dd1e56ed"
+  debugInfo: "81811a36020b7fce615350a00700ad65951c2edd"
+- cached: "528f956e8e39f7d6d45c511874096c0d8e5c333f"
+  debugInfo: "073eafcc58bfb75ca008148c3b1f8f265bd19492"
+- cached: "6231ba8d07e267da136bf5fb210c95b3195bf414"
+  debugInfo: "0268534196d344b1237b1abc1bd20180f5da6aa4"
+- cached: "c5b40e39bc49f72546c988699d9939367199335a"
+  debugInfo: "3281f6b2a5b04f49d55b80097afba3f24496b672"
+- cached: "4e7d5cf19a0de3f1e78d38d534e5878dd96e7ada"
+  debugInfo: "bc5b2f403109b19b784d86658483c561dbec27b9"
+- cached: "b40af0835ce9b78bf60cc958e8477f30e3417295"
+  debugInfo: "2ca94203b7a5d65a5b7a66c70ae71f2a89aac372"
+results:
+  nodes:
+    resultArranger: "1\"nd\"ei12"
+  edges:
+    resultArranger: "2\"pred\"ei12\"succ\"ei12"
+  '#select':
+    resultArranger: "4\"sourceNode\"ei12\"sinkNode\"ei120s0s"
+inputsDigest: "f5290edb3d5f2479807ae31e4ddda5118b20fd90"

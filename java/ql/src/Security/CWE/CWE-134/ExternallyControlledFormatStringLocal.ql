@@ -11,15 +11,25 @@
  */
 
 import java
+import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.StringFormat
-import semmle.code.java.security.ExternallyControlledFormatStringLocalQuery
-import ExternallyControlledFormatStringLocalFlow::PathGraph
+import DataFlow::PathGraph
+
+class ExternallyControlledFormatStringLocalConfig extends TaintTracking::Configuration {
+  ExternallyControlledFormatStringLocalConfig() {
+    this = "ExternallyControlledFormatStringLocalConfig"
+  }
+
+  override predicate isSource(DataFlow::Node source) { source instanceof LocalUserInput }
+
+  override predicate isSink(DataFlow::Node sink) {
+    sink.asExpr() = any(StringFormat formatCall).getFormatArgument()
+  }
+}
 
 from
-  ExternallyControlledFormatStringLocalFlow::PathNode source,
-  ExternallyControlledFormatStringLocalFlow::PathNode sink, StringFormat formatCall
-where
-  ExternallyControlledFormatStringLocalFlow::flowPath(source, sink) and
-  sink.getNode().asExpr() = formatCall.getFormatArgument()
+  DataFlow::PathNode source, DataFlow::PathNode sink, StringFormat formatCall,
+  ExternallyControlledFormatStringLocalConfig conf
+where conf.hasFlowPath(source, sink) and sink.getNode().asExpr() = formatCall.getFormatArgument()
 select formatCall.getFormatArgument(), source, sink, "Format string depends on a $@.",
   source.getNode(), "user-provided value"

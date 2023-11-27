@@ -39,8 +39,6 @@ predicate isSymbolicConstant(Variable v) {
   exists(VarDef vd | vd = getSingleDef(v) |
     vd.(VariableDeclarator).getDeclStmt() instanceof ConstDeclStmt
     or
-    vd.(VariableDeclarator).getDeclStmt() instanceof UsingDeclStmt
-    or
     isConstant(vd.getSource())
   )
 }

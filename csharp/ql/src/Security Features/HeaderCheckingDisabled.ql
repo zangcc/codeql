@@ -21,7 +21,7 @@ where
     pa.getTarget().hasName("EnableHeaderChecking") and
     pa.getTarget()
         .getDeclaringType()
-        .hasFullyQualifiedName("System.Web.Configuration", "HttpRuntimeSection") and
+        .hasQualifiedName("System.Web.Configuration", "HttpRuntimeSection") and
     a.getRValue().getValue() = "false" and
     a = l
   )

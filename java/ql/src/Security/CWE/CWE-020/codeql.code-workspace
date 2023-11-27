@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../../../../.."
+		},
+		{
+			"name": "[javatest source archive]",
+			"uri": "codeql-zip-archive://0-82/Users/mashuang/Desktop/121212/java-hello-world-with-maven-master/javatest/src.zip"
+		}
+	],
+	"settings": {
+		"codeQL.runningQueries.autoSave": true
+	}
+}

@@ -27,7 +27,7 @@ abstract class ConditionContext extends TranslatedElement {
  * and the compiler generated ones (captures the common patterns).
  */
 abstract class ConditionBase extends TranslatedElement {
-  final ConditionContext getConditionContext() { result = this.getParent() }
+  final ConditionContext getConditionContext() { result = getParent() }
 }
 
 /**
@@ -35,9 +35,9 @@ abstract class ConditionBase extends TranslatedElement {
  * and the compiler generated ones (captures the common patterns).
  */
 abstract class ValueConditionBase extends ConditionBase {
-  override TranslatedElement getChild(int id) { id = 0 and result = this.getValueExpr() }
+  override TranslatedElement getChild(int id) { id = 0 and result = getValueExpr() }
 
-  override Instruction getFirstInstruction() { result = this.getValueExpr().getFirstInstruction() }
+  override Instruction getFirstInstruction() { result = getValueExpr().getFirstInstruction() }
 
   override predicate hasInstruction(Opcode opcode, InstructionTag tag, CSharpType resultType) {
     tag = ValueConditionConditionalBranchTag() and
@@ -46,25 +46,25 @@ abstract class ValueConditionBase extends ConditionBase {
   }
 
   override Instruction getChildSuccessor(TranslatedElement child) {
-    child = this.getValueExpr() and
-    result = this.getInstruction(ValueConditionConditionalBranchTag())
+    child = getValueExpr() and
+    result = getInstruction(ValueConditionConditionalBranchTag())
   }
 
   override Instruction getInstructionSuccessor(InstructionTag tag, EdgeKind kind) {
     tag = ValueConditionConditionalBranchTag() and
     (
       kind instanceof TrueEdge and
-      result = this.getConditionContext().getChildTrueSuccessor(this)
+      result = getConditionContext().getChildTrueSuccessor(this)
       or
       kind instanceof FalseEdge and
-      result = this.getConditionContext().getChildFalseSuccessor(this)
+      result = getConditionContext().getChildFalseSuccessor(this)
     )
   }
 
   override Instruction getInstructionOperand(InstructionTag tag, OperandTag operandTag) {
     tag = ValueConditionConditionalBranchTag() and
     operandTag instanceof ConditionOperandTag and
-    result = this.valueExprResult()
+    result = valueExprResult()
   }
 
   /**

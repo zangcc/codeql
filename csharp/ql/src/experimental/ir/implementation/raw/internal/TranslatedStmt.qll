@@ -26,6 +26,9 @@ abstract class TranslatedStmt extends TranslatedElement, TTranslatedStmt {
 
   final override Language::AST getAst() { result = stmt }
 
+  /** DEPRECATED: Alias for getAst */
+  deprecated override Language::AST getAST() { result = this.getAst() }
+
   final override Callable getFunction() { result = stmt.getEnclosingCallable() }
 }
 

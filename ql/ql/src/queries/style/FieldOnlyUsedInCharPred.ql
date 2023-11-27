@@ -21,6 +21,5 @@ where
     any(PredicateCall call |
       call.getEnclosingPredicate() = c.getCharPred() and call.getTarget() instanceof NewTypeBranch
     ).getAnArgument() and
-  not f.getVarDecl().overrides(_) and
-  not any(FieldDecl other).getVarDecl().overrides(f.getVarDecl())
+  not f.getVarDecl().overrides(_)
 select f, "Field is only used in CharPred."

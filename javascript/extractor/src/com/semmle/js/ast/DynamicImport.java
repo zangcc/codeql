@@ -2,24 +2,14 @@ package com.semmle.js.ast;
 
 public class DynamicImport extends Expression {
   private final Expression source;
-  private final Expression attributes;
 
-  public DynamicImport(SourceLocation loc, Expression source, Expression attributes) {
+  public DynamicImport(SourceLocation loc, Expression source) {
     super("DynamicImport", loc);
     this.source = source;
-    this.attributes = attributes;
   }
 
   public Expression getSource() {
     return source;
-  }
-
-  /**
-   * Returns the second "argument" provided to the import, such as <code>{ "with": { type: "json" }}
-   * </code>.
-   */
-  public Expression getAttributes() {
-    return attributes;
   }
 
   @Override

@@ -24,8 +24,10 @@ private import python
 import semmle.python.dataflow.new.DataFlow
 import semmle.python.dataflow.new.TaintTracking
 
-module TestConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) {
+class TestConfiguration extends TaintTracking::Configuration {
+  TestConfiguration() { this = "TestConfiguration" }
+
+  override predicate isSource(DataFlow::Node node) {
     node.(DataFlow::CfgNode).getNode().(NameNode).getId() = "SOURCE"
     or
     node.(DataFlow::CfgNode).getNode().getNode().(StrConst).getS() = "source"
@@ -36,14 +38,14 @@ module TestConfig implements DataFlow::ConfigSig {
     // No support for complex numbers
   }
 
-  predicate isSink(DataFlow::Node node) {
+  override predicate isSink(DataFlow::Node node) {
     exists(CallNode call |
       call.getFunction().(NameNode).getId() in ["SINK", "SINK_F"] and
       node.(DataFlow::CfgNode).getNode() = call.getAnArg()
     )
   }
 
-  predicate isBarrierIn(DataFlow::Node node) { isSource(node) }
-}
+  override predicate isSanitizerIn(DataFlow::Node node) { this.isSource(node) }
 
-module TestFlow = TaintTracking::Global<TestConfig>;
+  override int explorationLimit() { result = 5 }
+}

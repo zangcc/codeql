@@ -32,12 +32,12 @@ private module Cached {
     exists(Assembly asm |
       asm = mi.getLocation() and
       (assemblyIsStubImpl(asm) implies asm.getFile().extractedQlTest()) and
-      mi =
-        max(MethodImplementation impl |
-          mi.getMethod() = impl.getMethod()
-        |
-          impl order by impl.getNumberOfInstructions(), impl.getLocation().getFile().toString() desc
-        ) and
+      not exists(MethodImplementation better | mi.getMethod() = better.getMethod() |
+        mi.getNumberOfInstructions() < better.getNumberOfInstructions()
+        or
+        mi.getNumberOfInstructions() = better.getNumberOfInstructions() and
+        asm.getFile().toString() > better.getLocation().getFile().toString()
+      ) and
       exists(mi.getAnInstruction())
     )
   }

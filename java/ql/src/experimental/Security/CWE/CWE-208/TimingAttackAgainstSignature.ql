@@ -16,13 +16,11 @@
 
 import java
 import NonConstantTimeCheckOnSignatureQuery
-import NonConstantTimeCryptoComparisonFlow::PathGraph
+import DataFlow::PathGraph
 
-from
-  NonConstantTimeCryptoComparisonFlow::PathNode source,
-  NonConstantTimeCryptoComparisonFlow::PathNode sink
+from DataFlow::PathNode source, DataFlow::PathNode sink, NonConstantTimeCryptoComparisonConfig conf
 where
-  NonConstantTimeCryptoComparisonFlow::flowPath(source, sink) and
+  conf.hasFlowPath(source, sink) and
   (
     source.getNode().(CryptoOperationSource).includesUserInput() and
     sink.getNode().(NonConstantTimeComparisonSink).includesUserInput()

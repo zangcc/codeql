@@ -4,10 +4,12 @@ import cpp
 import TestUtilities.InlineExpectationsTest
 import semmle.code.cpp.security.FlowSources
 
-module LocalFlowSourceTest implements TestSig {
-  string getARelevantTag() { result = "local_source" }
+class LocalFlowSourceTest extends InlineExpectationsTest {
+  LocalFlowSourceTest() { this = "LocalFlowSourceTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "local_source" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "local_source" and
     exists(LocalFlowSource node, int n |
       n =
@@ -28,5 +30,3 @@ module LocalFlowSourceTest implements TestSig {
     )
   }
 }
-
-import MakeTest<LocalFlowSourceTest>

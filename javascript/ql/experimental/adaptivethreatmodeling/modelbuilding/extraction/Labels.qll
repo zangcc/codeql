@@ -13,7 +13,7 @@ newtype TEndpointLabel =
 abstract class EndpointLabel extends TEndpointLabel {
   abstract string getEncoding();
 
-  string toString() { result = this.getEncoding() }
+  string toString() { result = getEncoding() }
 }
 
 class SinkLabel extends EndpointLabel, TSinkLabel {

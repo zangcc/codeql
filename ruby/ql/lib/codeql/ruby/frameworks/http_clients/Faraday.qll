@@ -7,6 +7,7 @@ private import codeql.ruby.CFG
 private import codeql.ruby.Concepts
 private import codeql.ruby.ApiGraphs
 private import codeql.ruby.DataFlow
+private import codeql.ruby.dataflow.internal.DataFlowImplForHttpClientLibraries as DataFlowImplForHttpClientLibraries
 
 /**
  * A call that makes an HTTP request using `Faraday`.
@@ -77,7 +78,8 @@ class FaradayHttpRequest extends Http::Client::Request::Range, DataFlow::CallNod
   override predicate disablesCertificateValidation(
     DataFlow::Node disablingNode, DataFlow::Node argumentOrigin
   ) {
-    FaradayDisablesCertificateValidationFlow::flow(argumentOrigin, disablingNode) and
+    any(FaradayDisablesCertificateValidationConfiguration config)
+        .hasFlow(argumentOrigin, disablingNode) and
     disablingNode = this.getCertificateValidationControllingValue(_)
   }
 
@@ -85,10 +87,14 @@ class FaradayHttpRequest extends Http::Client::Request::Range, DataFlow::CallNod
 }
 
 /** A configuration to track values that can disable certificate validation for Faraday. */
-private module FaradayDisablesCertificateValidationConfig implements DataFlow::StateConfigSig {
-  class FlowState = string;
+private class FaradayDisablesCertificateValidationConfiguration extends DataFlowImplForHttpClientLibraries::Configuration {
+  FaradayDisablesCertificateValidationConfiguration() {
+    this = "FaradayDisablesCertificateValidationConfiguration"
+  }
 
-  predicate isSource(DataFlow::Node source, FlowState state) {
+  override predicate isSource(
+    DataFlow::Node source, DataFlowImplForHttpClientLibraries::FlowState state
+  ) {
     source.asExpr().getExpr().(BooleanLiteral).isFalse() and
     state = "verify"
     or
@@ -96,10 +102,7 @@ private module FaradayDisablesCertificateValidationConfig implements DataFlow::S
     state = "verify_mode"
   }
 
-  predicate isSink(DataFlow::Node sink, FlowState state) {
+  override predicate isSink(DataFlow::Node sink, DataFlowImplForHttpClientLibraries::FlowState state) {
     sink = any(FaradayHttpRequest req).getCertificateValidationControllingValue(state)
   }
 }
-
-private module FaradayDisablesCertificateValidationFlow =
-  DataFlow::GlobalWithState<FaradayDisablesCertificateValidationConfig>;

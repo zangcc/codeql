@@ -92,7 +92,7 @@ void test_insert_iterator() {
 
     insert_iterator_by_trait i1 = c1.begin();
     *i1-- = source();
-    sink(c1); // $ ast,ir
+    sink(c1); // $ ast MISSING: ir
 
     insert_iterator_by_trait i2 = c2.begin();
     *i2-- = 0;
@@ -109,12 +109,12 @@ void test_assign_through_iterator() {
 	a = c1.begin();
 	b = c1.begin();
 	*a = source();
-	sink(a); // $ ast,ir
+	sink(a); // $ ast MISSING: ir
 
 	c = c1.begin();
 	sink(b); // MISSING: ast,ir
-	sink(c); // $ ast,ir
-	sink(c1); // $ ast,ir
+	sink(c); // $ ast MISSING: ir
+	sink(c1); // $ ast MISSING: ir
 }
 
 void test_nonmember_iterator() {

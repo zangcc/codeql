@@ -36,12 +36,6 @@
 #-----| TrueClass
 #-----| super -> Object
 
-#-----| UnresolvedNamespace::X1
-
-#-----| UnresolvedNamespace::X1::X2
-
-#-----| UnresolvedNamespace::X1::X2::X3
-
 calls.rb:
 #   21| M
 
@@ -94,64 +88,64 @@ calls.rb:
 #  325| C1
 #-----| super -> Object
 
-#  335| C2
+#  331| C2
 #-----| super -> C1
 
-#  341| C3
+#  337| C3
 #-----| super -> C2
 
-#  385| SingletonOverride1
+#  377| SingletonOverride1
 #-----| super -> Object
 
-#  420| SingletonOverride2
+#  412| SingletonOverride2
 #-----| super -> SingletonOverride1
 
-#  441| ConditionalInstanceMethods
+#  433| ConditionalInstanceMethods
 #-----| super -> Object
 
-#  504| ExtendSingletonMethod
+#  496| ExtendSingletonMethod
 
-#  514| ExtendSingletonMethod2
+#  506| ExtendSingletonMethod2
 
-#  520| ExtendSingletonMethod3
+#  512| ExtendSingletonMethod3
 
-#  533| ProtectedMethodInModule
+#  525| ProtectedMethodInModule
 
-#  539| ProtectedMethods
+#  531| ProtectedMethods
 #-----| super -> Object
 #-----| include -> ProtectedMethodInModule
 
-#  558| ProtectedMethodsSub
+#  550| ProtectedMethodsSub
 #-----| super -> ProtectedMethods
 
-#  572| SingletonUpCall_Base
+#  564| SingletonUpCall_Base
 #-----| super -> Object
 
-#  576| SingletonUpCall_Sub
+#  568| SingletonUpCall_Sub
 #-----| super -> SingletonUpCall_Base
 
-#  584| SingletonUpCall_SubSub
+#  576| SingletonUpCall_SubSub
 #-----| super -> SingletonUpCall_Sub
 
-#  591| SingletonA
+#  583| SingletonA
 #-----| super -> Object
 
-#  604| SingletonB
+#  596| SingletonB
 #-----| super -> SingletonA
 
-#  613| SingletonC
+#  605| SingletonC
 #-----| super -> SingletonA
 
-#  626| Included
+#  618| Included
 
-#  634| IncludesIncluded
+#  626| IncludesIncluded
 #-----| super -> Object
 #-----| include -> Included
 
-#  641| CustomNew1
+#  633| CustomNew1
 #-----| super -> Object
 
-#  649| CustomNew2
+#  641| CustomNew2
 #-----| super -> Object
 
 hello.rb:
@@ -277,13 +271,4 @@ unresolved_subclass.rb:
 #-----| super -> UnresolvedNamespace::Subclass1
 
 #   11| UnresolvedNamespace::A
-#-----| super -> Object
-
-#   14| UnresolvedNamespace::X1::X2::X3::Subclass1
-#-----| super -> ResolvableBaseClass
-
-#   17| UnresolvedNamespace::X1::X2::X3::Subclass2
-#-----| super -> UnresolvedNamespace::X1::X2::X3::Subclass1
-
-#   21| UnresolvedNamespace::X1::X2::X3::A
 #-----| super -> Object

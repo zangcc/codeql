@@ -80,19 +80,11 @@ class ArithExpr extends Expr {
     (
       this instanceof UnaryAssignExpr or
       this instanceof AddExpr or
-      this instanceof AssignAddExpr or
       this instanceof MulExpr or
-      this instanceof AssignMulExpr or
       this instanceof SubExpr or
-      this instanceof AssignSubExpr or
-      this instanceof DivExpr or
-      this instanceof AssignDivExpr
+      this instanceof DivExpr
     ) and
-    forall(Expr e |
-      e = this.(BinaryExpr).getAnOperand() or
-      e = this.(UnaryAssignExpr).getExpr() or
-      e = this.(AssignOp).getSource()
-    |
+    forall(Expr e | e = this.(BinaryExpr).getAnOperand() or e = this.(UnaryAssignExpr).getExpr() |
       e.getType() instanceof NumType
     )
   }
@@ -111,21 +103,17 @@ class ArithExpr extends Expr {
    */
   Expr getLeftOperand() {
     result = this.(BinaryExpr).getLeftOperand() or
-    result = this.(UnaryAssignExpr).getExpr() or
-    result = this.(AssignOp).getDest()
+    result = this.(UnaryAssignExpr).getExpr()
   }
 
   /**
    * Gets the right-hand operand if this is a binary expression.
    */
-  Expr getRightOperand() {
-    result = this.(BinaryExpr).getRightOperand() or result = this.(AssignOp).getRhs()
-  }
+  Expr getRightOperand() { result = this.(BinaryExpr).getRightOperand() }
 
   /** Gets an operand of this arithmetic expression. */
   Expr getAnOperand() {
     result = this.(BinaryExpr).getAnOperand() or
-    result = this.(UnaryAssignExpr).getExpr() or
-    result = this.(AssignOp).getSource()
+    result = this.(UnaryAssignExpr).getExpr()
   }
 }

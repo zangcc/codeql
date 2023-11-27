@@ -27,21 +27,21 @@ class ArrayLengthRead extends FieldRead, SizeOfContainer {
 }
 
 /** An access to `String.length()`. */
-class StringLengthRead extends MethodCall, SizeOfContainer {
+class StringLengthRead extends MethodAccess, SizeOfContainer {
   StringLengthRead() { this.getMethod() instanceof StringLengthMethod }
 
   override string getContainerKind() { result = "a string" }
 }
 
 /** An access to `Collection.size()`. */
-class CollectionSizeCall extends MethodCall, SizeOfContainer {
+class CollectionSizeCall extends MethodAccess, SizeOfContainer {
   CollectionSizeCall() { this.getMethod() instanceof CollectionSizeMethod }
 
   override string getContainerKind() { result = "a collection" }
 }
 
 /** An access to `Map.size()`. */
-class MapSizeCall extends MethodCall, SizeOfContainer {
+class MapSizeCall extends MethodAccess, SizeOfContainer {
   MapSizeCall() { this.getMethod() instanceof MapSizeMethod }
 
   override string getContainerKind() { result = "a map" }

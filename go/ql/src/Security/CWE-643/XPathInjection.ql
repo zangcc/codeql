@@ -12,17 +12,17 @@
  */
 
 import go
-import semmle.go.security.XPathInjection
-import XPathInjection::Flow::PathGraph
+import semmle.go.security.XPathInjection::XPathInjection
+import DataFlow::PathGraph
 
 /** Holds if `node` is either a string or a byte slice */
-predicate isStringOrByte(XPathInjection::Flow::PathNode node) {
+predicate isStringOrByte(DataFlow::PathNode node) {
   exists(Type t | t = node.getNode().getType().getUnderlyingType() |
     t instanceof StringType or t instanceof ByteSliceType
   )
 }
 
-from XPathInjection::Flow::PathNode source, XPathInjection::Flow::PathNode sink
-where XPathInjection::Flow::flowPath(source, sink) and isStringOrByte(sink)
+from Configuration config, DataFlow::PathNode source, DataFlow::PathNode sink
+where config.hasFlowPath(source, sink) and isStringOrByte(sink)
 select sink.getNode(), source, sink, "XPath expression depends on a $@.", source.getNode(),
   "user-provided value"

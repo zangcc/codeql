@@ -15,14 +15,12 @@
 
 import java
 import semmle.code.java.security.regexp.PolynomialReDoSQuery
-import PolynomialRedosFlow::PathGraph
+import DataFlow::PathGraph
 
 from
-  PolynomialRedosFlow::PathNode source, PolynomialRedosFlow::PathNode sink,
+  DataFlow::PathNode source, DataFlow::PathNode sink,
   SuperlinearBackTracking::PolynomialBackTrackingTerm regexp
-where
-  PolynomialRedosFlow::flowPath(source, sink) and
-  regexp.getRootTerm() = sink.getNode().(PolynomialRedosSink).getRegExp()
+where hasPolynomialReDoSResult(source, sink, regexp)
 select sink, source, sink,
   "This $@ that depends on a $@ may run slow on strings " + regexp.getPrefixMessage() +
     "with many repetitions of '" + regexp.getPumpString() + "'.", regexp, "regular expression",

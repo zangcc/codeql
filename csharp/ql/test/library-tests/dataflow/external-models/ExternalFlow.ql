@@ -3,22 +3,22 @@
  */
 
 import csharp
-import semmle.code.csharp.dataflow.internal.ExternalFlow
-import Taint::PathGraph
+import DataFlow::PathGraph
+import semmle.code.csharp.dataflow.ExternalFlow
 import ModelValidation
 
-module TaintConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src.asExpr() instanceof ObjectCreation }
+class Conf extends TaintTracking::Configuration {
+  Conf() { this = "ExternalFlow" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node src) { src.asExpr() instanceof ObjectCreation }
+
+  override predicate isSink(DataFlow::Node sink) {
     exists(MethodCall mc |
       mc.getTarget().hasName("Sink") and
       mc.getAnArgument() = sink.asExpr()
     )
   }
 }
-
-module Taint = TaintTracking::Global<TaintConfig>;
 
 /**
  * Simulate that methods with summaries are not included in the source code.
@@ -28,6 +28,6 @@ private class MyMethod extends Method {
   override predicate fromSource() { none() }
 }
 
-from Taint::PathNode source, Taint::PathNode sink
-where Taint::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, Conf conf
+where conf.hasFlowPath(source, sink)
 select sink, source, sink, "$@", source, source.toString()

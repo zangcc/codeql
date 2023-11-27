@@ -86,7 +86,6 @@ module LocalTaintFlow<nodeSig/1 source, nodeSig/1 sink> {
 cached
 private module Cached {
   private import DataFlowImplCommon as DataFlowImplCommon
-  private import DataFlowPrivate as DataFlowPrivate
 
   cached
   predicate forceCachingInSameStage() { DataFlowImplCommon::forceCachingInSameStage() }
@@ -137,8 +136,7 @@ private module Cached {
       )
     )
     or
-    FlowSummaryImpl::Private::Steps::summaryLocalStep(src.(DataFlowPrivate::FlowSummaryNode)
-          .getSummaryNode(), sink.(DataFlowPrivate::FlowSummaryNode).getSummaryNode(), false)
+    FlowSummaryImpl::Private::Steps::summaryLocalStep(src, sink, false)
   }
 
   /**
@@ -177,7 +175,7 @@ private RefType getElementType(RefType container) {
  * of `c` at sinks and inputs to additional taint steps.
  */
 bindingset[node]
-predicate defaultImplicitTaintRead(DataFlow::Node node, DataFlow::ContentSet c) {
+predicate defaultImplicitTaintRead(DataFlow::Node node, DataFlow::Content c) {
   exists(RefType container |
     (node.asExpr() instanceof Argument or node instanceof ArgumentNode) and
     getElementType*(node.getType()) = container
@@ -239,7 +237,7 @@ private class BulkData extends RefType {
     this.(Array).getElementType().(PrimitiveType).hasName(["byte", "char"])
     or
     exists(RefType t | this.getASourceSupertype*() = t |
-      t instanceof TypeInputStream or
+      t.hasQualifiedName("java.io", "InputStream") or
       t.hasQualifiedName("java.nio", "ByteBuffer") or
       t.hasQualifiedName("java.lang", "Readable") or
       t.hasQualifiedName("java.io", "DataInput") or
@@ -257,9 +255,8 @@ private class BulkData extends RefType {
  * status of its argument.
  */
 private predicate inputStreamWrapper(Constructor c, int argi) {
-  not c.fromSource() and
   c.getParameterType(argi) instanceof BulkData and
-  c.getDeclaringType().getASourceSupertype+() instanceof TypeInputStream
+  c.getDeclaringType().getASourceSupertype().hasQualifiedName("java.io", "InputStream")
 }
 
 /** An object construction that preserves the data flow status of any of its arguments. */
@@ -290,7 +287,7 @@ private int argToParam(Call call, int argIdx) {
 
 /** Access to a method that passes taint from qualifier to argument. */
 private predicate qualifierToArgumentStep(Expr tracked, Expr sink) {
-  exists(MethodCall ma, int arg |
+  exists(MethodAccess ma, int arg |
     ma.getMethod().(TaintPreservingCallable).transfersTaint(-1, argToParam(ma, arg)) and
     tracked = ma.getQualifier() and
     sink = ma.getArgument(arg)
@@ -298,7 +295,7 @@ private predicate qualifierToArgumentStep(Expr tracked, Expr sink) {
 }
 
 /** Access to a method that passes taint from the qualifier. */
-private predicate qualifierToMethodStep(Expr tracked, MethodCall sink) {
+private predicate qualifierToMethodStep(Expr tracked, MethodAccess sink) {
   taintPreservingQualifierToMethod(sink.getMethod()) and
   tracked = sink.getQualifier()
 }
@@ -331,7 +328,7 @@ private predicate taintPreservingQualifierToMethod(Method m) {
 }
 
 /** Access to a method that passes taint from an argument. */
-private predicate argToMethodStep(Expr tracked, MethodCall sink) {
+private predicate argToMethodStep(Expr tracked, MethodAccess sink) {
   exists(Method m, int i |
     m = sink.getMethod() and
     taintPreservingArgumentToMethod(m, argToParam(sink, i)) and
@@ -375,7 +372,7 @@ private predicate taintPreservingArgumentToMethod(Method method, int arg) {
  * between arguments.
  */
 private predicate argToArgStep(Expr tracked, Expr sink) {
-  exists(MethodCall ma, Method method, int input, int output |
+  exists(MethodAccess ma, Method method, int input, int output |
     method.(TaintPreservingCallable).transfersTaint(argToParam(ma, input), argToParam(ma, output)) and
     ma.getMethod() = method and
     ma.getArgument(input) = tracked and
@@ -388,7 +385,7 @@ private predicate argToArgStep(Expr tracked, Expr sink) {
  * from the argument to the qualifier and `sink` is the qualifier.
  */
 private predicate argToQualifierStep(Expr tracked, Expr sink) {
-  exists(Method m, int i, MethodCall ma |
+  exists(Method m, int i, MethodAccess ma |
     taintPreservingArgumentToQualifier(m, argToParam(ma, i)) and
     ma.getMethod() = m and
     tracked = ma.getArgument(i) and
@@ -412,7 +409,7 @@ private predicate comparisonStep(Expr tracked, Expr sink) {
       e.hasOperands(tracked, other)
     )
     or
-    exists(MethodCall m | m.getMethod() instanceof EqualsMethod |
+    exists(MethodAccess m | m.getMethod() instanceof EqualsMethod |
       m = sink and
       (
         m.getQualifier() = tracked and m.getArgument(0) = other
@@ -429,13 +426,13 @@ private predicate comparisonStep(Expr tracked, Expr sink) {
 private predicate serializationStep(Expr tracked, Expr sink) {
   exists(ObjectOutputStreamVar v, VariableAssign def |
     def = v.getADef() and
-    exists(MethodCall ma, VarRead use |
+    exists(MethodAccess ma, RValue use |
       ma.getArgument(0) = tracked and
-      ma = v.getAWriteObjectMethodCall() and
+      ma = v.getAWriteObjectMethodAccess() and
       use = ma.getQualifier() and
       defUsePair(def, use)
     ) and
-    exists(VarRead outputstream, ClassInstanceExpr cie |
+    exists(RValue outputstream, ClassInstanceExpr cie |
       cie = def.getSource() and
       outputstream = cie.getArgument(0) and
       adjacentUseUse(outputstream, sink)
@@ -460,27 +457,23 @@ class ObjectOutputStreamVar extends LocalVariableDecl {
     result.getDestVar() = this
   }
 
-  /** Gets a call to `writeObject` called against this variable. */
-  MethodCall getAWriteObjectMethodCall() {
+  MethodAccess getAWriteObjectMethodAccess() {
     result.getQualifier() = this.getAnAccess() and
     result.getMethod().hasName("writeObject")
   }
-
-  /** DEPRECATED: Alias for `getAWriteObjectMethodCall`. */
-  deprecated MethodCall getAWriteObjectMethodAccess() { result = this.getAWriteObjectMethodCall() }
 }
 
 /** Flow through string formatting. */
 private predicate formatStep(Expr tracked, Expr sink) {
   exists(FormatterVar v, VariableAssign def |
     def = v.getADef() and
-    exists(MethodCall ma, VarRead use |
+    exists(MethodAccess ma, RValue use |
       ma.getAnArgument() = tracked and
-      ma = v.getAFormatMethodCall() and
+      ma = v.getAFormatMethodAccess() and
       use = ma.getQualifier() and
       defUsePair(def, use)
     ) and
-    exists(VarRead output, ClassInstanceExpr cie |
+    exists(RValue output, ClassInstanceExpr cie |
       cie = def.getSource() and
       output = cie.getArgument(0) and
       adjacentUseUse(output, sink) and
@@ -509,7 +502,7 @@ private class FormatterVar extends LocalVariableDecl {
     result.getDestVar() = this
   }
 
-  MethodCall getAFormatMethodCall() {
+  MethodAccess getAFormatMethodAccess() {
     result.getQualifier() = this.getAnAccess() and
     result.getMethod().hasName("format")
   }
@@ -559,7 +552,7 @@ module StringBuilderVarModule {
     /**
      * Gets a call that adds something to this string builder, from the argument at the given index.
      */
-    MethodCall getAnInput(int arg) {
+    MethodAccess getAnInput(int arg) {
       result.getQualifier() = this.getAChainedReference() and
       (
         result.getMethod().getName() = "append" and arg = 0
@@ -573,19 +566,19 @@ module StringBuilderVarModule {
     /**
      * Gets a call that appends something to this string builder.
      */
-    MethodCall getAnAppend() {
+    MethodAccess getAnAppend() {
       result.getQualifier() = this.getAChainedReference() and
       result.getMethod().getName() = "append"
     }
 
-    MethodCall getNextAppend(MethodCall append) {
+    MethodAccess getNextAppend(MethodAccess append) {
       result = this.getAnAppend() and
       append = this.getAnAppend() and
       (
         result.getQualifier() = append
         or
-        not exists(MethodCall chainAccess | chainAccess.getQualifier() = append) and
-        exists(VarRead sbva1, VarRead sbva2 |
+        not exists(MethodAccess chainAccess | chainAccess.getQualifier() = append) and
+        exists(RValue sbva1, RValue sbva2 |
           adjacentUseUse(sbva1, sbva2) and
           append.getQualifier() = this.getAChainedReference(sbva1) and
           result.getQualifier() = sbva2
@@ -596,7 +589,7 @@ module StringBuilderVarModule {
     /**
      * Gets a call that converts this string builder to a string.
      */
-    MethodCall getToStringCall() {
+    MethodAccess getToStringCall() {
       result.getQualifier() = this.getAChainedReference() and
       result.getMethod().getName() = "toString"
     }
@@ -616,13 +609,14 @@ module StringBuilderVarModule {
   }
 }
 
-private MethodCall callReturningSameType(Expr ref) {
+private MethodAccess callReturningSameType(Expr ref) {
   ref = result.getQualifier() and
   result.getMethod().getReturnType() = ref.getType()
 }
 
+pragma[assume_small_delta]
 private SrcRefType entrypointType() {
-  exists(ThreatModelFlowSource s, RefType t |
+  exists(RemoteFlowSource s, RefType t |
     s instanceof DataFlow::ExplicitParameterNode and
     t = pragma[only_bind_out](s).getType() and
     not t instanceof TypeObject and
@@ -633,10 +627,6 @@ private SrcRefType entrypointType() {
 }
 
 private predicate entrypointFieldStep(DataFlow::Node src, DataFlow::Node sink) {
-  exists(FieldRead fa |
-    fa = sink.asExpr() and
-    src = DataFlow::getFieldQualifier(fa) and
-    not fa.getField().isStatic()
-  ) and
+  src = DataFlow::getFieldQualifier(sink.asExpr().(FieldRead)) and
   src.getType().(RefType).getSourceDeclaration() = entrypointType()
 }

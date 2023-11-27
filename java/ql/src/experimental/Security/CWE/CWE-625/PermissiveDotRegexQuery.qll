@@ -26,7 +26,7 @@ private class PermissiveDotStr extends StringLiteral {
 /** The qualifier of a request dispatch method call. */
 private class UrlDispatchSink extends UrlRedirectSink {
   UrlDispatchSink() {
-    exists(MethodCall ma |
+    exists(MethodAccess ma |
       ma.getMethod() instanceof RequestDispatchMethod and
       this.asExpr() = ma.getQualifier()
     )
@@ -44,7 +44,7 @@ private class ServletFilterMethod extends Method {
 /** The qualifier of a servlet filter method call. */
 private class UrlFilterSink extends UrlRedirectSink {
   UrlFilterSink() {
-    exists(MethodCall ma |
+    exists(MethodAccess ma |
       ma.getMethod() instanceof ServletFilterMethod and
       this.asExpr() = ma.getQualifier()
     )
@@ -75,7 +75,7 @@ private class SpringUriInputParameterSource extends DataFlow::Node {
  */
 private class CompileRegexSink extends DataFlow::ExprNode {
   CompileRegexSink() {
-    exists(MethodCall ma, Method m | m = ma.getMethod() |
+    exists(MethodAccess ma, Method m | m = ma.getMethod() |
       (
         ma.getArgument(0) = this.asExpr() and
         (
@@ -93,14 +93,16 @@ private class CompileRegexSink extends DataFlow::ExprNode {
 /**
  * A data flow configuration for regular expressions that include permissive dots.
  */
-private module PermissiveDotRegexConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow2::Node src) { src.asExpr() instanceof PermissiveDotStr }
+private class PermissiveDotRegexConfig extends DataFlow2::Configuration {
+  PermissiveDotRegexConfig() { this = "PermissiveDotRegex::PermissiveDotRegexConfig" }
 
-  predicate isSink(DataFlow2::Node sink) { sink instanceof CompileRegexSink }
+  override predicate isSource(DataFlow2::Node src) { src.asExpr() instanceof PermissiveDotStr }
 
-  predicate isBarrier(DataFlow2::Node node) {
+  override predicate isSink(DataFlow2::Node sink) { sink instanceof CompileRegexSink }
+
+  override predicate isBarrier(DataFlow2::Node node) {
     exists(
-      MethodCall ma, Field f // Pattern.compile(PATTERN, Pattern.DOTALL)
+      MethodAccess ma, Field f // Pattern.compile(PATTERN, Pattern.DOTALL)
     |
       ma.getMethod() instanceof PatternCompileMethod and
       ma.getArgument(1) = f.getAnAccess() and
@@ -111,31 +113,31 @@ private module PermissiveDotRegexConfig implements DataFlow::ConfigSig {
   }
 }
 
-private module PermissiveDotRegexFlow = DataFlow::Global<PermissiveDotRegexConfig>;
-
 /**
  * A taint-tracking configuration for untrusted user input used to match regular expressions
  * that include permissive dots.
  */
-module MatchRegexConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) {
+class MatchRegexConfiguration extends TaintTracking::Configuration {
+  MatchRegexConfiguration() { this = "PermissiveDotRegex::MatchRegexConfiguration" }
+
+  override predicate isSource(DataFlow::Node source) {
     sourceNode(source, "uri-path") or // Servlet uri source
     source instanceof SpringUriInputParameterSource // Spring uri source
   }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSink(DataFlow::Node sink) {
     sink instanceof MatchRegexSink and
     exists(
       Guard guard, Expr se, Expr ce // used in a condition to control url redirect, which is a typical security enforcement
     |
       (
-        sink.asExpr() = ce.(MethodCall).getQualifier() or
-        sink.asExpr() = ce.(MethodCall).getAnArgument() or
+        sink.asExpr() = ce.(MethodAccess).getQualifier() or
+        sink.asExpr() = ce.(MethodAccess).getAnArgument() or
         sink.asExpr() = ce
       ) and
       (
-        DataFlow::localExprFlow(ce, guard.(MethodCall).getQualifier()) or
-        DataFlow::localExprFlow(ce, guard.(MethodCall).getAnArgument())
+        DataFlow::localExprFlow(ce, guard.(MethodAccess).getQualifier()) or
+        DataFlow::localExprFlow(ce, guard.(MethodAccess).getAnArgument())
       ) and
       (
         DataFlow::exprNode(se) instanceof UrlRedirectSink or
@@ -143,14 +145,14 @@ module MatchRegexConfig implements DataFlow::ConfigSig {
       ) and
       guard.controls(se.getBasicBlock(), true)
     ) and
-    exists(MethodCall ma | PermissiveDotRegexFlow::flowToExpr(ma.getArgument(0)) |
+    exists(MethodAccess ma | any(PermissiveDotRegexConfig conf2).hasFlowToExpr(ma.getArgument(0)) |
       // input.matches(regexPattern)
       ma.getMethod() instanceof StringMatchMethod and
       ma.getQualifier() = sink.asExpr()
       or
       // p = Pattern.compile(regexPattern); p.matcher(input)
       ma.getMethod() instanceof PatternCompileMethod and
-      exists(MethodCall pma |
+      exists(MethodAccess pma |
         pma.getMethod() instanceof PatternMatcherMethod and
         sink.asExpr() = pma.getArgument(0) and
         DataFlow::localExprFlow(ma, pma.getQualifier())
@@ -163,8 +165,6 @@ module MatchRegexConfig implements DataFlow::ConfigSig {
   }
 }
 
-module MatchRegexFlow = TaintTracking::Global<MatchRegexConfig>;
-
 /**
  * A data flow sink representing a string being matched against a regular expression.
  */
@@ -175,7 +175,7 @@ abstract class MatchRegexSink extends DataFlow::ExprNode { }
  */
 private class StringMatchRegexSink extends MatchRegexSink {
   StringMatchRegexSink() {
-    exists(MethodCall ma, Method m | m = ma.getMethod() |
+    exists(MethodAccess ma, Method m | m = ma.getMethod() |
       (
         m instanceof StringMatchMethod and
         ma.getQualifier() = this.asExpr()
@@ -189,7 +189,7 @@ private class StringMatchRegexSink extends MatchRegexSink {
  */
 private class PatternMatchRegexSink extends MatchRegexSink {
   PatternMatchRegexSink() {
-    exists(MethodCall ma, Method m | m = ma.getMethod() |
+    exists(MethodAccess ma, Method m | m = ma.getMethod() |
       (
         m instanceof PatternMatchMethod and
         ma.getArgument(1) = this.asExpr()
@@ -203,7 +203,7 @@ private class PatternMatchRegexSink extends MatchRegexSink {
  */
 private class PatternMatcherRegexSink extends MatchRegexSink {
   PatternMatcherRegexSink() {
-    exists(MethodCall ma, Method m | m = ma.getMethod() |
+    exists(MethodAccess ma, Method m | m = ma.getMethod() |
       (
         m instanceof PatternMatcherMethod and
         ma.getArgument(0) = this.asExpr()

@@ -8,16 +8,16 @@ import codeql.ruby.DataFlow
 import codeql.ruby.security.IncompleteMultiCharacterSanitizationQuery as Query
 import TestUtilities.InlineExpectationsTest
 
-module Test implements TestSig {
-  string getARelevantTag() { result = "hasResult" }
+class Test extends InlineExpectationsTest {
+  Test() { this = "IncompleteMultiCharacterSanitizationTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "hasResult" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "hasResult" and
     hasResult(location, element, value)
   }
 }
-
-import MakeTest<Test>
 
 predicate hasResult(Location location, string element, string value) {
   exists(DataFlow::Node replace, string kind |

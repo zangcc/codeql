@@ -13,41 +13,47 @@
 
 import csharp
 import semmle.code.csharp.security.dataflow.UnsafeDeserializationQuery
-import Flow::PathGraph
+import DataFlow::PathGraph
 
-module Flow =
-  DataFlow::MergePathGraph3<TaintToObjectMethodTracking::PathNode,
-    TaintToConstructorOrStaticMethodTracking::PathNode, JsonConvertTracking::PathNode,
-    TaintToObjectMethodTracking::PathGraph, TaintToConstructorOrStaticMethodTracking::PathGraph,
-    JsonConvertTracking::PathGraph>;
-
-from Flow::PathNode userInput, Flow::PathNode deserializeCallArg
+from DataFlow::PathNode userInput, DataFlow::PathNode deserializeCallArg
 where
-  // all flows from user input to deserialization with weak and strong type serializers
-  TaintToObjectMethodTracking::flowPath(userInput.asPathNode1(), deserializeCallArg.asPathNode1()) and
+  exists(TaintToObjectMethodTrackingConfig taintTracking |
+    // all flows from user input to deserialization with weak and strong type serializers
+    taintTracking.hasFlowPath(userInput, deserializeCallArg)
+  ) and
   // intersect with strong types, but user controlled or weak types deserialization usages
   (
-    exists(DataFlow::Node weakTypeUsage, MethodCall mc |
-      WeakTypeCreationToUsageTracking::flowTo(weakTypeUsage) and
+    exists(
+      DataFlow::Node weakTypeUsage,
+      WeakTypeCreationToUsageTrackingConfig weakTypeDeserializerTracking, MethodCall mc
+    |
+      weakTypeDeserializerTracking.hasFlowTo(weakTypeUsage) and
       mc.getQualifier() = weakTypeUsage.asExpr() and
       mc.getAnArgument() = deserializeCallArg.getNode().asExpr()
     )
     or
-    exists(DataFlow::Node taintedTypeUsage, MethodCall mc |
-      TaintToObjectTypeTracking::flowTo(taintedTypeUsage) and
+    exists(
+      TaintToObjectTypeTrackingConfig userControlledTypeTracking, DataFlow::Node taintedTypeUsage,
+      MethodCall mc
+    |
+      userControlledTypeTracking.hasFlowTo(taintedTypeUsage) and
       mc.getQualifier() = taintedTypeUsage.asExpr() and
       mc.getAnArgument() = deserializeCallArg.getNode().asExpr()
     )
   )
   or
   // no type check needed - straightforward taint -> sink
-  TaintToConstructorOrStaticMethodTracking::flowPath(userInput.asPathNode2(),
-    deserializeCallArg.asPathNode2())
+  exists(TaintToConstructorOrStaticMethodTrackingConfig taintTracking2 |
+    taintTracking2.hasFlowPath(userInput, deserializeCallArg)
+  )
   or
   // JsonConvert static method call, but with additional unsafe typename tracking
-  exists(DataFlow::Node settingsCallArg |
-    JsonConvertTracking::flowPath(userInput.asPathNode3(), deserializeCallArg.asPathNode3()) and
-    TypeNameTracking::flow(_, settingsCallArg) and
+  exists(
+    JsonConvertTrackingConfig taintTrackingJsonConvert, TypeNameTrackingConfig typenameTracking,
+    DataFlow::Node settingsCallArg
+  |
+    taintTrackingJsonConvert.hasFlowPath(userInput, deserializeCallArg) and
+    typenameTracking.hasFlow(_, settingsCallArg) and
     deserializeCallArg.getNode().asExpr().getParent() = settingsCallArg.asExpr().getParent()
   )
 select deserializeCallArg, userInput, deserializeCallArg, "$@ flows to unsafe deserializer.",

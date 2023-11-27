@@ -1,6 +1,5 @@
 private import TreeSitter
 private import codeql.ruby.AST
-private import codeql.ruby.CFG
 private import codeql.ruby.ast.internal.AST
 private import codeql.ruby.ast.internal.Parameter
 private import codeql.ruby.ast.internal.Pattern
@@ -365,11 +364,22 @@ private module Cached {
 
   cached
   predicate isCapturedAccess(LocalVariableAccess access) {
-    exists(Scope scope1, CfgScope scope2 |
+    exists(Scope scope1, Scope scope2 |
       scope1 = access.getVariable().getDeclaringScope() and
       scope2 = access.getCfgScope() and
-      scope1 != scope2 and
-      not scope2 instanceof Toplevel
+      scope1 != scope2
+    |
+      if access instanceof SelfVariableAccess
+      then
+        // ```
+        // class C
+        //   def self.m // not a captured access
+        //   end
+        // end
+        // ```
+        not scope2 instanceof Toplevel or
+        not access = any(SingletonMethod m).getObject()
+      else any()
     )
   }
 
@@ -597,8 +607,7 @@ private class GlobalVariableAccessReal extends GlobalVariableAccessImpl, TGlobal
   final override string toString() { result = g.getValue() }
 }
 
-private class GlobalVariableAccessSynth extends GlobalVariableAccessImpl, TGlobalVariableAccessSynth
-{
+private class GlobalVariableAccessSynth extends GlobalVariableAccessImpl, TGlobalVariableAccessSynth {
   private GlobalVariable v;
 
   GlobalVariableAccessSynth() { this = TGlobalVariableAccessSynth(_, _, v) }
@@ -615,8 +624,7 @@ module InstanceVariableAccess {
 abstract class InstanceVariableAccessImpl extends VariableAccessImpl, TInstanceVariableAccess { }
 
 private class InstanceVariableAccessReal extends InstanceVariableAccessImpl,
-  TInstanceVariableAccessReal
-{
+  TInstanceVariableAccessReal {
   private Ruby::InstanceVariable g;
   private InstanceVariable v;
 
@@ -628,8 +636,7 @@ private class InstanceVariableAccessReal extends InstanceVariableAccessImpl,
 }
 
 private class InstanceVariableAccessSynth extends InstanceVariableAccessImpl,
-  TInstanceVariableAccessSynth
-{
+  TInstanceVariableAccessSynth {
   private InstanceVariable v;
 
   InstanceVariableAccessSynth() { this = TInstanceVariableAccessSynth(_, _, v) }
@@ -657,8 +664,7 @@ private class ClassVariableAccessReal extends ClassVariableAccessRealImpl, TClas
 }
 
 private class ClassVariableAccessSynth extends ClassVariableAccessRealImpl,
-  TClassVariableAccessSynth
-{
+  TClassVariableAccessSynth {
   private ClassVariable v;
 
   ClassVariableAccessSynth() { this = TClassVariableAccessSynth(_, _, v) }

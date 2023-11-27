@@ -104,9 +104,9 @@ private class AnalyzedNamespaceDeclaration extends DataFlow::AnalyzedValueNode {
   override NamespaceDeclaration astNode;
 
   override AbstractValue getALocalValue() {
-    result = TAbstractOtherObject() and this.getPreviousValue().getBooleanValue() = false
+    result = TAbstractOtherObject() and getPreviousValue().getBooleanValue() = false
     or
-    result = this.getPreviousValue() and result.getBooleanValue() = true
+    result = getPreviousValue() and result.getBooleanValue() = true
   }
 
   AbstractValue getPreviousValue() {
@@ -161,7 +161,7 @@ private class AnalyzedSuperCall extends DataFlow::AnalyzedValueNode {
 
   override AbstractValue getALocalValue() {
     exists(MethodDefinition md, DataFlow::AnalyzedNode sup, AbstractValue supVal |
-      md.getBody() = this.asExpr().getEnclosingFunction() and
+      md.getBody() = asExpr().getEnclosingFunction() and
       sup = md.getDeclaringClass().getSuperClass().analyze() and
       supVal = sup.getALocalValue()
     |
@@ -183,7 +183,7 @@ private class AnalyzedNewExpr extends DataFlow::AnalyzedValueNode {
   override NewExpr astNode;
 
   override AbstractValue getALocalValue() {
-    this.isIndefinite() and
+    isIndefinite() and
     (
       result = TIndefiniteFunctionOrClass("call") or
       result = TIndefiniteObject("call")

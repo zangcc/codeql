@@ -4,10 +4,12 @@ import cpp
 import TestUtilities.InlineExpectationsTest
 import semmle.code.cpp.security.FlowSources
 
-module RemoteFlowSourceTest implements TestSig {
-  string getARelevantTag() { result = "remote_source" }
+class RemoteFlowSourceTest extends InlineExpectationsTest {
+  RemoteFlowSourceTest() { this = "RemoteFlowSourceTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "remote_source" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "remote_source" and
     exists(RemoteFlowSource node, int n |
       n =
@@ -29,10 +31,12 @@ module RemoteFlowSourceTest implements TestSig {
   }
 }
 
-module RemoteFlowSinkTest implements TestSig {
-  string getARelevantTag() { result = "remote_sink" }
+class RemoteFlowSinkTest extends InlineExpectationsTest {
+  RemoteFlowSinkTest() { this = "RemoteFlowSinkTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "remote_sink" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     tag = "remote_sink" and
     exists(RemoteFlowSink node, int n |
       n =
@@ -53,5 +57,3 @@ module RemoteFlowSinkTest implements TestSig {
     )
   }
 }
-
-import MakeTest<MergeTests<RemoteFlowSourceTest, RemoteFlowSinkTest>>

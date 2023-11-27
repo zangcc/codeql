@@ -14,6 +14,7 @@
 
 import codeql.ruby.AST
 import codeql.ruby.DataFlow
+import DataFlow::PathGraph
 import codeql.ruby.TaintTracking
 import codeql.ruby.controlflow.CfgNodes
 
@@ -131,12 +132,14 @@ class CredentialSink extends DataFlow::Node {
   CredentialSink() { isCredentialSink(this) }
 }
 
-private module HardcodedCredentialsConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof HardcodedValueSource }
+class HardcodedCredentialsConfiguration extends DataFlow::Configuration {
+  HardcodedCredentialsConfiguration() { this = "HardcodedCredentialsConfiguration" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof CredentialSink }
+  override predicate isSource(DataFlow::Node source) { source instanceof HardcodedValueSource }
 
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+  override predicate isSink(DataFlow::Node sink) { sink instanceof CredentialSink }
+
+  override predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
     exists(ExprNodes::BinaryOperationCfgNode binop |
       (
         binop.getLeftOperand() = node1.asExpr() or
@@ -149,11 +152,7 @@ private module HardcodedCredentialsConfig implements DataFlow::ConfigSig {
   }
 }
 
-private module HardcodedCredentialsFlow = DataFlow::Global<HardcodedCredentialsConfig>;
-
-import HardcodedCredentialsFlow::PathGraph
-
-from HardcodedCredentialsFlow::PathNode source, HardcodedCredentialsFlow::PathNode sink
-where HardcodedCredentialsFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, HardcodedCredentialsConfiguration conf
+where conf.hasFlowPath(source, sink)
 select source.getNode(), source, sink, "This hardcoded value is $@.", sink.getNode(),
   "used as credentials"

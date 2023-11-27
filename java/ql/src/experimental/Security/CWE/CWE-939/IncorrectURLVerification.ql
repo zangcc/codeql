@@ -46,8 +46,8 @@ class UriGetHostMethod extends Method {
 /**
  * The method access with incorrect string comparison
  */
-class HostVerificationMethodCall extends MethodCall {
-  HostVerificationMethodCall() {
+class HostVerificationMethodAccess extends MethodAccess {
+  HostVerificationMethodAccess() {
     (
       this.getMethod().hasName("endsWith") or
       this.getMethod().hasName("contains") or
@@ -69,7 +69,7 @@ class HostVerificationMethodCall extends MethodCall {
       or
       this.getArgument(0).(AddExpr).getLeftOperand().(StringLiteral).getValue().charAt(0) != "." //"."+var2, check string constant "." e.g. String domainName = "example.com";  Uri.parse(url).getHost().endsWith("www."+domainName)
       or
-      exists(MethodCall ma, Method m, Field f |
+      exists(MethodAccess ma, Method m, Field f |
         this.getArgument(0) = ma and
         ma.getMethod() = m and
         m.hasName("getString") and
@@ -89,6 +89,6 @@ class HostVerificationMethodCall extends MethodCall {
   }
 }
 
-from UriGetHostMethod um, MethodCall uma, HostVerificationMethodCall hma
+from UriGetHostMethod um, MethodAccess uma, HostVerificationMethodAccess hma
 where hma.getQualifier() = uma and uma.getMethod() = um
 select hma, "Method has potentially $@.", hma.getArgument(0), "improper URL verification"

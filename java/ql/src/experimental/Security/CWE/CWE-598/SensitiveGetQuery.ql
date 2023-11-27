@@ -14,7 +14,7 @@ import java
 import semmle.code.java.dataflow.FlowSources
 import semmle.code.java.dataflow.TaintTracking
 import semmle.code.java.security.SensitiveActions
-import SensitiveGetQueryFlow::PathGraph
+import DataFlow::PathGraph
 
 /** A variable that holds sensitive information judging by its name. */
 class SensitiveInfoExpr extends Expr {
@@ -37,10 +37,10 @@ class DoGetServletMethod extends Method {
 }
 
 /** Holds if `ma` is (perhaps indirectly) called from the `doGet` method of `HttpServlet`. */
-predicate isReachableFromServletDoGet(MethodCall ma) {
+predicate isReachableFromServletDoGet(MethodAccess ma) {
   ma.getEnclosingCallable() instanceof DoGetServletMethod
   or
-  exists(Method pm, MethodCall pma |
+  exists(Method pm, MethodAccess pma |
     ma.getEnclosingCallable() = pm and
     pma.getMethod() = pm and
     isReachableFromServletDoGet(pma)
@@ -50,7 +50,7 @@ predicate isReachableFromServletDoGet(MethodCall ma) {
 /** Source of GET servlet requests. */
 class RequestGetParamSource extends DataFlow::ExprNode {
   RequestGetParamSource() {
-    exists(MethodCall ma |
+    exists(MethodAccess ma |
       isRequestGetParamMethod(ma) and
       ma = this.asExpr() and
       isReachableFromServletDoGet(ma)
@@ -59,22 +59,22 @@ class RequestGetParamSource extends DataFlow::ExprNode {
 }
 
 /** A taint configuration tracking flow from the `ServletRequest` of a GET request handler to an expression whose name suggests it holds security-sensitive data. */
-module SensitiveGetQueryConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof RequestGetParamSource }
+class SensitiveGetQueryConfiguration extends TaintTracking::Configuration {
+  SensitiveGetQueryConfiguration() { this = "SensitiveGetQueryConfiguration" }
 
-  predicate isSink(DataFlow::Node sink) { sink.asExpr() instanceof SensitiveInfoExpr }
+  override predicate isSource(DataFlow::Node source) { source instanceof RequestGetParamSource }
+
+  override predicate isSink(DataFlow::Node sink) { sink.asExpr() instanceof SensitiveInfoExpr }
 
   /** Holds if the node is in a servlet method other than `doGet`. */
-  predicate isBarrier(DataFlow::Node node) {
+  override predicate isSanitizer(DataFlow::Node node) {
     isServletRequestMethod(node.getEnclosingCallable()) and
     not isGetServletMethod(node.getEnclosingCallable())
   }
 }
 
-module SensitiveGetQueryFlow = TaintTracking::Global<SensitiveGetQueryConfig>;
-
-from SensitiveGetQueryFlow::PathNode source, SensitiveGetQueryFlow::PathNode sink
-where SensitiveGetQueryFlow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, SensitiveGetQueryConfiguration c
+where c.hasFlowPath(source, sink)
 select sink.getNode(), source, sink,
   "$@ uses the GET request method to transmit sensitive information.", source.getNode(),
   "This request"

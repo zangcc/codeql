@@ -35,6 +35,9 @@ module ImproperCodeSanitization {
    */
   class JsonStringifyAsSource extends Source instanceof JsonStringifyCall { }
 
+  /** DEPRECATED: Alias for JsonStringifyAsSource */
+  deprecated class JSONStringifyAsSource = JsonStringifyAsSource;
+
   /**
    * A leaf in a string-concatenation, where the string-concatenation constructs code that looks like a function.
    */

@@ -42,8 +42,8 @@ class SpringFactoryMethod extends CallableEntryPoint {
  */
 class SpringBeanAnnotatedMethod extends CallableEntryPoint {
   SpringBeanAnnotatedMethod() {
-    this.hasAnnotation("org.springframework.context.annotation", "Bean") and
-    this.getDeclaringType().(SpringComponent).isLive()
+    hasAnnotation("org.springframework.context.annotation", "Bean") and
+    getDeclaringType().(SpringComponent).isLive()
   }
 }
 
@@ -59,9 +59,9 @@ class SpringControllerEntryPoint extends CallableEntryPoint instanceof SpringCon
 class SpringResponseAccessibleMethod extends CallableEntryPoint {
   SpringResponseAccessibleMethod() {
     // Must be on a type used in a Model response.
-    this.getDeclaringType() instanceof SpringModelResponseType and
+    getDeclaringType() instanceof SpringModelResponseType and
     // Must be public.
-    this.isPublic()
+    isPublic()
   }
 }
 
@@ -72,11 +72,10 @@ class SpringResponseAccessibleMethod extends CallableEntryPoint {
 class SpringManagedResource extends CallableEntryPoint {
   SpringManagedResource() {
     (
-      this.hasAnnotation("org.springframework.jmx.export.annotation", "ManagedAttribute") or
-      this.hasAnnotation("org.springframework.jmx.export.annotation", "ManagedOperation")
+      hasAnnotation("org.springframework.jmx.export.annotation", "ManagedAttribute") or
+      hasAnnotation("org.springframework.jmx.export.annotation", "ManagedOperation")
     ) and
-    this.getDeclaringType()
-        .hasAnnotation("org.springframework.jmx.export.annotation", "ManagedResource")
+    getDeclaringType().hasAnnotation("org.springframework.jmx.export.annotation", "ManagedResource")
   }
 }
 
@@ -85,18 +84,18 @@ class SpringManagedResource extends CallableEntryPoint {
  */
 class SpringPersistenceConstructor extends CallableEntryPoint {
   SpringPersistenceConstructor() {
-    this.hasAnnotation("org.springframework.data.annotation", "PersistenceConstructor") and
-    this.getDeclaringType() instanceof PersistentEntity
+    hasAnnotation("org.springframework.data.annotation", "PersistenceConstructor") and
+    getDeclaringType() instanceof PersistentEntity
   }
 }
 
 class SpringAspect extends CallableEntryPoint {
   SpringAspect() {
     (
-      this.hasAnnotation("org.aspectj.lang.annotation", "Around") or
-      this.hasAnnotation("org.aspectj.lang.annotation", "Before")
+      hasAnnotation("org.aspectj.lang.annotation", "Around") or
+      hasAnnotation("org.aspectj.lang.annotation", "Before")
     ) and
-    this.getDeclaringType().hasAnnotation("org.aspectj.lang.annotation", "Aspect")
+    getDeclaringType().hasAnnotation("org.aspectj.lang.annotation", "Aspect")
   }
 }
 
@@ -106,10 +105,10 @@ class SpringAspect extends CallableEntryPoint {
 class SpringCli extends CallableEntryPoint {
   SpringCli() {
     (
-      this.hasAnnotation("org.springframework.shell.core.annotation", "CliCommand") or
-      this.hasAnnotation("org.springframework.shell.core.annotation", "CliAvailabilityIndicator")
+      hasAnnotation("org.springframework.shell.core.annotation", "CliCommand") or
+      hasAnnotation("org.springframework.shell.core.annotation", "CliAvailabilityIndicator")
     ) and
-    this.getDeclaringType()
+    getDeclaringType()
         .getAnAncestor()
         .hasQualifiedName("org.springframework.shell.core", "CommandMarker")
   }

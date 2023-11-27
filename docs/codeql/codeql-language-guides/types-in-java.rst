@@ -1,11 +1,9 @@
 .. _types-in-java:
 
-Types in Java and Kotlin
-========================
+Types in Java
+=============
 
-You can use CodeQL to find out information about data types used in Java/Kotlin code. This allows you to write queries to identify specific type-related issues.
-
-.. include:: ../reusables/kotlin-beta-note.rst
+You can use CodeQL to find out information about data types used in Java code. This allows you to write queries to identify specific type-related issues.
 
 About working with Java types
 -----------------------------

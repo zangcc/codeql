@@ -14,11 +14,9 @@
 
 import cpp
 import semmle.code.cpp.security.Security
-import semmle.code.cpp.security.FlowSources
 import semmle.code.cpp.security.FunctionWithWrappers
-import semmle.code.cpp.ir.IR
-import semmle.code.cpp.ir.dataflow.TaintTracking
-import SqlTainted::PathGraph
+import semmle.code.cpp.ir.dataflow.internal.DefaultTaintTrackingImpl
+import TaintedWithPath
 
 class SqlLikeFunction extends FunctionWithWrappers {
   SqlLikeFunction() { sqlArgument(this.getName(), _) }
@@ -26,43 +24,31 @@ class SqlLikeFunction extends FunctionWithWrappers {
   override predicate interestingArg(int arg) { sqlArgument(this.getName(), arg) }
 }
 
-Expr asSinkExpr(DataFlow::Node node) {
-  result = node.asIndirectArgument()
-  or
-  // We want the conversion so we only get one node for the expression
-  result = node.asExpr()
-}
-
-module SqlTaintedConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) { node instanceof FlowSource }
-
-  predicate isSink(DataFlow::Node node) {
-    exists(SqlLikeFunction runSql | runSql.outermostWrapperFunctionCall(asSinkExpr(node), _))
+class Configuration extends TaintTrackingConfiguration {
+  override predicate isSink(Element tainted) {
+    exists(SqlLikeFunction runSql | runSql.outermostWrapperFunctionCall(tainted, _))
   }
 
-  predicate isBarrier(DataFlow::Node node) {
-    node.asExpr().getUnspecifiedType() instanceof IntegralType
-  }
-
-  predicate isBarrierIn(DataFlow::Node node) {
+  override predicate isBarrier(Expr e) {
+    super.isBarrier(e)
+    or
+    e.getUnspecifiedType() instanceof IntegralType
+    or
     exists(SqlBarrierFunction sql, int arg, FunctionInput input |
-      node.asIndirectArgument() = sql.getACallToThisFunction().getArgument(arg) and
+      e = sql.getACallToThisFunction().getArgument(arg) and
       input.isParameterDeref(arg) and
       sql.barrierSqlArgument(input, _)
     )
   }
 }
 
-module SqlTainted = TaintTracking::Global<SqlTaintedConfig>;
-
 from
-  SqlLikeFunction runSql, Expr taintedArg, FlowSource taintSource, SqlTainted::PathNode sourceNode,
-  SqlTainted::PathNode sinkNode, string callChain
+  SqlLikeFunction runSql, Expr taintedArg, Expr taintSource, PathNode sourceNode, PathNode sinkNode,
+  string taintCause, string callChain
 where
   runSql.outermostWrapperFunctionCall(taintedArg, callChain) and
-  SqlTainted::flowPath(sourceNode, sinkNode) and
-  taintedArg = asSinkExpr(sinkNode.getNode()) and
-  taintSource = sourceNode.getNode()
+  taintedWithPath(taintSource, taintedArg, sourceNode, sinkNode) and
+  isUserInput(taintSource, taintCause)
 select taintedArg, sourceNode, sinkNode,
   "This argument to a SQL query function is derived from $@ and then passed to " + callChain + ".",
-  taintSource, "user input (" + taintSource.getSourceType() + ")"
+  taintSource, "user input (" + taintCause + ")"

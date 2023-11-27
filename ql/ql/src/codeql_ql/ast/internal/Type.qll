@@ -21,7 +21,7 @@ private newtype TType =
 private predicate primTypeName(string s) { s = ["int", "float", "string", "boolean", "date"] }
 
 private predicate isActualClass(Class c) {
-  (not exists(c.getAliasType()) or c.isFinal()) and
+  not exists(c.getAliasType()) and
   not exists(c.getUnionMember())
 }
 
@@ -36,10 +36,6 @@ class Type extends TType {
   /**
    * Gets a supertype of this type. This follows the user-visible type hierarchy,
    * and doesn't include internal types like the characteristic and domain types of classes.
-   *
-   * For supertypes that are `final` aliases, this returns the alias itself, and for
-   * types that are `final` aliases, this returns the supertypes of the type that is
-   * being aliased.
    */
   Type getASuperType() { none() }
 
@@ -98,23 +94,9 @@ class ClassType extends Type, TClass {
 
   override Class getDeclaration() { result = decl }
 
-  override Type getASuperType() {
-    result = decl.getASuperType().getResolvedType()
-    or
-    exists(ClassType alias |
-      this.isFinalAlias(alias) and
-      result = alias.getASuperType()
-    )
-  }
+  override Type getASuperType() { result = decl.getASuperType().getResolvedType() }
 
-  Type getAnInstanceofType() {
-    result = decl.getAnInstanceofType().getResolvedType()
-    or
-    exists(ClassType alias |
-      this.isFinalAlias(alias) and
-      result = alias.getAnInstanceofType()
-    )
-  }
+  Type getAnInstanceofType() { result = decl.getAnInstanceofType().getResolvedType() }
 
   override Type getAnInternalSuperType() {
     result.(ClassCharType).getClassType() = this
@@ -127,12 +109,6 @@ class ClassType extends Type, TClass {
     not exists(VarDecl other | other = fieldCandidate(this, name) |
       other.getDeclaringType().getASuperType+() = result.getDeclaringType()
     )
-  }
-
-  /** Holds if this class is a `final` alias of `c`. */
-  predicate isFinalAlias(ClassType c) {
-    decl.isFinal() and
-    decl.getAliasType().getResolvedType() = c
   }
 }
 
@@ -160,37 +136,23 @@ private PredicateOrBuiltin declaredPred(Type ty, string name, int arity) {
   result.getDeclaringType() = ty and
   result.getName() = name and
   result.getArity() = arity
-  or
-  exists(ClassType alias |
-    ty.(ClassType).isFinalAlias(alias) and
-    result = declaredPred(alias, name, arity)
-  )
 }
 
 pragma[nomagic]
-private PredicateOrBuiltin classPredCandidate(Type ty, string name, int arity, boolean isFinal) {
-  result = declaredPred(ty, name, arity) and
-  if ty.(ClassType).getDeclaration().isFinal() then isFinal = true else isFinal = false
+private PredicateOrBuiltin classPredCandidate(Type ty, string name, int arity) {
+  result = declaredPred(ty, name, arity)
   or
   not exists(declaredPred(ty, name, arity)) and
-  result = inherClassPredCandidate(ty, name, arity, isFinal)
+  result = inherClassPredCandidate(ty, name, arity)
 }
 
-private PredicateOrBuiltin classPredCandidate(Type ty, string name, int arity) {
-  result = classPredCandidate(ty, name, arity, _)
-}
-
-private PredicateOrBuiltin inherClassPredCandidate(Type ty, string name, int arity, boolean isFinal) {
-  result = classPredCandidate(ty.getAnInternalSuperType(), name, arity, isFinal) and
+private PredicateOrBuiltin inherClassPredCandidate(Type ty, string name, int arity) {
+  result = classPredCandidate(ty.getAnInternalSuperType(), name, arity) and
   not result.isPrivate()
 }
 
 predicate predOverrides(ClassPredicate sub, ClassPredicate sup) {
-  sup = inherClassPredCandidate(sub.getDeclaringType(), sub.getName(), sub.getArity(), false)
-}
-
-predicate predShadows(ClassPredicate sub, ClassPredicate sup) {
-  sup = inherClassPredCandidate(sub.getDeclaringType(), sub.getName(), sub.getArity(), true)
+  sup = inherClassPredCandidate(sub.getDeclaringType(), sub.getName(), sub.getArity())
 }
 
 private VarDecl declaredField(ClassType ty, string name) {
@@ -414,8 +376,7 @@ private predicate defines(FileOrModule m, string name, Type t, boolean public) {
   exists(Class ty | t = ty.getAliasType().getResolvedType() |
     getEnclosingModule(ty) = m and
     ty.getName() = name and
-    public = getPublicBool(ty) and
-    not ty.isFinal()
+    public = getPublicBool(ty)
   )
   or
   exists(Import im |

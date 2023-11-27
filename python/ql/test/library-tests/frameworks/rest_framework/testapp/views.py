@@ -19,41 +19,19 @@ class BarViewSet(viewsets.ModelViewSet):
     queryset = Bar.objects.all()
     serializer_class = BarSerializer
 
-class EntrypointViewSet(viewsets.ModelViewSet):
-    queryset = Bar.objects.all()
-    serializer_class = BarSerializer
-
-    def create(self, request, *args, **kwargs): # $ requestHandler
-        return Response("create") # $ HttpResponse
-
-    def retrieve(self, request, *args, **kwargs): # $ requestHandler
-        return Response("retrieve") # $ HttpResponse
-
-    def update(self, request, *args, **kwargs): # $ requestHandler
-        return Response("update") # $ HttpResponse
-
-    def partial_update(self, request, *args, **kwargs): # $ requestHandler
-        return Response("partial_update") # $ HttpResponse
-
-    def destroy(self, request, *args, **kwargs): # $ requestHandler
-        return Response("destroy") # $ HttpResponse
-
-    def list(self, request, *args, **kwargs): # $ requestHandler
-        return Response("list") # $ HttpResponse
-
 # class based view
 # see https://www.django-rest-framework.org/api-guide/views/#class-based-views
 
 class MyClass(APIView):
-    def initial(self, request, *args, **kwargs): # $ requestHandler
+    def initial(self, request, *args, **kwargs):
         # this method will be called before processing any request
         super().initial(request, *args, **kwargs)
 
-    def get(self, request): # $ requestHandler
-        return Response("GET request") # $ HttpResponse
+    def get(self, request):
+        return Response("GET request")
 
-    def post(self, request): # $ requestHandler
-        return Response("POST request") # $ HttpResponse
+    def post(self, request):
+        return Response("POST request")
 
 
 # function based view
@@ -61,21 +39,21 @@ class MyClass(APIView):
 
 
 @api_view(["GET", "POST"])
-def function_based_view(request: Request): # $ requestHandler
-    return Response({"message": "Hello, world!"}) # $ HttpResponse
+def function_based_view(request: Request):
+    return Response({"message": "Hello, world!"})
 
 
 @api_view(["GET", "POST"])
-def cookie_test(request: Request): # $ requestHandler
-    resp = Response("wat") # $ HttpResponse
+def cookie_test(request: Request):
+    resp = Response("wat")
     resp.set_cookie("key", "value") # $ CookieWrite CookieName="key" CookieValue="value"
-    resp.set_cookie(key="key4", value="value") # $ CookieWrite CookieName="key4" CookieValue="value"
+    resp.set_cookie(key="key4", value="value") # $ CookieWrite CookieName="key" CookieValue="value"
     resp.headers["Set-Cookie"] = "key2=value2" # $ MISSING: CookieWrite CookieRawHeader="key2=value2"
     resp.cookies["key3"] = "value3" # $ CookieWrite CookieName="key3" CookieValue="value3"
     return resp
 
 @api_view(["GET", "POST"])
-def exception_test(request: Request): # $ requestHandler
+def exception_test(request: Request):
     # see https://www.django-rest-framework.org/api-guide/exceptions/
     # note: `code details` not exposed by default
-    raise APIException("exception details", "code details") # $ HttpResponse
+    raise APIException("exception details", "code details")

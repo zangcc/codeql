@@ -11,15 +11,11 @@ signature module InputSig {
     /**
      * Gets the absolute path of this container.
      *
-     * Typically `folders(this, result) or files(this, result)`.
+     * Typically `containerparent(result, this)`.
      */
     string getAbsolutePath();
 
-    /**
-     * Gets the parent container of this container, if any.
-     *
-     * Typically `containerparent(result, this)`.
-     */
+    /** Gets the parent container of this container, if any. */
     ContainerBase getParentContainer();
   }
 
@@ -85,17 +81,6 @@ module Make<InputSig Input> {
     string getAbsolutePath() { result = super.getAbsolutePath() }
 
     /**
-     * Holds if either,
-     * - `part` is the base name of this container and `i = 1`, or
-     * - `part` is the stem of this container and `i = 2`, or
-     * - `part` is the extension of this container and `i = 3`.
-     */
-    cached
-    private predicate splitAbsolutePath(string part, int i) {
-      part = this.getAbsolutePath().regexpCapture(".*/(([^/]*?)(?:\\.([^.]*))?)", i)
-    }
-
-    /**
      * Gets the base name of this container including extension, that is, the last
      * segment of its absolute path, or the empty string if it has no segments.
      *
@@ -112,7 +97,9 @@ module Make<InputSig Input> {
      * <tr><td>"//FileServer/"</td><td>""</td></tr>
      * </table>
      */
-    string getBaseName() { this.splitAbsolutePath(result, 1) }
+    string getBaseName() {
+      result = this.getAbsolutePath().regexpCapture(".*/(([^/]*?)(?:\\.([^.]*))?)", 1)
+    }
 
     /**
      * Gets the extension of this container, that is, the suffix of its base name
@@ -137,7 +124,9 @@ module Make<InputSig Input> {
      * <tr><td>"/tmp/x.tar.gz"</td><td>"gz"</td></tr>
      * </table>
      */
-    string getExtension() { this.splitAbsolutePath(result, 3) }
+    string getExtension() {
+      result = this.getAbsolutePath().regexpCapture(".*/([^/]*?)(\\.([^.]*))?", 3)
+    }
 
     /** Gets the file in this container that has the given `baseName`, if any. */
     File getFile(string baseName) {
@@ -190,7 +179,9 @@ module Make<InputSig Input> {
      * <tr><td>"/tmp/x.tar.gz"</td><td>"x.tar"</td></tr>
      * </table>
      */
-    string getStem() { this.splitAbsolutePath(result, 2) }
+    string getStem() {
+      result = this.getAbsolutePath().regexpCapture(".*/([^/]*?)(?:\\.([^.]*))?", 1)
+    }
 
     /**
      * Gets a URL representing the location of this container.

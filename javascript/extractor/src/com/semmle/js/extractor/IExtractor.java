@@ -1,7 +1,6 @@
 package com.semmle.js.extractor;
 
 import java.io.IOException;
-import com.semmle.js.parser.ParseError;
 
 /** Generic extractor interface. */
 public interface IExtractor {
@@ -10,5 +9,5 @@ public interface IExtractor {
    * TextualExtractor}, and return information about the number of lines of code and the number of
    * lines of comments extracted.
    */
-  public ParseResultInfo extract(TextualExtractor textualExtractor) throws IOException;
+  public LoCInfo extract(TextualExtractor textualExtractor) throws IOException;
 }

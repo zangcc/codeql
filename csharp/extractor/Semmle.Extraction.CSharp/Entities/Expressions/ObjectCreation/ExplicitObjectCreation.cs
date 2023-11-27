@@ -1,6 +1,5 @@
-using System.IO;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-
+using System.IO;
 
 namespace Semmle.Extraction.CSharp.Entities.Expressions
 {

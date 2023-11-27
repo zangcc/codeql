@@ -4,14 +4,16 @@ import TestUtilities.InlineExpectationsTest
 import semmle.python.functions.ModificationOfParameterWithDefault
 private import semmle.python.dataflow.new.internal.PrintNode
 
-module ModificationOfParameterWithDefaultTest implements TestSig {
-  string getARelevantTag() { result = "modification" }
+class ModificationOfParameterWithDefaultTest extends InlineExpectationsTest {
+  ModificationOfParameterWithDefaultTest() { this = "ModificationOfParameterWithDefaultTest" }
 
-  private predicate relevant_node(DataFlow::Node sink) {
-    ModificationOfParameterWithDefault::Flow::flowTo(sink)
+  override string getARelevantTag() { result = "modification" }
+
+  predicate relevant_node(DataFlow::Node sink) {
+    exists(ModificationOfParameterWithDefault::Configuration cfg | cfg.hasFlowTo(sink))
   }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(DataFlow::Node n | relevant_node(n) |
       n.getLocation() = location and
       tag = "modification" and
@@ -20,5 +22,3 @@ module ModificationOfParameterWithDefaultTest implements TestSig {
     )
   }
 }
-
-import MakeTest<ModificationOfParameterWithDefaultTest>

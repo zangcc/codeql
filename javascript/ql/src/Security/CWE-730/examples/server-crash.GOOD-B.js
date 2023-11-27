@@ -1,12 +1,12 @@
 // ...
 express().post("/save", async (req, res) => {
-  try {
-    await fs.promises.access(rootDir);
-    save(rootDir, req.query.path, req.body); // GOOD exception is caught below
-    res.status(200);
-    res.end();
-  } catch (e) {
+  if (!(await fs.promises.exists(rootDir))) {
+    console.error(`Server setup is corrupted, ${rootDir} does not exist!`);
     res.status(500);
     res.end();
+    return;
   }
+  save(rootDir, req.query.path, req.body); // MAYBE BAD, depends on the commandline options
+  res.status(200);
+  res.end();
 });

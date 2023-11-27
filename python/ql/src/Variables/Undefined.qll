@@ -73,11 +73,11 @@ class UninitializedConfig extends TaintTracking::Configuration {
   override predicate isBarrier(DataFlow::Node node, TaintKind kind) {
     kind instanceof Uninitialized and
     (
-      this.definition(node.asVariable())
+      definition(node.asVariable())
       or
-      this.use(node.asVariable())
+      use(node.asVariable())
       or
-      this.sanitizingNode(node.asCfgNode())
+      sanitizingNode(node.asCfgNode())
     )
   }
 

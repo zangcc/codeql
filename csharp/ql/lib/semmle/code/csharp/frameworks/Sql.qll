@@ -36,11 +36,11 @@ class IDbCommandConstructionSqlExpr extends SqlExpr, ObjectCreation {
       ic.getParameter(0).getType() instanceof StringType and
       not exists(Type t | t = ic.getDeclaringType() |
         // Known sealed classes:
-        t.hasFullyQualifiedName("System.Data.SqlClient", "SqlCommand") or
-        t.hasFullyQualifiedName("System.Data.Odbc", "OdbcCommand") or
-        t.hasFullyQualifiedName("System.Data.OleDb", "OleDbCommand") or
-        t.hasFullyQualifiedName("System.Data.EntityClient", "EntityCommand") or
-        t.hasFullyQualifiedName("System.Data.SQLite", "SQLiteCommand")
+        t.hasQualifiedName("System.Data.SqlClient", "SqlCommand") or
+        t.hasQualifiedName("System.Data.Odbc", "OdbcCommand") or
+        t.hasQualifiedName("System.Data.OleDb", "OleDbCommand") or
+        t.hasQualifiedName("System.Data.EntityClient", "EntityCommand") or
+        t.hasQualifiedName("System.Data.SQLite", "SQLiteCommand")
       )
     )
   }
@@ -52,24 +52,23 @@ class IDbCommandConstructionSqlExpr extends SqlExpr, ObjectCreation {
 class DapperCommandDefinitionMethodCallSqlExpr extends SqlExpr, ObjectCreation {
   DapperCommandDefinitionMethodCallSqlExpr() {
     this.getObjectType() instanceof Dapper::CommandDefinitionStruct and
-    DapperCommandDefinitionMethodCallSql::flow(DataFlow::exprNode(this), _)
+    exists(Conf c | c.hasFlow(DataFlow::exprNode(this), _))
   }
 
   override Expr getSql() { result = this.getArgumentForName("commandText") }
 }
 
-private module DapperCommandDefitionMethodCallSqlConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node node) {
+private class Conf extends DataFlow4::Configuration {
+  Conf() { this = "DapperCommandDefinitionFlowConfig" }
+
+  override predicate isSource(DataFlow::Node node) {
     node.asExpr().(ObjectCreation).getObjectType() instanceof Dapper::CommandDefinitionStruct
   }
 
-  predicate isSink(DataFlow::Node node) {
+  override predicate isSink(DataFlow::Node node) {
     exists(MethodCall mc |
       mc.getTarget() = any(Dapper::SqlMapperClass c).getAQueryMethod() and
       node.asExpr() = mc.getArgumentForName("command")
     )
   }
 }
-
-private module DapperCommandDefinitionMethodCallSql =
-  DataFlow::Global<DapperCommandDefitionMethodCallSqlConfig>;

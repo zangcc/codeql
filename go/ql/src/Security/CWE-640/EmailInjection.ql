@@ -13,9 +13,9 @@
  */
 
 import go
+import DataFlow::PathGraph
 import EmailInjection::EmailInjection
-import Flow::PathGraph
 
-from Flow::PathNode source, Flow::PathNode sink
-where Flow::flowPath(source, sink)
+from DataFlow::PathNode source, DataFlow::PathNode sink, Configuration config
+where config.hasFlowPath(source, sink)
 select sink, source, sink, "Email content may contain $@.", source.getNode(), "untrusted input"

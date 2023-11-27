@@ -12,13 +12,13 @@
 import csharp
 import semmle.code.csharp.commons.QualifiedName
 import semmle.code.csharp.security.dataflow.ExternalAPIsQuery
-import RemoteSourceToExternalApi::PathGraph
+import DataFlow::PathGraph
 
 from
-  RemoteSourceToExternalApi::PathNode source, RemoteSourceToExternalApi::PathNode sink,
+  UntrustedDataToExternalApiConfig config, DataFlow::PathNode source, DataFlow::PathNode sink,
   string qualifier, string name
 where
-  RemoteSourceToExternalApi::flowPath(source, sink) and
+  config.hasFlowPath(source, sink) and
   sink.getNode().(ExternalApiDataNode).hasQualifiedName(qualifier, name)
 select sink, source, sink,
   "Call to " + getQualifiedName(qualifier, name) + " with untrusted data from $@.", source,

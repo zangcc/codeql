@@ -11,7 +11,7 @@ private import semmle.code.java.frameworks.Properties
  * 2. No `mail.smtp.ssl.checkserveridentity` property is enabled.
  */
 predicate isInsecureMailPropertyConfig(Variable properties) {
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     ma.getMethod() instanceof SetPropertyMethod and
     ma.getQualifier() = properties.getAnAccess()
   |
@@ -20,7 +20,7 @@ predicate isInsecureMailPropertyConfig(Variable properties) {
     or
     getStringValue(ma.getArgument(0)).matches("%.socketFactory%") //mail.smtp.socketFactory or mail.smtp.socketFactory.class
   ) and
-  not exists(MethodCall ma |
+  not exists(MethodAccess ma |
     ma.getMethod() instanceof SetPropertyMethod and
     ma.getQualifier() = properties.getAnAccess()
   |
@@ -32,7 +32,7 @@ predicate isInsecureMailPropertyConfig(Variable properties) {
 /**
  * Holds if `ma` enables TLS/SSL with Apache Email.
  */
-predicate enablesEmailSsl(MethodCall ma) {
+predicate enablesEmailSsl(MethodAccess ma) {
   ma.getMethod().hasName(["setSSLOnConnect", "setStartTLSRequired"]) and
   ma.getMethod().getDeclaringType() instanceof ApacheEmail and
   ma.getArgument(0).(BooleanLiteral).getBooleanValue() = true
@@ -42,7 +42,7 @@ predicate enablesEmailSsl(MethodCall ma) {
  * Holds if a SSL certificate check is enabled on an access of `apacheEmail` with Apache Email.
  */
 predicate hasSslCertificateCheck(Variable apacheEmail) {
-  exists(MethodCall ma |
+  exists(MethodAccess ma |
     ma.getQualifier() = apacheEmail.getAnAccess() and
     ma.getMethod().hasName("setSSLCheckServerIdentity") and
     ma.getMethod().getDeclaringType() instanceof ApacheEmail and

@@ -20,27 +20,27 @@ private class AndroidFilesystemCleartextStorageSink extends CleartextStorageSink
 /** A call to a method or constructor that may write to files to the local filesystem. */
 class LocalFileOpenCall extends Storable {
   LocalFileOpenCall() {
-    this = any(DataFlow::Node sink | sinkNode(sink, "path-injection")).asExpr().(Argument).getCall()
+    this = any(DataFlow::Node sink | sinkNode(sink, "create-file")).asExpr().(Argument).getCall()
   }
 
   override Expr getAnInput() {
-    exists(DataFlow::Node n |
+    exists(FilesystemFlowConfig conf, DataFlow::Node n |
       filesystemInput(n, result) and
-      FilesystemFlow::flow(DataFlow::exprNode(this), n)
+      conf.hasFlow(DataFlow::exprNode(this), n)
     )
   }
 
   override Expr getAStore() {
-    exists(DataFlow::Node n |
+    exists(FilesystemFlowConfig conf, DataFlow::Node n |
       closesFile(n, result) and
-      FilesystemFlow::flow(DataFlow::exprNode(this), n)
+      conf.hasFlow(DataFlow::exprNode(this), n)
     )
   }
 }
 
 /** Holds if `input` is written into `file`. */
 private predicate filesystemInput(DataFlow::Node file, Argument input) {
-  exists(DataFlow::Node write | sinkNode(write, "file-content-store") |
+  exists(DataFlow::Node write | sinkNode(write, "write-file") |
     input = write.asExpr() or
     isVarargs(input, write)
   ) and
@@ -79,15 +79,17 @@ private class CloseFileMethod extends Method {
   }
 }
 
-private module FilesystemFlowConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node src) { src.asExpr() instanceof LocalFileOpenCall }
+private class FilesystemFlowConfig extends DataFlow::Configuration {
+  FilesystemFlowConfig() { this = "FilesystemFlowConfig" }
 
-  predicate isSink(DataFlow::Node sink) {
+  override predicate isSource(DataFlow::Node src) { src.asExpr() instanceof LocalFileOpenCall }
+
+  override predicate isSink(DataFlow::Node sink) {
     filesystemInput(sink, _) or
     closesFile(sink, _)
   }
 
-  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+  override predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
     // Add nested Writer constructors as extra data flow steps
     exists(ClassInstanceExpr cie |
       cie.getConstructedType().getAnAncestor().hasQualifiedName("java.io", "Writer") and
@@ -96,5 +98,3 @@ private module FilesystemFlowConfig implements DataFlow::ConfigSig {
     )
   }
 }
-
-private module FilesystemFlow = DataFlow::Global<FilesystemFlowConfig>;

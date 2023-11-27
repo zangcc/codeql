@@ -16,6 +16,9 @@ class FacesConfigXmlFile extends XmlFile {
   }
 }
 
+/** DEPRECATED: Alias for FacesConfigXmlFile */
+deprecated class FacesConfigXMLFile = FacesConfigXmlFile;
+
 /**
  * An XML element in a `FacesConfigXMLFile`.
  */
@@ -27,6 +30,9 @@ class FacesConfigXmlElement extends XmlElement {
    */
   string getValue() { result = this.allCharactersString().trim() }
 }
+
+/** DEPRECATED: Alias for FacesConfigXmlElement */
+deprecated class FacesConfigXMLElement = FacesConfigXmlElement;
 
 /**
  * An element in a JSF config file that declares a managed bean.

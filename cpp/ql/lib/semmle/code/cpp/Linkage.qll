@@ -24,10 +24,10 @@ class LinkTarget extends @link_target {
    * captured as part of the snapshot, then everything is grouped together
    * into a single dummy link target.
    */
-  predicate isDummy() { this.getBinary().getAbsolutePath() = "" }
+  predicate isDummy() { getBinary().getAbsolutePath() = "" }
 
   /** Gets a textual representation of this element. */
-  string toString() { result = this.getBinary().getAbsolutePath() }
+  string toString() { result = getBinary().getAbsolutePath() }
 
   /**
    * Gets a function which was compiled into this link target, or had its

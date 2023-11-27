@@ -8,18 +8,15 @@ import csharp
 
 /** A typeref is a reference to a type in some assembly. */
 private class TypeRef extends @typeref {
-  /** Gets the name of type being referenced. */
   string getName() { typerefs(this, result) }
 
-  /** Gets a textual representation of this type reference. */
   string toString() { result = this.getName() }
 
-  /** Gets the type being referenced. */
   Type getReferencedType() {
     typeref_type(this, result)
     or
     not typeref_type(this, _) and
-    result.(UnknownType).isCanonical()
+    result instanceof UnknownType
   }
 }
 
@@ -30,4 +27,8 @@ private class TypeRef extends @typeref {
  * This is used for extensionals that can be supplied
  * as either type references or types.
  */
-TypeRef getTypeRef(Type type) { result.getReferencedType() = type }
+@type_or_ref getTypeRef(Type type) {
+  result = type
+  or
+  result.(TypeRef).getReferencedType() = type
+}

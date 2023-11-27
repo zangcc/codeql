@@ -15,3 +15,6 @@ query predicate test_JSXname(JsxElement element, JsxName jsxname, string name, s
 }
 
 query ThisExpr test_JsxName_this(JsxElement element) { result.getParentExpr+() = element }
+
+/** DEPRECATED: Alias for test_JsxName_this */
+deprecated ThisExpr test_JSXName_this(JSXElement element) { result = test_JsxName_this(element) }

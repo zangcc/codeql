@@ -12,18 +12,27 @@
  */
 
 import java
-import semmle.code.java.security.internal.ArraySizing
-import semmle.code.java.security.internal.BoundingChecks
-import semmle.code.java.security.ImproperValidationOfArrayIndexCodeSpecifiedQuery
-import BoundedFlowSourceFlow::PathGraph
+import ArraySizing
+import BoundingChecks
+import DataFlow::PathGraph
+
+class BoundedFlowSourceConf extends DataFlow::Configuration {
+  BoundedFlowSourceConf() { this = "BoundedFlowSource" }
+
+  override predicate isSource(DataFlow::Node source) { source instanceof BoundedFlowSource }
+
+  override predicate isSink(DataFlow::Node sink) {
+    exists(CheckableArrayAccess arrayAccess | arrayAccess.canThrowOutOfBounds(sink.asExpr()))
+  }
+}
 
 from
-  BoundedFlowSourceFlow::PathNode source, BoundedFlowSourceFlow::PathNode sink,
-  BoundedFlowSource boundedsource, CheckableArrayAccess arrayAccess
+  DataFlow::PathNode source, DataFlow::PathNode sink, BoundedFlowSource boundedsource,
+  CheckableArrayAccess arrayAccess
 where
   arrayAccess.canThrowOutOfBounds(sink.getNode().asExpr()) and
   boundedsource = source.getNode() and
-  BoundedFlowSourceFlow::flowPath(source, sink) and
+  any(BoundedFlowSourceConf conf).hasFlowPath(source, sink) and
   boundedsource != sink.getNode() and
   not (
     (

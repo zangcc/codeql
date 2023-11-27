@@ -9,6 +9,6 @@ where
   c.hasName("TestOverloading") and
   count(Method m |
     m.getDeclaringType() = c and
-    (m.hasName("F") or m.hasName("F`1"))
+    (m.hasName("F") or m.hasName("F<>"))
   ) = 6
 select c

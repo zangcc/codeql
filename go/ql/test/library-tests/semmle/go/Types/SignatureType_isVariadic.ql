@@ -1,10 +1,12 @@
 import go
 import TestUtilities.InlineExpectationsTest
 
-module SignatureTypeIsVariadicTest implements TestSig {
-  string getARelevantTag() { result = "isVariadic" }
+class SignatureTypeIsVariadicTest extends InlineExpectationsTest {
+  SignatureTypeIsVariadicTest() { this = "SignatureType::IsVariadicTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "isVariadic" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(FuncDef fd |
       fd.isVariadic() and
       fd.hasLocationInfo(location.getFile().getAbsolutePath(), location.getStartLine(),
@@ -15,5 +17,3 @@ module SignatureTypeIsVariadicTest implements TestSig {
     )
   }
 }
-
-import MakeTest<SignatureTypeIsVariadicTest>

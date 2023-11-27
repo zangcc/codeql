@@ -184,6 +184,9 @@ class AstNode extends @ast_node, NodeInStmtContainer {
   }
 }
 
+/** DEPRECATED: Alias for AstNode */
+deprecated class ASTNode = AstNode;
+
 /**
  * Holds if the given file is a `.d.ts` file.
  */
@@ -335,6 +338,9 @@ class EventHandlerCode extends @event_handler, CodeInAttribute { }
  * ```
  */
 class JavaScriptUrl extends @javascript_url, CodeInAttribute { }
+
+/** DEPRECATED: Alias for JavaScriptUrl */
+deprecated class JavaScriptURL = JavaScriptUrl;
 
 /**
  * A toplevel syntactic entity containing Closure-style externs definitions.

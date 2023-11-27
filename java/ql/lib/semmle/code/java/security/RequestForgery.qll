@@ -34,10 +34,9 @@ private class DefaultRequestForgeryAdditionalTaintStep extends RequestForgeryAdd
   }
 }
 
-private class TypePropertiesRequestForgeryAdditionalTaintStep extends RequestForgeryAdditionalTaintStep
-{
+private class TypePropertiesRequestForgeryAdditionalTaintStep extends RequestForgeryAdditionalTaintStep {
   override predicate propagatesTaint(DataFlow::Node pred, DataFlow::Node succ) {
-    exists(MethodCall ma |
+    exists(MethodAccess ma |
       // Properties props = new Properties();
       // props.setProperty("jdbcUrl", tainted);
       // Propagate tainted value to the qualifier `props`
@@ -52,8 +51,12 @@ private class TypePropertiesRequestForgeryAdditionalTaintStep extends RequestFor
 /** A data flow sink for server-side request forgery (SSRF) vulnerabilities. */
 abstract class RequestForgerySink extends DataFlow::Node { }
 
-private class DefaultRequestForgerySink extends RequestForgerySink {
-  DefaultRequestForgerySink() { sinkNode(this, "request-forgery") }
+private class UrlOpenSinkAsRequestForgerySink extends RequestForgerySink {
+  UrlOpenSinkAsRequestForgerySink() { sinkNode(this, "open-url") }
+}
+
+private class JdbcUrlSinkAsRequestForgerySink extends RequestForgerySink {
+  JdbcUrlSinkAsRequestForgerySink() { sinkNode(this, "jdbc-url") }
 }
 
 /** A sanitizer for request forgery vulnerabilities. */
@@ -75,7 +78,10 @@ private class HostnameSanitizingPrefix extends InterestingPrefix {
     // the host or entity addressed: for example, anything containing `?` or `#`, or a slash that
     // doesn't appear to be a protocol specifier (e.g. `http://` is not sanitizing), or specifically
     // the string "/".
-    exists(this.getStringValue().regexpFind("([?#]|[^?#:/\\\\][/\\\\])|^/$", 0, offset))
+    exists(
+      this.getStringValue()
+          .regexpFind(".*([?#]|[^?#:/\\\\][/\\\\]).*|[/\\\\][^/\\\\].*|^/$", 0, offset)
+    )
   }
 
   override int getOffset() { result = offset }

@@ -32,10 +32,9 @@ class SystemCollectionsGenericUnboundGenericStruct extends UnboundGenericStruct 
   }
 }
 
-/** The ``System.Collections.Generic.IComparer`1`` interface. */
-class SystemCollectionsGenericIComparerTInterface extends SystemCollectionsGenericUnboundGenericInterface
-{
-  SystemCollectionsGenericIComparerTInterface() { this.hasName("IComparer`1") }
+/** The `System.Collections.Generic.IComparer<>` interface. */
+class SystemCollectionsGenericIComparerTInterface extends SystemCollectionsGenericUnboundGenericInterface {
+  SystemCollectionsGenericIComparerTInterface() { this.hasName("IComparer<>") }
 
   /** Gets the `int Compare(T, T)` method. */
   Method getCompareMethod() {
@@ -48,10 +47,9 @@ class SystemCollectionsGenericIComparerTInterface extends SystemCollectionsGener
   }
 }
 
-/** The ``System.Collections.Generic.IEqualityComparer`1`` interface. */
-class SystemCollectionsGenericIEqualityComparerTInterface extends SystemCollectionsGenericUnboundGenericInterface
-{
-  SystemCollectionsGenericIEqualityComparerTInterface() { this.hasName("IEqualityComparer`1") }
+/** The `System.Collections.Generic.IEqualityComparer<>` interface. */
+class SystemCollectionsGenericIEqualityComparerTInterface extends SystemCollectionsGenericUnboundGenericInterface {
+  SystemCollectionsGenericIEqualityComparerTInterface() { this.hasName("IEqualityComparer<>") }
 
   /** Gets the `bool Equals(T, T)` method. */
   Method getEqualsMethod() {
@@ -64,20 +62,18 @@ class SystemCollectionsGenericIEqualityComparerTInterface extends SystemCollecti
   }
 }
 
-/** The ``System.Collections.Generic.IEnumerable`1`` interface. */
-class SystemCollectionsGenericIEnumerableTInterface extends SystemCollectionsGenericUnboundGenericInterface
-{
+/** The `System.Collections.Generic.IEnumerable<>` interface. */
+class SystemCollectionsGenericIEnumerableTInterface extends SystemCollectionsGenericUnboundGenericInterface {
   SystemCollectionsGenericIEnumerableTInterface() {
-    this.hasName("IEnumerable`1") and
+    this.hasName("IEnumerable<>") and
     this.getNumberOfTypeParameters() = 1
   }
 }
 
-/** The ``System.Collections.Generic.IEnumerator`1`` interface. */
-class SystemCollectionsGenericIEnumeratorInterface extends SystemCollectionsGenericUnboundGenericInterface
-{
+/** The `System.Collections.Generic.IEnumerator<>` interface. */
+class SystemCollectionsGenericIEnumeratorInterface extends SystemCollectionsGenericUnboundGenericInterface {
   SystemCollectionsGenericIEnumeratorInterface() {
-    this.hasName("IEnumerator`1") and
+    this.hasName("IEnumerator<>") and
     this.getNumberOfTypeParameters() = 1
   }
 
@@ -89,28 +85,26 @@ class SystemCollectionsGenericIEnumeratorInterface extends SystemCollectionsGene
   }
 }
 
-/** The ``System.Collections.Generic.IList`1`` interface. */
-class SystemCollectionsGenericIListTInterface extends SystemCollectionsGenericUnboundGenericInterface
-{
+/** The `System.Collections.Generic.IList<>` interface. */
+class SystemCollectionsGenericIListTInterface extends SystemCollectionsGenericUnboundGenericInterface {
   SystemCollectionsGenericIListTInterface() {
-    this.hasName("IList`1") and
+    this.hasName("IList<>") and
     this.getNumberOfTypeParameters() = 1
   }
 }
 
-/** The ``System.Collections.Generic.List`1`` class. */
+/** The `System.Collections.Generic.List<>` class. */
 class SystemCollectionsGenericListClass extends SystemCollectionsGenericUnboundGenericClass {
   SystemCollectionsGenericListClass() {
-    this.hasName("List`1") and
+    this.hasName("List<>") and
     this.getNumberOfTypeParameters() = 1
   }
 }
 
-/** The ``System.Collections.Generic.KeyValuePair`2`` structure. */
-class SystemCollectionsGenericKeyValuePairStruct extends SystemCollectionsGenericUnboundGenericStruct
-{
+/** The `System.Collections.Generic.KeyValuePair<,>` structure. */
+class SystemCollectionsGenericKeyValuePairStruct extends SystemCollectionsGenericUnboundGenericStruct {
   SystemCollectionsGenericKeyValuePairStruct() {
-    this.hasName("KeyValuePair`2") and
+    this.hasName("KeyValuePair<,>") and
     this.getNumberOfTypeParameters() = 2
   }
 
@@ -129,10 +123,9 @@ class SystemCollectionsGenericKeyValuePairStruct extends SystemCollectionsGeneri
   }
 }
 
-/** The ``System.Collections.Generic.ICollection`1`` interface. */
-class SystemCollectionsGenericICollectionInterface extends SystemCollectionsGenericUnboundGenericInterface
-{
-  SystemCollectionsGenericICollectionInterface() { this.hasName("ICollection`1") }
+/** The `System.Collections.Generic.ICollection<>` interface. */
+class SystemCollectionsGenericICollectionInterface extends SystemCollectionsGenericUnboundGenericInterface {
+  SystemCollectionsGenericICollectionInterface() { this.hasName("ICollection<>") }
 
   /** Gets the `Count` property. */
   Property getCountProperty() { result = this.getProperty("Count") }
@@ -144,17 +137,15 @@ class SystemCollectionsGenericICollectionInterface extends SystemCollectionsGene
   Method getAddMethod() { result = this.getAMethod("Add") }
 }
 
-/** The ``System.Collections.Generic.IList`1`` interface. */
-class SystemCollectionsGenericIListInterface extends SystemCollectionsGenericUnboundGenericInterface
-{
-  SystemCollectionsGenericIListInterface() { this.hasName("IList`1") }
+/** The `System.Collections.Generic.IList<>` interface. */
+class SystemCollectionsGenericIListInterface extends SystemCollectionsGenericUnboundGenericInterface {
+  SystemCollectionsGenericIListInterface() { this.hasName("IList<>") }
 }
 
-/** The ``System.Collections.Generic.IDictionary`2`` interface. */
-class SystemCollectionsGenericIDictionaryInterface extends SystemCollectionsGenericUnboundGenericInterface
-{
+/** The `System.Collections.Generic.IDictionary<>` interface. */
+class SystemCollectionsGenericIDictionaryInterface extends SystemCollectionsGenericUnboundGenericInterface {
   SystemCollectionsGenericIDictionaryInterface() {
-    this.hasName("IDictionary`2") and
+    this.hasName("IDictionary<,>") and
     this.getNumberOfTypeParameters() = 2
   }
 }

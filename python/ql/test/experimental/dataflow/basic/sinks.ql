@@ -1,7 +1,5 @@
 import allFlowsConfig
 
 from DataFlow::Node sink
-where
-  exists(AllFlowsConfig cfg | cfg.isSink(sink)) and
-  exists(sink.getLocation().getFile().getRelativePath())
+where exists(AllFlowsConfig cfg | cfg.isSink(sink))
 select sink

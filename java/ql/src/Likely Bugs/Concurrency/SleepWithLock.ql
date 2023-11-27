@@ -14,7 +14,7 @@
 
 import java
 
-from MethodCall ma, Method sleep
+from MethodAccess ma, Method sleep
 where
   ma.getMethod() = sleep and
   sleep.hasName("sleep") and

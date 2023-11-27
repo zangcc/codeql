@@ -13,9 +13,9 @@
 
 import csharp
 import semmle.code.csharp.security.dataflow.ResourceInjectionQuery
-import ResourceInjection::PathGraph
+import semmle.code.csharp.dataflow.DataFlow::DataFlow::PathGraph
 
-from ResourceInjection::PathNode source, ResourceInjection::PathNode sink
-where ResourceInjection::flowPath(source, sink)
+from TaintTrackingConfiguration c, DataFlow::PathNode source, DataFlow::PathNode sink
+where c.hasFlowPath(source, sink)
 select sink.getNode(), source, sink, "This resource descriptor depends on a $@.", source.getNode(),
   "user-provided value"

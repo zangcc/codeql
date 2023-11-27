@@ -6,9 +6,11 @@ private import PrintAST
  * that requests that function, or no `PrintASTConfiguration` exists.
  */
 private predicate shouldPrintDeclaration(Declaration decl) {
-  not (decl instanceof Function or decl instanceof GlobalOrNamespaceVariable)
+  not decl instanceof Function
   or
-  exists(PrintAstConfiguration config | config.shouldPrintDeclaration(decl))
+  not exists(PrintAstConfiguration c)
+  or
+  exists(PrintAstConfiguration config | config.shouldPrintFunction(decl))
 }
 
 /**

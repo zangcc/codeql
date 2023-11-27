@@ -7,21 +7,18 @@ import semmle.code.java.dataflow.TaintTracking
  * A taint-tracking configuration for unsafe user input
  * that is used to construct and evaluate an expression.
  */
-module JakartaExpressionInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
+class JakartaExpressionInjectionConfig extends TaintTracking::Configuration {
+  JakartaExpressionInjectionConfig() { this = "JakartaExpressionInjectionConfig" }
 
-  predicate isSink(DataFlow::Node sink) { sink instanceof ExpressionEvaluationSink }
+  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
 
-  predicate isAdditionalFlowStep(DataFlow::Node fromNode, DataFlow::Node toNode) {
+  override predicate isSink(DataFlow::Node sink) { sink instanceof ExpressionEvaluationSink }
+
+  override predicate isAdditionalTaintStep(DataFlow::Node fromNode, DataFlow::Node toNode) {
     any(TaintPropagatingCall c).taintFlow(fromNode, toNode) or
     hasGetterFlow(fromNode, toNode)
   }
 }
-
-/**
- * Taint-tracking flow from remote sources, through an expression, to its eventual evaluation.
- */
-module JakartaExpressionInjectionFlow = TaintTracking::Global<JakartaExpressionInjectionConfig>;
 
 /**
  * A sink for Expresssion Language injection vulnerabilities,
@@ -29,7 +26,7 @@ module JakartaExpressionInjectionFlow = TaintTracking::Global<JakartaExpressionI
  */
 private class ExpressionEvaluationSink extends DataFlow::ExprNode {
   ExpressionEvaluationSink() {
-    exists(MethodCall ma, Method m, Expr taintFrom |
+    exists(MethodAccess ma, Method m, Expr taintFrom |
       ma.getMethod() = m and taintFrom = this.asExpr()
     |
       m.getDeclaringType() instanceof ValueExpression and
@@ -64,7 +61,7 @@ private class TaintPropagatingCall extends Call {
   TaintPropagatingCall() {
     taintFromExpr = this.getArgument(1) and
     (
-      exists(Method m | this.(MethodCall).getMethod() = m |
+      exists(Method m | this.(MethodAccess).getMethod() = m |
         m.getDeclaringType() instanceof ExpressionFactory and
         m.hasName(["createValueExpression", "createMethodExpression"]) and
         taintFromExpr.getType() instanceof TypeString

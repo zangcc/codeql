@@ -4,10 +4,12 @@ import semmle.python.Concepts
 import TestUtilities.InlineExpectationsTest
 private import semmle.python.dataflow.new.internal.PrintNode
 
-module SystemCommandExecutionTest implements TestSig {
-  string getARelevantTag() { result = "getCommand" }
+class SystemCommandExecutionTest extends InlineExpectationsTest {
+  SystemCommandExecutionTest() { this = "SystemCommandExecutionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "getCommand" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(SystemCommandExecution sce, DataFlow::Node command |
       command = sce.getCommand() and
@@ -19,12 +21,14 @@ module SystemCommandExecutionTest implements TestSig {
   }
 }
 
-module DecodingTest implements TestSig {
-  string getARelevantTag() {
+class DecodingTest extends InlineExpectationsTest {
+  DecodingTest() { this = "DecodingTest" }
+
+  override string getARelevantTag() {
     result in ["decodeInput", "decodeOutput", "decodeFormat", "decodeMayExecuteInput"]
   }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Decoding d |
       exists(DataFlow::Node data |
@@ -57,10 +61,12 @@ module DecodingTest implements TestSig {
   }
 }
 
-module EncodingTest implements TestSig {
-  string getARelevantTag() { result in ["encodeInput", "encodeOutput", "encodeFormat"] }
+class EncodingTest extends InlineExpectationsTest {
+  EncodingTest() { this = "EncodingTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result in ["encodeInput", "encodeOutput", "encodeFormat"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Encoding e |
       exists(DataFlow::Node data |
@@ -87,10 +93,12 @@ module EncodingTest implements TestSig {
   }
 }
 
-module LoggingTest implements TestSig {
-  string getARelevantTag() { result = "loggingInput" }
+class LoggingTest extends InlineExpectationsTest {
+  LoggingTest() { this = "LoggingTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "loggingInput" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Logging logging, DataFlow::Node data |
       location = data.getLocation() and
@@ -102,10 +110,12 @@ module LoggingTest implements TestSig {
   }
 }
 
-module CodeExecutionTest implements TestSig {
-  string getARelevantTag() { result = "getCode" }
+class CodeExecutionTest extends InlineExpectationsTest {
+  CodeExecutionTest() { this = "CodeExecutionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "getCode" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(CodeExecution ce, DataFlow::Node code |
       exists(location.getFile().getRelativePath()) and
@@ -118,10 +128,12 @@ module CodeExecutionTest implements TestSig {
   }
 }
 
-module SqlConstructionTest implements TestSig {
-  string getARelevantTag() { result = "constructedSql" }
+class SqlConstructionTest extends InlineExpectationsTest {
+  SqlConstructionTest() { this = "SqlConstructionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "constructedSql" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(SqlConstruction e, DataFlow::Node sql |
       exists(location.getFile().getRelativePath()) and
@@ -134,10 +146,12 @@ module SqlConstructionTest implements TestSig {
   }
 }
 
-module SqlExecutionTest implements TestSig {
-  string getARelevantTag() { result = "getSql" }
+class SqlExecutionTest extends InlineExpectationsTest {
+  SqlExecutionTest() { this = "SqlExecutionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "getSql" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(SqlExecution e, DataFlow::Node sql |
       exists(location.getFile().getRelativePath()) and
@@ -150,10 +164,12 @@ module SqlExecutionTest implements TestSig {
   }
 }
 
-module XPathConstructionTest implements TestSig {
-  string getARelevantTag() { result = "constructedXPath" }
+class XPathConstructionTest extends InlineExpectationsTest {
+  XPathConstructionTest() { this = "XPathConstructionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "constructedXPath" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(XML::XPathConstruction e, DataFlow::Node xpath |
       exists(location.getFile().getRelativePath()) and
@@ -166,10 +182,12 @@ module XPathConstructionTest implements TestSig {
   }
 }
 
-module XPathExecutionTest implements TestSig {
-  string getARelevantTag() { result = "getXPath" }
+class XPathExecutionTest extends InlineExpectationsTest {
+  XPathExecutionTest() { this = "XPathExecutionTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "getXPath" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(XML::XPathExecution e, DataFlow::Node xpath |
       exists(location.getFile().getRelativePath()) and
@@ -182,10 +200,12 @@ module XPathExecutionTest implements TestSig {
   }
 }
 
-module EscapingTest implements TestSig {
-  string getARelevantTag() { result in ["escapeInput", "escapeOutput", "escapeKind"] }
+class EscapingTest extends InlineExpectationsTest {
+  EscapingTest() { this = "EscapingTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result in ["escapeInput", "escapeOutput", "escapeKind"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Escaping esc |
       exists(DataFlow::Node data |
@@ -212,10 +232,12 @@ module EscapingTest implements TestSig {
   }
 }
 
-module HttpServerRouteSetupTest implements TestSig {
-  string getARelevantTag() { result = "routeSetup" }
+class HttpServerRouteSetupTest extends InlineExpectationsTest {
+  HttpServerRouteSetupTest() { this = "HttpServerRouteSetupTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "routeSetup" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Http::Server::RouteSetup setup |
       location = setup.getLocation() and
@@ -231,10 +253,12 @@ module HttpServerRouteSetupTest implements TestSig {
   }
 }
 
-module HttpServerRequestHandlerTest implements TestSig {
-  string getARelevantTag() { result in ["requestHandler", "routedParameter"] }
+class HttpServerRequestHandlerTest extends InlineExpectationsTest {
+  HttpServerRequestHandlerTest() { this = "HttpServerRequestHandlerTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result in ["requestHandler", "routedParameter"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     (
       exists(Http::Server::RequestHandler handler |
@@ -255,74 +279,63 @@ module HttpServerRequestHandlerTest implements TestSig {
   }
 }
 
-abstract class DedicatedResponseTest extends string {
-  bindingset[this]
-  DedicatedResponseTest() { any() }
+class HttpServerHttpResponseTest extends InlineExpectationsTest {
+  File file;
 
-  string toString() { result = this }
+  HttpServerHttpResponseTest() {
+    file.getExtension() = "py" and
+    this = "HttpServerHttpResponseTest: " + file
+  }
 
-  abstract predicate isDedicatedFile(File file);
-}
+  override string getARelevantTag() { result in ["HttpResponse", "responseBody", "mimetype"] }
 
-module HttpServerHttpResponseTest implements TestSig {
-  string getARelevantTag() { result in ["HttpResponse", "responseBody", "mimetype"] }
-
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     // By adding `file` as a class field, and these two restrictions, it's possible to
     // say that we only want to check _some_ tags for certain files. This helped make
     // flask tests more readable since adding full annotations for HttpResponses in the
     // the tests for routing setup is both annoying and not very useful.
-    exists(File file |
-      location.getFile() = file and
-      file.getExtension() = "py" and
-      exists(file.getRelativePath()) and
-      // we need to do this step since we expect subclasses could override getARelevantTag
-      tag = getARelevantTag() and
-      (
-        exists(Http::Server::HttpResponse response |
-          location = response.getLocation() and
-          element = response.toString() and
-          value = "" and
-          tag = "HttpResponse"
-        )
-        or
+    location.getFile() = file and
+    exists(file.getRelativePath()) and
+    // we need to do this step since we expect subclasses could override getARelevantTag
+    tag = getARelevantTag() and
+    (
+      exists(Http::Server::HttpResponse response |
+        location = response.getLocation() and
+        element = response.toString() and
+        value = "" and
+        tag = "HttpResponse"
+      )
+      or
+      exists(Http::Server::HttpResponse response |
+        location = response.getLocation() and
+        element = response.toString() and
+        value = prettyNodeForInlineTest(response.getBody()) and
+        tag = "responseBody"
+      )
+      or
+      exists(Http::Server::HttpResponse response |
+        location = response.getLocation() and
+        element = response.toString() and
+        // Ensure that an expectation value such as "mimetype=text/html; charset=utf-8" is parsed as a
+        // single expectation with tag mimetype, and not as two expecations with tags mimetype and
+        // charset.
         (
-          not exists(DedicatedResponseTest d)
-          or
-          exists(DedicatedResponseTest d | d.isDedicatedFile(file))
+          if exists(response.getMimetype().indexOf(" "))
+          then value = "\"" + response.getMimetype() + "\""
+          else value = response.getMimetype()
         ) and
-        (
-          exists(Http::Server::HttpResponse response, DataFlow::Node body |
-            body = response.getBody() and
-            location = body.getLocation() and
-            element = body.toString() and
-            value = prettyNodeForInlineTest(body) and
-            tag = "responseBody"
-          )
-          or
-          exists(Http::Server::HttpResponse response |
-            location = response.getLocation() and
-            element = response.toString() and
-            // Ensure that an expectation value such as "mimetype=text/html; charset=utf-8" is parsed as a
-            // single expectation with tag mimetype, and not as two expectations with tags mimetype and
-            // charset.
-            (
-              if exists(response.getMimetype().indexOf(" "))
-              then value = "\"" + response.getMimetype() + "\""
-              else value = response.getMimetype()
-            ) and
-            tag = "mimetype"
-          )
-        )
+        tag = "mimetype"
       )
     )
   }
 }
 
-module HttpServerHttpRedirectResponseTest implements TestSig {
-  string getARelevantTag() { result in ["HttpRedirectResponse", "redirectLocation"] }
+class HttpServerHttpRedirectResponseTest extends InlineExpectationsTest {
+  HttpServerHttpRedirectResponseTest() { this = "HttpServerHttpRedirectResponseTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result in ["HttpRedirectResponse", "redirectLocation"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     (
       exists(Http::Server::HttpRedirectResponse redirect |
@@ -342,12 +355,14 @@ module HttpServerHttpRedirectResponseTest implements TestSig {
   }
 }
 
-module HttpServerCookieWriteTest implements TestSig {
-  string getARelevantTag() {
+class HttpServerCookieWriteTest extends InlineExpectationsTest {
+  HttpServerCookieWriteTest() { this = "HttpServerCookieWriteTest" }
+
+  override string getARelevantTag() {
     result in ["CookieWrite", "CookieRawHeader", "CookieName", "CookieValue"]
   }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Http::Server::CookieWrite cookieWrite |
       location = cookieWrite.getLocation() and
@@ -372,10 +387,12 @@ module HttpServerCookieWriteTest implements TestSig {
   }
 }
 
-module FileSystemAccessTest implements TestSig {
-  string getARelevantTag() { result = "getAPathArgument" }
+class FileSystemAccessTest extends InlineExpectationsTest {
+  FileSystemAccessTest() { this = "FileSystemAccessTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "getAPathArgument" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(FileSystemAccess a, DataFlow::Node path |
       path = a.getAPathArgument() and
@@ -387,10 +404,12 @@ module FileSystemAccessTest implements TestSig {
   }
 }
 
-module FileSystemWriteAccessTest implements TestSig {
-  string getARelevantTag() { result = "fileWriteData" }
+class FileSystemWriteAccessTest extends InlineExpectationsTest {
+  FileSystemWriteAccessTest() { this = "FileSystemWriteAccessTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "fileWriteData" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(FileSystemWriteAccess write, DataFlow::Node data |
       data = write.getADataNode() and
@@ -402,10 +421,12 @@ module FileSystemWriteAccessTest implements TestSig {
   }
 }
 
-module PathNormalizationTest implements TestSig {
-  string getARelevantTag() { result = "pathNormalization" }
+class PathNormalizationTest extends InlineExpectationsTest {
+  PathNormalizationTest() { this = "PathNormalizationTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "pathNormalization" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Path::PathNormalization n |
       location = n.getLocation() and
@@ -416,10 +437,12 @@ module PathNormalizationTest implements TestSig {
   }
 }
 
-module SafeAccessCheckTest implements TestSig {
-  string getARelevantTag() { result = "SafeAccessCheck" }
+class SafeAccessCheckTest extends InlineExpectationsTest {
+  SafeAccessCheckTest() { this = "SafeAccessCheckTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "SafeAccessCheck" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Path::SafeAccessCheck c |
       location = c.getLocation() and
@@ -430,10 +453,12 @@ module SafeAccessCheckTest implements TestSig {
   }
 }
 
-module PublicKeyGenerationTest implements TestSig {
-  string getARelevantTag() { result in ["PublicKeyGeneration", "keySize"] }
+class PublicKeyGenerationTest extends InlineExpectationsTest {
+  PublicKeyGenerationTest() { this = "PublicKeyGenerationTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result in ["PublicKeyGeneration", "keySize"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Cryptography::PublicKey::KeyGeneration keyGen |
       location = keyGen.getLocation() and
@@ -450,15 +475,17 @@ module PublicKeyGenerationTest implements TestSig {
   }
 }
 
-module CryptographicOperationTest implements TestSig {
-  string getARelevantTag() {
+class CryptographicOperationTest extends InlineExpectationsTest {
+  CryptographicOperationTest() { this = "CryptographicOperationTest" }
+
+  override string getARelevantTag() {
     result in [
         "CryptographicOperation", "CryptographicOperationInput", "CryptographicOperationAlgorithm",
         "CryptographicOperationBlockMode"
       ]
   }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Cryptography::CryptographicOperation cryptoOperation |
       location = cryptoOperation.getLocation() and
@@ -483,12 +510,14 @@ module CryptographicOperationTest implements TestSig {
   }
 }
 
-module HttpClientRequestTest implements TestSig {
-  string getARelevantTag() {
+class HttpClientRequestTest extends InlineExpectationsTest {
+  HttpClientRequestTest() { this = "HttpClientRequestTest" }
+
+  override string getARelevantTag() {
     result in ["clientRequestUrlPart", "clientRequestCertValidationDisabled"]
   }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Http::Client::Request req, DataFlow::Node url |
       url = req.getAUrlPart() and
@@ -509,10 +538,12 @@ module HttpClientRequestTest implements TestSig {
   }
 }
 
-module CsrfProtectionSettingTest implements TestSig {
-  string getARelevantTag() { result = "CsrfProtectionSetting" }
+class CsrfProtectionSettingTest extends InlineExpectationsTest {
+  CsrfProtectionSettingTest() { this = "CsrfProtectionSettingTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "CsrfProtectionSetting" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Http::Server::CsrfProtectionSetting setting |
       location = setting.getLocation() and
@@ -523,10 +554,12 @@ module CsrfProtectionSettingTest implements TestSig {
   }
 }
 
-module CsrfLocalProtectionSettingTest implements TestSig {
-  string getARelevantTag() { result = "CsrfLocalProtection" + ["Enabled", "Disabled"] }
+class CsrfLocalProtectionSettingTest extends InlineExpectationsTest {
+  CsrfLocalProtectionSettingTest() { this = "CsrfLocalProtectionSettingTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "CsrfLocalProtection" + ["Enabled", "Disabled"] }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(Http::Server::CsrfLocalProtectionSetting p |
       location = p.getLocation() and
@@ -539,10 +572,12 @@ module CsrfLocalProtectionSettingTest implements TestSig {
   }
 }
 
-module XmlParsingTest implements TestSig {
-  string getARelevantTag() { result = "xmlVuln" }
+class XmlParsingTest extends InlineExpectationsTest {
+  XmlParsingTest() { this = "XmlParsingTest" }
 
-  predicate hasActualResult(Location location, string element, string tag, string value) {
+  override string getARelevantTag() { result = "xmlVuln" }
+
+  override predicate hasActualResult(Location location, string element, string tag, string value) {
     exists(location.getFile().getRelativePath()) and
     exists(XML::XmlParsing parsing, XML::XmlParsingVulnerabilityKind kind |
       parsing.vulnerableTo(kind) and
@@ -553,14 +588,3 @@ module XmlParsingTest implements TestSig {
     )
   }
 }
-
-import MakeTest<MergeTests5<MergeTests5<SystemCommandExecutionTest, DecodingTest, EncodingTest, LoggingTest,
-    CodeExecutionTest>,
-  MergeTests5<SqlConstructionTest, SqlExecutionTest, XPathConstructionTest, XPathExecutionTest,
-    EscapingTest>,
-  MergeTests5<HttpServerRouteSetupTest, HttpServerRequestHandlerTest, HttpServerHttpResponseTest,
-    HttpServerHttpRedirectResponseTest, HttpServerCookieWriteTest>,
-  MergeTests5<FileSystemAccessTest, FileSystemWriteAccessTest, PathNormalizationTest,
-    SafeAccessCheckTest, PublicKeyGenerationTest>,
-  MergeTests5<CryptographicOperationTest, HttpClientRequestTest, CsrfProtectionSettingTest,
-    CsrfLocalProtectionSettingTest, XmlParsingTest>>>

@@ -74,10 +74,7 @@ newtype TDataFlowCall =
   TPropertyGetterCall(PropertyGetterCfgNode getter) or
   TPropertySetterCall(PropertySetterCfgNode setter) or
   TPropertyObserverCall(PropertyObserverCfgNode observer) or
-  TKeyPathCall(KeyPathApplicationExprCfgNode keyPathApplication) or
-  TSummaryCall(
-    FlowSummaryImpl::Public::SummarizedCallable c, FlowSummaryImpl::Private::SummaryNode receiver
-  ) {
+  TSummaryCall(FlowSummaryImpl::Public::SummarizedCallable c, Node receiver) {
     FlowSummaryImpl::Private::summaryCallbackRange(c, receiver)
   }
 
@@ -91,9 +88,6 @@ class DataFlowCall extends TDataFlowCall {
 
   /** Gets the underlying source code call, if any. */
   ApplyExprCfgNode asCall() { none() }
-
-  /** Gets the underlying key-path application node, if any. */
-  KeyPathApplicationExprCfgNode asKeyPath() { none() }
 
   /**
    * Gets the i'th argument of call.class
@@ -144,25 +138,6 @@ private class NormalCall extends DataFlowCall, TNormalCall {
   override Location getLocation() { result = apply.getLocation() }
 }
 
-private class KeyPathCall extends DataFlowCall, TKeyPathCall {
-  private KeyPathApplicationExprCfgNode apply;
-
-  KeyPathCall() { this = TKeyPathCall(apply) }
-
-  override KeyPathApplicationExprCfgNode asKeyPath() { result = apply }
-
-  override CfgNode getArgument(int i) {
-    i = -1 and
-    result = apply.getBase()
-  }
-
-  override DataFlowCallable getEnclosingCallable() { result = TDataFlowFunc(apply.getScope()) }
-
-  override string toString() { result = apply.toString() }
-
-  override Location getLocation() { result = apply.getLocation() }
-}
-
 class PropertyGetterCall extends DataFlowCall, TPropertyGetterCall {
   private PropertyGetterCfgNode getter;
 
@@ -181,7 +156,7 @@ class PropertyGetterCall extends DataFlowCall, TPropertyGetterCall {
 
   override Location getLocation() { result = getter.getLocation() }
 
-  Accessor getAccessor() { result = getter.getAccessor() }
+  AccessorDecl getAccessorDecl() { result = getter.getAccessorDecl() }
 }
 
 class PropertySetterCall extends DataFlowCall, TPropertySetterCall {
@@ -205,7 +180,7 @@ class PropertySetterCall extends DataFlowCall, TPropertySetterCall {
 
   override Location getLocation() { result = setter.getLocation() }
 
-  Accessor getAccessor() { result = setter.getAccessor() }
+  AccessorDecl getAccessorDecl() { result = setter.getAccessorDecl() }
 }
 
 class PropertyObserverCall extends DataFlowCall, TPropertyObserverCall {
@@ -217,6 +192,9 @@ class PropertyObserverCall extends DataFlowCall, TPropertyObserverCall {
     i = -1 and
     result = observer.getBase()
     or
+    // TODO: This is correct for `willSet` (which takes a `newValue` parameter),
+    // but for `didSet` (which takes an `oldValue` parameter) we need an rvalue
+    // for `getBase()`.
     i = 0 and
     result = observer.getSource()
   }
@@ -229,19 +207,21 @@ class PropertyObserverCall extends DataFlowCall, TPropertyObserverCall {
 
   override Location getLocation() { result = observer.getLocation() }
 
-  Accessor getAccessor() { result = observer.getAccessor() }
+  AccessorDecl getAccessorDecl() { result = observer.getAccessorDecl() }
 }
 
 class SummaryCall extends DataFlowCall, TSummaryCall {
   private FlowSummaryImpl::Public::SummarizedCallable c;
-  private FlowSummaryImpl::Private::SummaryNode receiver;
+  private Node receiver;
 
   SummaryCall() { this = TSummaryCall(c, receiver) }
 
   /** Gets the data flow node that this call targets. */
-  FlowSummaryImpl::Private::SummaryNode getReceiver() { result = receiver }
+  Node getReceiver() { result = receiver }
 
-  override DataFlowCallable getEnclosingCallable() { result = TSummarizedCallable(c) }
+  override DataFlowCallable getEnclosingCallable() {
+    result = TDataFlowFunc(c.getEnclosingFunction())
+  }
 
   override string toString() { result = "[summary] call to " + receiver + " in " + c }
 
@@ -260,11 +240,11 @@ private module Cached {
   DataFlowCallable viableCallable(DataFlowCall call) {
     result = TDataFlowFunc(call.asCall().getStaticTarget())
     or
-    result = TDataFlowFunc(call.(PropertyGetterCall).getAccessor())
+    result = TDataFlowFunc(call.(PropertyGetterCall).getAccessorDecl())
     or
-    result = TDataFlowFunc(call.(PropertySetterCall).getAccessor())
+    result = TDataFlowFunc(call.(PropertySetterCall).getAccessorDecl())
     or
-    result = TDataFlowFunc(call.(PropertyObserverCall).getAccessor())
+    result = TDataFlowFunc(call.(PropertyObserverCall).getAccessorDecl())
     or
     result = TSummarizedCallable(call.asCall().getStaticTarget())
   }

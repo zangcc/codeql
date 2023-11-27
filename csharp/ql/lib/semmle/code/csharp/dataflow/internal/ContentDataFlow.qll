@@ -1,181 +1,156 @@
 /**
  * Provides classes for performing global (inter-procedural)
  * content-sensitive data flow analyses.
- *
- * Unlike `DataFlow::Global`, we allow for data to be stored (possibly nested) inside
- * contents of sources and sinks.
- * We track flow paths of the form
- *
- * ```
- * source --value-->* node
- *        (--read--> node --value-->* node)*
- *        --(non-value|value)-->* node
- *        (--store--> node --value-->* node)*
- *        --value-->* sink
- * ```
- *
- * where `--value-->` is a value-preserving flow step, `--read-->` is a read
- * step, `--store-->` is a store step, and `--(non-value)-->` is a
- * non-value-preserving flow step.
- *
- * That is, first a sequence of 0 or more reads, followed by 0 or more additional
- * steps, followed by 0 or more stores, with value-preserving steps allowed in
- * between all other steps.
  */
 
-private import csharp
-private import codeql.util.Boolean
 private import DataFlowImplCommon
-private import DataFlowImplSpecific::Private
-private import DataFlowImplSpecific::Private as DataFlowPrivate
 
-/**
- * An input configuration for content data flow.
- */
-signature module ConfigSig {
+module ContentDataFlow {
+  private import DataFlowImplSpecific::Private
+  private import DataFlowImplSpecific::Private as DataFlowPrivate
+  private import DataFlowImplForContentDataFlow as DF
+
+  class Node = DF::Node;
+
+  class FlowFeature = DF::FlowFeature;
+
+  class ContentSet = DF::ContentSet;
+
+  // predicate stageStats = DF::stageStats/8;
   /**
-   * Holds if `source` is a relevant data flow source.
-   */
-  predicate isSource(DataFlow::Node source);
-
-  /**
-   * Holds if `sink` is a relevant data flow sink.
-   */
-  predicate isSink(DataFlow::Node sink);
-
-  /**
-   * Holds if data may flow from `node1` to `node2` in addition to the normal data-flow steps.
-   */
-  default predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) { none() }
-
-  /** Holds if data flow into `node` is prohibited. */
-  default predicate isBarrier(DataFlow::Node node) { none() }
-
-  /**
-   * Gets a data flow configuration feature to add restrictions to the set of
-   * valid flow paths.
+   * A configuration of interprocedural data flow analysis. This defines
+   * sources, sinks, and any other configurable aspect of the analysis. Each
+   * use of the global data flow library must define its own unique extension
+   * of this abstract class. To create a configuration, extend this class with
+   * a subclass whose characteristic predicate is a unique singleton string.
+   * For example, write
    *
-   * - `FeatureHasSourceCallContext`:
-   *    Assume that sources have some existing call context to disallow
-   *    conflicting return-flow directly following the source.
-   * - `FeatureHasSinkCallContext`:
-   *    Assume that sinks have some existing call context to disallow
-   *    conflicting argument-to-parameter flow directly preceding the sink.
-   * - `FeatureEqualSourceSinkCallContext`:
-   *    Implies both of the above and additionally ensures that the entire flow
-   *    path preserves the call context.
+   * ```ql
+   * class MyAnalysisConfiguration extends ContentDataFlowConfiguration {
+   *   MyAnalysisConfiguration() { this = "MyAnalysisConfiguration" }
+   *   // Override `isSource` and `isSink`.
+   *   // Optionally override `isBarrier`.
+   *   // Optionally override `isAdditionalFlowStep`.
+   *   // Optionally override `getAFeature`.
+   *   // Optionally override `accessPathLimit`.
+   *   // Optionally override `isRelevantContent`.
+   * }
+   * ```
+   *
+   * Unlike `DataFlow::Configuration` (on which this class is based), we allow
+   * for data to be stored (possibly nested) inside contents of sources and sinks.
+   * We track flow paths of the form
+   *
+   * ```
+   * source --value-->* node
+   *        (--read--> node --value-->* node)*
+   *        --(non-value|value)-->* node
+   *        (--store--> node --value-->* node)*
+   *        --value-->* sink
+   * ```
+   *
+   * where `--value-->` is a value-preserving flow step, `--read-->` is a read
+   * step, `--store-->` is a store step, and `--(non-value)-->` is a
+   * non-value-preserving flow step.
+   *
+   * That is, first a sequence of 0 or more reads, followed by 0 or more additional
+   * steps, followed by 0 or more stores, with value-preserving steps allowed in
+   * between all other steps.
    */
-  default DataFlow::FlowFeature getAFeature() { none() }
+  abstract class Configuration extends string {
+    bindingset[this]
+    Configuration() { any() }
 
-  /** Gets a limit on the number of reads out of sources and number of stores into sinks. */
-  default int accessPathLimit() { result = DataFlowPrivate::accessPathLimit() }
+    /**
+     * Holds if `source` is a relevant data flow source.
+     */
+    abstract predicate isSource(Node source);
 
-  /** Holds if `c` is relevant for reads out of sources or stores into sinks. */
-  default predicate isRelevantContent(DataFlow::ContentSet c) { any() }
-}
+    /**
+     * Holds if `sink` is a relevant data flow sink.
+     */
+    abstract predicate isSink(Node sink);
 
-/**
- * Constructs a global content data flow computation.
- */
-module Global<ConfigSig ContentConfig> {
-  private module FlowConfig implements DataFlow::StateConfigSig {
-    class FlowState = State;
+    /**
+     * Holds if data may flow from `node1` to `node2` in addition to the normal data-flow steps.
+     */
+    predicate isAdditionalFlowStep(Node node1, Node node2) { none() }
 
-    predicate isSource(DataFlow::Node source, FlowState state) {
-      ContentConfig::isSource(source) and
-      state.(InitState).decode(true)
-    }
+    /** Holds if data flow into `node` is prohibited. */
+    predicate isBarrier(Node node) { none() }
 
-    predicate isSink(DataFlow::Node sink, FlowState state) {
-      ContentConfig::isSink(sink) and
-      (
-        state instanceof InitState or
-        state instanceof StoreState or
-        state instanceof ReadState
+    /**
+     * Gets a data flow configuration feature to add restrictions to the set of
+     * valid flow paths.
+     *
+     * - `FeatureHasSourceCallContext`:
+     *    Assume that sources have some existing call context to disallow
+     *    conflicting return-flow directly following the source.
+     * - `FeatureHasSinkCallContext`:
+     *    Assume that sinks have some existing call context to disallow
+     *    conflicting argument-to-parameter flow directly preceding the sink.
+     * - `FeatureEqualSourceSinkCallContext`:
+     *    Implies both of the above and additionally ensures that the entire flow
+     *    path preserves the call context.
+     */
+    FlowFeature getAFeature() { none() }
+
+    /** Gets a limit on the number of reads out of sources and number of stores into sinks. */
+    int accessPathLimit() { result = DataFlowPrivate::accessPathLimit() }
+
+    /** Holds if `c` is relevant for reads out of sources or stores into sinks. */
+    predicate isRelevantContent(ContentSet c) { any() }
+
+    /**
+     * Holds if data stored inside `sourceAp` on `source` flows to `sinkAp` inside `sink`
+     * for this configuration. `preservesValue` indicates whether any of the additional
+     * flow steps defined by `isAdditionalFlowStep` are needed.
+     *
+     * For the source access path, `sourceAp`, the top of the stack represents the content
+     * that was last read from. That is, if `sourceAp` is `Field1.Field2` (with `Field1`
+     * being the top of the stack), then there is flow from `source.Field2.Field1`.
+     *
+     * For the sink access path, `sinkAp`, the top of the stack represents the content
+     * that was last stored into. That is, if `sinkAp` is `Field1.Field2` (with `Field1`
+     * being the top of the stack), then there is flow into `sink.Field1.Field2`.
+     */
+    final predicate hasFlow(
+      Node source, AccessPath sourceAp, Node sink, AccessPath sinkAp, boolean preservesValue
+    ) {
+      exists(DF::PathNode pathSource, DF::PathNode pathSink |
+        this.(ConfigurationAdapter).hasFlowPath(pathSource, pathSink) and
+        nodeReaches(pathSource, TAccessPathNil(), TAccessPathNil(), pathSink, sourceAp, sinkAp) and
+        source = pathSource.getNode() and
+        sink = pathSink.getNode()
+      |
+        pathSink.getState().(InitState).decode(preservesValue)
+        or
+        pathSink.getState().(ReadState).decode(_, preservesValue)
+        or
+        pathSink.getState().(StoreState).decode(_, preservesValue)
       )
     }
-
-    predicate isAdditionalFlowStep(
-      DataFlow::Node node1, FlowState state1, DataFlow::Node node2, FlowState state2
-    ) {
-      storeStep(node1, state1, _, node2, state2) or
-      readStep(node1, state1, _, node2, state2) or
-      additionalStep(node1, state1, node2, state2)
-    }
-
-    predicate isAdditionalFlowStep = ContentConfig::isAdditionalFlowStep/2;
-
-    predicate isBarrier = ContentConfig::isBarrier/1;
-
-    DataFlow::FlowFeature getAFeature() { result = ContentConfig::getAFeature() }
-
-    // needed to record reads/stores inside summarized callables
-    predicate includeHiddenNodes() { any() }
-  }
-
-  private module Flow = DataFlow::GlobalWithState<FlowConfig>;
-
-  /**
-   * Holds if data stored inside `sourceAp` on `source` flows to `sinkAp` inside `sink`
-   * for this configuration. `preservesValue` indicates whether any of the additional
-   * flow steps defined by `isAdditionalFlowStep` are needed.
-   *
-   * For the source access path, `sourceAp`, the top of the stack represents the content
-   * that was last read from. That is, if `sourceAp` is `Field1.Field2` (with `Field1`
-   * being the top of the stack), then there is flow from `source.Field2.Field1`.
-   *
-   * For the sink access path, `sinkAp`, the top of the stack represents the content
-   * that was last stored into. That is, if `sinkAp` is `Field1.Field2` (with `Field1`
-   * being the top of the stack), then there is flow into `sink.Field1.Field2`.
-   */
-  predicate flow(
-    DataFlow::Node source, AccessPath sourceAp, DataFlow::Node sink, AccessPath sinkAp,
-    boolean preservesValue
-  ) {
-    exists(Flow::PathNode pathSource, Flow::PathNode pathSink |
-      Flow::flowPath(pathSource, pathSink) and
-      nodeReaches(pathSource, TAccessPathNil(), TAccessPathNil(), pathSink, sourceAp, sinkAp) and
-      source = pathSource.getNode() and
-      sink = pathSink.getNode()
-    |
-      pathSink.getState().(InitState).decode(preservesValue)
-      or
-      pathSink.getState().(ReadState).decode(_, preservesValue)
-      or
-      pathSink.getState().(StoreState).decode(_, preservesValue)
-    )
-  }
-
-  private newtype TState =
-    TInitState(Boolean preservesValue) or
-    TStoreState(int size, Boolean preservesValue) {
-      size in [1 .. ContentConfig::accessPathLimit()]
-    } or
-    TReadState(int size, Boolean preservesValue) { size in [1 .. ContentConfig::accessPathLimit()] }
-
-  abstract private class State extends TState {
-    abstract string toString();
   }
 
   /** A flow state representing no reads or stores. */
-  private class InitState extends State, TInitState {
+  private class InitState extends DF::FlowState {
     private boolean preservesValue_;
 
-    InitState() { this = TInitState(preservesValue_) }
-
-    override string toString() { result = "Init(" + preservesValue_ + ")" }
+    InitState() { this = "Init(" + preservesValue_ + ")" and preservesValue_ in [false, true] }
 
     predicate decode(boolean preservesValue) { preservesValue = preservesValue_ }
   }
 
   /** A flow state representing that content has been stored into. */
-  private class StoreState extends State, TStoreState {
+  private class StoreState extends DF::FlowState {
     private boolean preservesValue_;
     private int size_;
 
-    StoreState() { this = TStoreState(size_, preservesValue_) }
-
-    override string toString() { result = "StoreState(" + size_ + "," + preservesValue_ + ")" }
+    StoreState() {
+      preservesValue_ in [false, true] and
+      size_ in [1 .. any(Configuration c).accessPathLimit()] and
+      this = "StoreState(" + size_ + "," + preservesValue_ + ")"
+    }
 
     predicate decode(int size, boolean preservesValue) {
       size = size_ and preservesValue = preservesValue_
@@ -183,13 +158,15 @@ module Global<ConfigSig ContentConfig> {
   }
 
   /** A flow state representing that content has been read from. */
-  private class ReadState extends State, TReadState {
+  private class ReadState extends DF::FlowState {
     private boolean preservesValue_;
     private int size_;
 
-    ReadState() { this = TReadState(size_, preservesValue_) }
-
-    override string toString() { result = "ReadState(" + size_ + "," + preservesValue_ + ")" }
+    ReadState() {
+      preservesValue_ in [false, true] and
+      size_ in [1 .. any(Configuration c).accessPathLimit()] and
+      this = "ReadState(" + size_ + "," + preservesValue_ + ")"
+    }
 
     predicate decode(int size, boolean preservesValue) {
       size = size_ and preservesValue = preservesValue_
@@ -197,12 +174,12 @@ module Global<ConfigSig ContentConfig> {
   }
 
   private predicate storeStep(
-    DataFlow::Node node1, State state1, DataFlow::ContentSet c, DataFlow::Node node2,
-    StoreState state2
+    Node node1, DF::FlowState state1, ContentSet c, Node node2, StoreState state2,
+    Configuration config
   ) {
     exists(boolean preservesValue, int size |
       storeSet(node1, c, node2, _, _) and
-      ContentConfig::isRelevantContent(c) and
+      config.isRelevantContent(c) and
       state2.decode(size + 1, preservesValue)
     |
       state1.(InitState).decode(preservesValue) and size = 0
@@ -214,12 +191,12 @@ module Global<ConfigSig ContentConfig> {
   }
 
   private predicate readStep(
-    DataFlow::Node node1, State state1, DataFlow::ContentSet c, DataFlow::Node node2,
-    ReadState state2
+    Node node1, DF::FlowState state1, ContentSet c, Node node2, ReadState state2,
+    Configuration config
   ) {
     exists(int size |
       readSet(node1, c, node2) and
-      ContentConfig::isRelevantContent(c) and
+      config.isRelevantContent(c) and
       state2.decode(size + 1, true)
     |
       state1.(InitState).decode(true) and
@@ -230,9 +207,9 @@ module Global<ConfigSig ContentConfig> {
   }
 
   private predicate additionalStep(
-    DataFlow::Node node1, State state1, DataFlow::Node node2, State state2
+    Node node1, DF::FlowState state1, Node node2, DF::FlowState state2, Configuration config
   ) {
-    ContentConfig::isAdditionalFlowStep(node1, node2) and
+    config.isAdditionalFlowStep(node1, node2) and
     (
       state1 instanceof InitState and
       state2.(InitState).decode(false)
@@ -244,9 +221,40 @@ module Global<ConfigSig ContentConfig> {
     )
   }
 
+  private class ConfigurationAdapter extends DF::Configuration instanceof Configuration {
+    final override predicate isSource(Node source, DF::FlowState state) {
+      Configuration.super.isSource(source) and
+      state.(InitState).decode(true)
+    }
+
+    final override predicate isSink(Node sink, DF::FlowState state) {
+      Configuration.super.isSink(sink) and
+      (
+        state instanceof InitState or
+        state instanceof StoreState or
+        state instanceof ReadState
+      )
+    }
+
+    final override predicate isAdditionalFlowStep(
+      Node node1, DF::FlowState state1, Node node2, DF::FlowState state2
+    ) {
+      storeStep(node1, state1, _, node2, state2, this) or
+      readStep(node1, state1, _, node2, state2, this) or
+      additionalStep(node1, state1, node2, state2, this)
+    }
+
+    final override predicate isBarrier(Node node) { Configuration.super.isBarrier(node) }
+
+    final override FlowFeature getAFeature() { result = Configuration.super.getAFeature() }
+
+    // needed to record reads/stores inside summarized callables
+    final override predicate includeHiddenNodes() { any() }
+  }
+
   private newtype TAccessPath =
     TAccessPathNil() or
-    TAccessPathCons(DataFlow::ContentSet head, AccessPath tail) {
+    TAccessPathCons(ContentSet head, AccessPath tail) {
       nodeReachesStore(_, _, _, _, head, _, tail)
       or
       nodeReachesRead(_, _, _, _, head, tail, _)
@@ -255,7 +263,7 @@ module Global<ConfigSig ContentConfig> {
   /** An access path. */
   class AccessPath extends TAccessPath {
     /** Gets the head of this access path, if any. */
-    DataFlow::ContentSet getHead() { this = TAccessPathCons(result, _) }
+    ContentSet getHead() { this = TAccessPathCons(result, _) }
 
     /** Gets the tail of this access path, if any. */
     AccessPath getTail() { this = TAccessPathCons(_, result) }
@@ -270,7 +278,7 @@ module Global<ConfigSig ContentConfig> {
       this = TAccessPathNil() and
       result = ""
       or
-      exists(DataFlow::ContentSet head, AccessPath tail |
+      exists(ContentSet head, AccessPath tail |
         this = TAccessPathCons(head, tail) and
         result = head + "." + tail
       )
@@ -279,7 +287,7 @@ module Global<ConfigSig ContentConfig> {
 
   // important to use `edges` and not `PathNode::getASuccessor()`, as the latter
   // is not pruned for reachability
-  private predicate pathSucc = Flow::PathGraph::edges/2;
+  private predicate pathSucc = DF::PathGraph::edges/2;
 
   /**
    * Provides a big-step flow relation, where flow stops at read/store steps that
@@ -287,10 +295,10 @@ module Global<ConfigSig ContentConfig> {
    * summarized callables can be recorded as well.
    */
   private module BigStepFlow {
-    private predicate reachesSink(Flow::PathNode node) {
-      FlowConfig::isSink(node.getNode(), node.getState())
+    private predicate reachesSink(DF::PathNode node) {
+      any(ConfigurationAdapter config).isSink(node.getNode(), node.getState())
       or
-      exists(Flow::PathNode mid |
+      exists(DF::PathNode mid |
         pathSucc(node, mid) and
         reachesSink(mid)
       )
@@ -301,72 +309,76 @@ module Global<ConfigSig ContentConfig> {
      * in the big-step relation.
      */
     pragma[nomagic]
-    private predicate excludeStep(Flow::PathNode pred, Flow::PathNode succ) {
+    private predicate excludeStep(DF::PathNode pred, DF::PathNode succ) {
       pathSucc(pred, succ) and
       (
         // we need to record reads/stores inside summarized callables
-        Flow::PathGraph::subpaths(pred, _, _, succ)
+        DF::PathGraph::subpaths(pred, _, _, succ)
         or
         // only allow flow into a summarized callable, as part of the big-step
         // relation, when flow can reach a sink without going back out
-        Flow::PathGraph::subpaths(pred, succ, _, _) and
+        DF::PathGraph::subpaths(pred, succ, _, _) and
         not reachesSink(succ)
         or
         // needed to record store steps
-        storeStep(pred.getNode(), pred.getState(), _, succ.getNode(), succ.getState())
+        storeStep(pred.getNode(), pred.getState(), _, succ.getNode(), succ.getState(),
+          pred.getConfiguration())
         or
         // needed to record read steps
-        readStep(pred.getNode(), pred.getState(), _, succ.getNode(), succ.getState())
+        readStep(pred.getNode(), pred.getState(), _, succ.getNode(), succ.getState(),
+          pred.getConfiguration())
       )
     }
 
     pragma[nomagic]
-    private DataFlowCallable getEnclosingCallableImpl(Flow::PathNode node) {
+    private DataFlowCallable getEnclosingCallableImpl(DF::PathNode node) {
       result = getNodeEnclosingCallable(node.getNode())
     }
 
     pragma[inline]
-    private DataFlowCallable getEnclosingCallable(Flow::PathNode node) {
+    private DataFlowCallable getEnclosingCallable(DF::PathNode node) {
       pragma[only_bind_into](result) = getEnclosingCallableImpl(pragma[only_bind_out](node))
     }
 
     pragma[nomagic]
-    private predicate bigStepEntry(Flow::PathNode node) {
+    private predicate bigStepEntry(DF::PathNode node) {
+      node.getConfiguration() instanceof Configuration and
       (
-        FlowConfig::isSource(node.getNode(), node.getState())
+        any(ConfigurationAdapter config).isSource(node.getNode(), node.getState())
         or
         excludeStep(_, node)
         or
-        Flow::PathGraph::subpaths(_, node, _, _)
+        DF::PathGraph::subpaths(_, node, _, _)
       )
     }
 
     pragma[nomagic]
-    private predicate bigStepExit(Flow::PathNode node) {
+    private predicate bigStepExit(DF::PathNode node) {
+      node.getConfiguration() instanceof Configuration and
       (
         bigStepEntry(node)
         or
-        FlowConfig::isSink(node.getNode(), node.getState())
+        any(ConfigurationAdapter config).isSink(node.getNode(), node.getState())
         or
         excludeStep(node, _)
         or
-        Flow::PathGraph::subpaths(_, _, node, _)
+        DF::PathGraph::subpaths(_, _, node, _)
       )
     }
 
     pragma[nomagic]
-    private predicate step(Flow::PathNode pred, Flow::PathNode succ) {
+    private predicate step(DF::PathNode pred, DF::PathNode succ) {
       pathSucc(pred, succ) and
       not excludeStep(pred, succ)
     }
 
     pragma[nomagic]
-    private predicate stepRec(Flow::PathNode pred, Flow::PathNode succ) {
+    private predicate stepRec(DF::PathNode pred, DF::PathNode succ) {
       step(pred, succ) and
       not bigStepEntry(pred)
     }
 
-    private predicate stepRecPlus(Flow::PathNode n1, Flow::PathNode n2) = fastTC(stepRec/2)(n1, n2)
+    private predicate stepRecPlus(DF::PathNode n1, DF::PathNode n2) = fastTC(stepRec/2)(n1, n2)
 
     /**
      * Holds if there is flow `pathSucc+(pred) = succ`, and such a flow path does
@@ -374,8 +386,8 @@ module Global<ConfigSig ContentConfig> {
      * steps.
      */
     pragma[nomagic]
-    private predicate bigStep(Flow::PathNode pred, Flow::PathNode succ) {
-      exists(Flow::PathNode mid |
+    private predicate bigStep(DF::PathNode pred, DF::PathNode succ) {
+      exists(DF::PathNode mid |
         bigStepEntry(pred) and
         step(pred, mid)
       |
@@ -387,13 +399,13 @@ module Global<ConfigSig ContentConfig> {
     }
 
     pragma[nomagic]
-    predicate bigStepNotLocal(Flow::PathNode pred, Flow::PathNode succ) {
+    predicate bigStepNotLocal(DF::PathNode pred, DF::PathNode succ) {
       bigStep(pred, succ) and
       not getEnclosingCallable(pred) = getEnclosingCallable(succ)
     }
 
     pragma[nomagic]
-    predicate bigStepMaybeLocal(Flow::PathNode pred, Flow::PathNode succ) {
+    predicate bigStepMaybeLocal(DF::PathNode pred, DF::PathNode succ) {
       bigStep(pred, succ) and
       getEnclosingCallable(pred) = getEnclosingCallable(succ)
     }
@@ -410,54 +422,55 @@ module Global<ConfigSig ContentConfig> {
    */
   pragma[nomagic]
   private predicate nodeReaches(
-    Flow::PathNode source, AccessPath scReads, AccessPath scStores, Flow::PathNode node,
+    DF::PathNode source, AccessPath scReads, AccessPath scStores, DF::PathNode node,
     AccessPath reads, AccessPath stores
   ) {
-    node = source and
-    reads = scReads and
-    stores = scStores and
-    (
-      Flow::flowPath(source, _) and
+    exists(ConfigurationAdapter config |
+      node = source and
+      reads = scReads and
+      stores = scStores
+    |
+      config.hasFlowPath(source, _) and
       scReads = TAccessPathNil() and
       scStores = TAccessPathNil()
       or
       // the argument in a sub path can be reached, so we start flow from the sub path
       // parameter, while recording the read/store summary context
-      exists(Flow::PathNode arg |
+      exists(DF::PathNode arg |
         nodeReachesSubpathArg(_, _, _, arg, scReads, scStores) and
-        Flow::PathGraph::subpaths(arg, source, _, _)
+        DF::PathGraph::subpaths(arg, source, _, _)
       )
     )
     or
-    exists(Flow::PathNode mid |
+    exists(DF::PathNode mid |
       nodeReaches(source, scReads, scStores, mid, reads, stores) and
       BigStepFlow::bigStepMaybeLocal(mid, node)
     )
     or
-    exists(Flow::PathNode mid |
+    exists(DF::PathNode mid |
       nodeReaches(source, scReads, scStores, mid, reads, stores) and
       BigStepFlow::bigStepNotLocal(mid, node) and
       // when flow is not local, we cannot flow back out, so we may stop
       // flow early when computing summary flow
-      Flow::flowPath(source, _) and
+      any(ConfigurationAdapter config).hasFlowPath(source, _) and
       scReads = TAccessPathNil() and
       scStores = TAccessPathNil()
     )
     or
     // store step
-    exists(AccessPath storesMid, DataFlow::ContentSet c |
+    exists(AccessPath storesMid, ContentSet c |
       nodeReachesStore(source, scReads, scStores, node, c, reads, storesMid) and
       stores = TAccessPathCons(c, storesMid)
     )
     or
     // read step
-    exists(AccessPath readsMid, DataFlow::ContentSet c |
+    exists(AccessPath readsMid, ContentSet c |
       nodeReachesRead(source, scReads, scStores, node, c, readsMid, stores) and
       reads = TAccessPathCons(c, readsMid)
     )
     or
     // flow-through step; match outer stores/reads with inner store/read summary contexts
-    exists(Flow::PathNode mid, AccessPath innerScReads, AccessPath innerScStores |
+    exists(DF::PathNode mid, AccessPath innerScReads, AccessPath innerScStores |
       nodeReachesSubpathArg(source, scReads, scStores, mid, innerScReads, innerScStores) and
       subpathArgReachesOut(mid, innerScReads, innerScStores, node, reads, stores)
     )
@@ -465,45 +478,47 @@ module Global<ConfigSig ContentConfig> {
 
   pragma[nomagic]
   private predicate nodeReachesStore(
-    Flow::PathNode source, AccessPath scReads, AccessPath scStores, Flow::PathNode node,
-    DataFlow::ContentSet c, AccessPath reads, AccessPath stores
+    DF::PathNode source, AccessPath scReads, AccessPath scStores, DF::PathNode node, ContentSet c,
+    AccessPath reads, AccessPath stores
   ) {
-    exists(Flow::PathNode mid |
+    exists(DF::PathNode mid |
       nodeReaches(source, scReads, scStores, mid, reads, stores) and
-      storeStep(mid.getNode(), mid.getState(), c, node.getNode(), node.getState()) and
+      storeStep(mid.getNode(), mid.getState(), c, node.getNode(), node.getState(),
+        node.getConfiguration()) and
       pathSucc(mid, node)
     )
   }
 
   pragma[nomagic]
   private predicate nodeReachesRead(
-    Flow::PathNode source, AccessPath scReads, AccessPath scStores, Flow::PathNode node,
-    DataFlow::ContentSet c, AccessPath reads, AccessPath stores
+    DF::PathNode source, AccessPath scReads, AccessPath scStores, DF::PathNode node, ContentSet c,
+    AccessPath reads, AccessPath stores
   ) {
-    exists(Flow::PathNode mid |
+    exists(DF::PathNode mid |
       nodeReaches(source, scReads, scStores, mid, reads, stores) and
-      readStep(mid.getNode(), mid.getState(), c, node.getNode(), node.getState()) and
+      readStep(mid.getNode(), mid.getState(), c, node.getNode(), node.getState(),
+        node.getConfiguration()) and
       pathSucc(mid, node)
     )
   }
 
   pragma[nomagic]
   private predicate nodeReachesSubpathArg(
-    Flow::PathNode source, AccessPath scReads, AccessPath scStores, Flow::PathNode arg,
+    DF::PathNode source, AccessPath scReads, AccessPath scStores, DF::PathNode arg,
     AccessPath reads, AccessPath stores
   ) {
     nodeReaches(source, scReads, scStores, arg, reads, stores) and
-    Flow::PathGraph::subpaths(arg, _, _, _)
+    DF::PathGraph::subpaths(arg, _, _, _)
   }
 
   pragma[nomagic]
   private predicate subpathArgReachesOut(
-    Flow::PathNode arg, AccessPath scReads, AccessPath scStores, Flow::PathNode out,
-    AccessPath reads, AccessPath stores
+    DF::PathNode arg, AccessPath scReads, AccessPath scStores, DF::PathNode out, AccessPath reads,
+    AccessPath stores
   ) {
-    exists(Flow::PathNode source, Flow::PathNode ret |
+    exists(DF::PathNode source, DF::PathNode ret |
       nodeReaches(source, scReads, scStores, ret, reads, stores) and
-      Flow::PathGraph::subpaths(arg, source, ret, out)
+      DF::PathGraph::subpaths(arg, source, ret, out)
     )
   }
 }

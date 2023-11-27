@@ -2,7 +2,7 @@
 
 private import semmle.code.java.dataflow.FlowSummary
 
-private class CollectCall extends MethodCall {
+private class CollectCall extends MethodAccess {
   CollectCall() {
     this.getMethod()
         .getSourceDeclaration()
@@ -10,7 +10,7 @@ private class CollectCall extends MethodCall {
   }
 }
 
-private class Collector extends MethodCall {
+private class Collector extends MethodAccess {
   Collector() {
     this.getMethod().getDeclaringType().hasQualifiedName("java.util.stream", "Collectors")
   }

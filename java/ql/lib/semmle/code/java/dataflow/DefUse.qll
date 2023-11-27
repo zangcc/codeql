@@ -13,7 +13,7 @@ private import SSA
  *
  * This is the transitive closure of `adjacentUseUseSameVar`.
  */
-predicate useUsePairSameVar(VarRead use1, VarRead use2) { adjacentUseUseSameVar+(use1, use2) }
+predicate useUsePairSameVar(RValue use1, RValue use2) { adjacentUseUseSameVar+(use1, use2) }
 
 /**
  * Holds if `use1` and `use2` form a use-use-pair of the same
@@ -23,7 +23,7 @@ predicate useUsePairSameVar(VarRead use1, VarRead use2) { adjacentUseUseSameVar+
  *
  * This is the transitive closure of `adjacentUseUse`.
  */
-predicate useUsePair(VarRead use1, VarRead use2) { adjacentUseUse+(use1, use2) }
+predicate useUsePair(RValue use1, RValue use2) { adjacentUseUse+(use1, use2) }
 
 /**
  * Holds if there exists a path from `def` to `use` without passing through another
@@ -31,7 +31,7 @@ predicate useUsePair(VarRead use1, VarRead use2) { adjacentUseUse+(use1, use2) }
  *
  * Other paths may also exist, so the SSA variables in `def` and `use` can be different.
  */
-predicate defUsePair(VariableUpdate def, VarRead use) {
+predicate defUsePair(VariableUpdate def, RValue use) {
   exists(SsaVariable v |
     v.getAUse() = use and v.getAnUltimateDefinition().(SsaExplicitUpdate).getDefiningExpr() = def
   )
@@ -43,7 +43,7 @@ predicate defUsePair(VariableUpdate def, VarRead use) {
  *
  * Other paths may also exist, so the SSA variables can be different.
  */
-predicate parameterDefUsePair(Parameter p, VarRead use) {
+predicate parameterDefUsePair(Parameter p, RValue use) {
   exists(SsaVariable v |
     v.getAUse() = use and v.getAnUltimateDefinition().(SsaImplicitInit).isParameterDefinition(p)
   )

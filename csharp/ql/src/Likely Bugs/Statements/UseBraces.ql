@@ -15,9 +15,9 @@ import csharp
 
 // Iterate the control flow until we reach a Stmt
 Stmt findSuccessorStmt(ControlFlow::Node n) {
-  result = n.getAstNode()
+  result = n.getElement()
   or
-  not n.getAstNode() instanceof Stmt and result = findSuccessorStmt(n.getASuccessor())
+  not n.getElement() instanceof Stmt and result = findSuccessorStmt(n.getASuccessor())
 }
 
 // Return a successor statement to s
@@ -26,11 +26,11 @@ Stmt getASuccessorStmt(Stmt s) {
 }
 
 class IfThenStmt extends IfStmt {
-  IfThenStmt() { not exists(this.getElse()) }
+  IfThenStmt() { not exists(getElse()) }
 }
 
 class IfThenElseStmt extends IfStmt {
-  IfThenElseStmt() { exists(this.getElse()) }
+  IfThenElseStmt() { exists(getElse()) }
 }
 
 Stmt getTrailingBody(Stmt s) {
@@ -49,16 +49,16 @@ abstract class UnbracedControlStmt extends Stmt {
   abstract Stmt getSuccessorStmt();
 
   private Stmt getACandidate() {
-    this.getSuccessorStmt() = result and
+    getSuccessorStmt() = result and
     getBlockStmt(this) = getBlockStmt(result)
   }
 
-  private Location getBodyLocation() { result = this.getBody().getLocation() }
+  private Location getBodyLocation() { result = getBody().getLocation() }
 
   pragma[noopt]
   Stmt getAConfusingTrailingStmt() {
-    result = this.getACandidate() and
-    exists(Location l1, Location l2 | l1 = this.getBodyLocation() and l2 = result.getLocation() |
+    result = getACandidate() and
+    exists(Location l1, Location l2 | l1 = getBodyLocation() and l2 = result.getLocation() |
       // This test is slightly unreliable
       // because tabs are counted as 1 column.
       // But it's accurate enough to be useful, and will
@@ -79,7 +79,7 @@ class UnbracedIfStmt extends UnbracedControlStmt {
   override Stmt getBody() { result = getTrailingBody(this) }
 
   override Stmt getSuccessorStmt() {
-    result = getASuccessorStmt(this.getBody()) and
+    result = getASuccessorStmt(getBody()) and
     result != this
   }
 }
@@ -95,7 +95,7 @@ class UnbracedLoopStmt extends UnbracedControlStmt {
 
   override Stmt getSuccessorStmt() {
     result = getASuccessorStmt(this) and
-    result != this.getBody()
+    result != getBody()
   }
 }
 

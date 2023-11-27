@@ -27,26 +27,16 @@ class ReturnStackAllocatedMemoryConfig extends MustFlowConfiguration {
   ReturnStackAllocatedMemoryConfig() { this = "ReturnStackAllocatedMemoryConfig" }
 
   override predicate isSource(Instruction source) {
-    exists(Function func |
+    // Holds if `source` is a node that represents the use of a stack variable
+    exists(VariableAddressInstruction var, Function func |
+      var = source and
+      func = source.getEnclosingFunction() and
+      var.getAstVariable() instanceof StackVariable and
+      // Pointer-to-member types aren't properly handled in the dbscheme.
+      not var.getResultType() instanceof PointerToMemberType and
       // Rule out FPs caused by extraction errors.
       not any(ErrorExpr e).getEnclosingFunction() = func and
-      not intentionallyReturnsStackPointer(func) and
-      func = source.getEnclosingFunction()
-    |
-      // `source` is an instruction that represents the use of a stack variable
-      exists(VariableAddressInstruction var |
-        var = source and
-        var.getAstVariable() instanceof StackVariable and
-        // Pointer-to-member types aren't properly handled in the dbscheme.
-        not var.getResultType() instanceof PointerToMemberType
-      )
-      or
-      // `source` is an instruction that represents the return value of a
-      // function that is known to return stack-allocated memory.
-      exists(Call call |
-        call.getTarget().hasGlobalName(["alloca", "strdupa", "strndupa", "_alloca", "_malloca"]) and
-        source.getUnconvertedResultExpression() = call
-      )
+      not intentionallyReturnsStackPointer(func)
     )
   }
 
@@ -95,10 +85,10 @@ class ReturnStackAllocatedMemoryConfig extends MustFlowConfiguration {
 }
 
 from
-  MustFlowPathNode source, MustFlowPathNode sink, Instruction instr,
+  MustFlowPathNode source, MustFlowPathNode sink, VariableAddressInstruction var,
   ReturnStackAllocatedMemoryConfig conf
 where
   conf.hasFlowPath(pragma[only_bind_into](source), pragma[only_bind_into](sink)) and
-  source.getInstruction() = instr
+  source.getInstruction() = var
 select sink.getInstruction(), source, sink, "May return stack-allocated memory from $@.",
-  instr.getAst(), instr.getAst().toString()
+  var.getAst(), var.getAst().toString()
