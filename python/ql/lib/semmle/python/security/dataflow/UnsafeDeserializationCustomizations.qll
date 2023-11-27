@@ -32,6 +32,13 @@ module UnsafeDeserialization {
   abstract class Sanitizer extends DataFlow::Node { }
 
   /**
+   * DEPRECATED: Use `Sanitizer` instead.
+   *
+   * A sanitizer guard for "code execution from deserialization" vulnerabilities.
+   */
+  abstract deprecated class SanitizerGuard extends DataFlow::BarrierGuard { }
+
+  /**
    * A source of remote user input, considered as a flow source.
    */
   class RemoteFlowSourceAsSource extends Source, RemoteFlowSource { }

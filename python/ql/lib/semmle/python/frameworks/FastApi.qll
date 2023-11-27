@@ -37,6 +37,9 @@ private module FastApi {
     }
   }
 
+  /** DEPRECATED: Alias for ApiRouter */
+  deprecated module APIRouter = ApiRouter;
+
   // ---------------------------------------------------------------------------
   // routing modeling
   // ---------------------------------------------------------------------------
@@ -66,9 +69,6 @@ private module FastApi {
       result = this.getARequestHandler().getArgByName(_) and
       // type-annotated with `Response`
       not any(Response::RequestHandlerParam src).asExpr() = result
-      or
-      // **kwargs
-      result = this.getARequestHandler().getKwarg()
     }
 
     override DataFlow::Node getUrlPatternArg() {
@@ -88,8 +88,7 @@ private module FastApi {
    * Pydantic model.
    */
   private class PydanticModelRequestHandlerParam extends Pydantic::BaseModel::InstanceSource,
-    DataFlow::ParameterNode
-  {
+    DataFlow::ParameterNode {
     PydanticModelRequestHandlerParam() {
       this.getParameter().getAnnotation() =
         Pydantic::BaseModel::subclassRef().getAValueReachableFromSource().asExpr() and
@@ -104,8 +103,7 @@ private module FastApi {
    * A parameter to a request handler that has a WebSocket type-annotation.
    */
   private class WebSocketRequestHandlerParam extends Starlette::WebSocket::InstanceSource,
-    DataFlow::ParameterNode
-  {
+    DataFlow::ParameterNode {
     WebSocketRequestHandlerParam() {
       this.getParameter().getAnnotation() =
         Starlette::WebSocket::classRef().getAValueReachableFromSource().asExpr() and
@@ -198,8 +196,7 @@ private module FastApi {
 
     /** A direct instantiation of a response class. */
     private class ResponseInstantiation extends InstanceSource, Http::Server::HttpResponse::Range,
-      DataFlow::CallCfgNode
-    {
+      DataFlow::CallCfgNode {
       API::Node baseApiNode;
       API::Node responseClass;
 
@@ -226,8 +223,7 @@ private module FastApi {
      * A direct instantiation of a redirect response.
      */
     private class RedirectResponseInstantiation extends ResponseInstantiation,
-      Http::Server::HttpRedirectResponse::Range
-    {
+      Http::Server::HttpRedirectResponse::Range {
       RedirectResponseInstantiation() { baseApiNode = getModeledResponseClass("RedirectResponse") }
 
       override DataFlow::Node getRedirectLocation() {
@@ -250,8 +246,7 @@ private module FastApi {
      * An implicit response from a return of FastAPI request handler.
      */
     private class FastApiRequestHandlerReturn extends Http::Server::HttpResponse::Range,
-      DataFlow::CfgNode
-    {
+      DataFlow::CfgNode {
       FastApiRouteSetup routeSetup;
 
       FastApiRequestHandlerReturn() {
@@ -278,8 +273,7 @@ private module FastApi {
      * `response_class` set to a `FileResponse`.
      */
     private class FastApiRequestHandlerFileResponseReturn extends FastApiRequestHandlerReturn,
-      FileSystemAccess::Range
-    {
+      FileSystemAccess::Range {
       FastApiRequestHandlerFileResponseReturn() {
         exists(API::Node responseClass |
           responseClass.getAValueReachableFromSource() = routeSetup.getResponseClassArg() and
@@ -297,8 +291,7 @@ private module FastApi {
      * `response_class` set to a `RedirectResponse`.
      */
     private class FastApiRequestHandlerRedirectReturn extends FastApiRequestHandlerReturn,
-      Http::Server::HttpRedirectResponse::Range
-    {
+      Http::Server::HttpRedirectResponse::Range {
       FastApiRequestHandlerRedirectReturn() {
         exists(API::Node responseClass |
           responseClass.getAValueReachableFromSource() = routeSetup.getResponseClassArg() and
@@ -356,8 +349,7 @@ private module FastApi {
      * header-key.
      */
     private class HeadersAppendCookie extends Http::Server::CookieWrite::Range,
-      DataFlow::MethodCallNode
-    {
+      DataFlow::MethodCallNode {
       HeadersAppendCookie() {
         exists(DataFlow::AttrRead headers, DataFlow::Node keyArg |
           headers.accesses(instance(), "headers") and

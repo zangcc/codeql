@@ -12,11 +12,9 @@ import semmle.python.dataflow.new.TaintTracking
 import CodeInjectionCustomizations::CodeInjection
 
 /**
- * DEPRECATED: Use `CodeInjectionFlow` module instead.
- *
  * A taint-tracking configuration for detecting "code injection" vulnerabilities.
  */
-deprecated class Configuration extends TaintTracking::Configuration {
+class Configuration extends TaintTracking::Configuration {
   Configuration() { this = "CodeInjection" }
 
   override predicate isSource(DataFlow::Node source) { source instanceof Source }
@@ -24,15 +22,8 @@ deprecated class Configuration extends TaintTracking::Configuration {
   override predicate isSink(DataFlow::Node sink) { sink instanceof Sink }
 
   override predicate isSanitizer(DataFlow::Node node) { node instanceof Sanitizer }
+
+  deprecated override predicate isSanitizerGuard(DataFlow::BarrierGuard guard) {
+    guard instanceof SanitizerGuard
+  }
 }
-
-private module CodeInjectionConfig implements DataFlow::ConfigSig {
-  predicate isSource(DataFlow::Node source) { source instanceof Source }
-
-  predicate isSink(DataFlow::Node sink) { sink instanceof Sink }
-
-  predicate isBarrier(DataFlow::Node node) { node instanceof Sanitizer }
-}
-
-/** Global taint-tracking for detecting "code injection" vulnerabilities. */
-module CodeInjectionFlow = TaintTracking::Global<CodeInjectionConfig>;

@@ -307,8 +307,7 @@ private module Lxml {
    * - https://lxml.de/apidoc/lxml.etree.html?highlight=parseids#lxml.etree.iterparse
    */
   private class LxmlIterparseCall extends API::CallNode, XML::XmlParsing::Range,
-    FileSystemAccess::Range
-  {
+    FileSystemAccess::Range {
     LxmlIterparseCall() {
       this = API::moduleImport("lxml").getMember("etree").getMember("iterparse").getACall()
     }

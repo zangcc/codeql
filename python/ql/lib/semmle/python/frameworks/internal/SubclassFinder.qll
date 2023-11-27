@@ -73,6 +73,9 @@ private module NotExposed {
     result = "moduleImport(\"" + fullyQualified.replaceAll(".", "\").getMember(\"") + "\")"
   }
 
+  /** DEPRECATED: Alias for fullyQualifiedToApiGraphPath */
+  deprecated predicate fullyQualifiedToAPIGraphPath = fullyQualifiedToApiGraphPath/1;
+
   bindingset[this]
   abstract class FindSubclassesSpec extends string {
     abstract API::Node getAlreadyModeledClass();
