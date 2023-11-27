@@ -131,7 +131,10 @@ private module RestFramework {
           "initial", "http_method_not_allowed", "permission_denied", "throttled",
           "get_authenticate_header", "perform_content_negotiation", "perform_authentication",
           "check_permissions", "check_object_permissions", "check_throttles", "determine_version",
-          "initialize_request", "finalize_response", "dispatch", "options"
+          "initialize_request", "finalize_response", "dispatch", "options",
+          // ModelViewSet
+          // https://github.com/encode/django-rest-framework/blob/master/rest_framework/viewsets.py
+          "create", "retrieve", "update", "partial_update", "destroy", "list"
         ]
     }
   }
@@ -159,7 +162,8 @@ private module RestFramework {
    * known route setup.
    */
   class RestFrameworkFunctionBasedViewWithoutKnownRoute extends Http::Server::RequestHandler::Range,
-    PrivateDjango::DjangoRouteHandler instanceof RestFrameworkFunctionBasedView {
+    PrivateDjango::DjangoRouteHandler instanceof RestFrameworkFunctionBasedView
+  {
     RestFrameworkFunctionBasedViewWithoutKnownRoute() {
       not exists(PrivateDjango::DjangoRouteSetup setup | setup.getARequestHandler() = this)
     }
@@ -168,7 +172,10 @@ private module RestFramework {
       // Since we don't know the URL pattern, we simply mark all parameters as a routed
       // parameter. This should give us more RemoteFlowSources but could also lead to
       // more FPs. If this turns out to be the wrong tradeoff, we can always change our mind.
-      result in [this.getArg(_), this.getArgByName(_)] and
+      result in [
+          this.getArg(_), this.getArgByName(_), //
+          this.getVararg().(Parameter), this.getKwarg().(Parameter), // TODO: These sources should be modeled as storing content!
+        ] and
       not result = any(int i | i < this.getFirstPossibleRoutedParamIndex() | this.getArg(i))
     }
 
@@ -183,7 +190,8 @@ private module RestFramework {
    * request handler is invoked.
    */
   private class RestFrameworkRequestHandlerRequestParam extends Request::InstanceSource,
-    RemoteFlowSource::Range, DataFlow::ParameterNode {
+    RemoteFlowSource::Range, DataFlow::ParameterNode
+  {
     RestFrameworkRequestHandlerRequestParam() {
       // rest_framework.views.APIView subclass
       exists(RestFrameworkApiViewClass vc |
@@ -220,8 +228,8 @@ private module RestFramework {
      *
      * Use the predicate `Request::instance()` to get references to instances of `rest_framework.request.Request`.
      */
-    abstract class InstanceSource extends PrivateDjango::DjangoImpl::DjangoHttp::Request::HttpRequest::InstanceSource {
-    }
+    abstract class InstanceSource extends PrivateDjango::DjangoImpl::DjangoHttp::Request::HttpRequest::InstanceSource
+    { }
 
     /** A direct instantiation of `rest_framework.request.Request`. */
     private class ClassInstantiation extends InstanceSource, DataFlow::CallCfgNode {
@@ -297,7 +305,8 @@ private module RestFramework {
 
     /** A direct instantiation of `rest_framework.response.Response`. */
     private class ClassInstantiation extends PrivateDjango::DjangoImpl::DjangoHttp::Response::HttpResponse::InstanceSource,
-      DataFlow::CallCfgNode {
+      DataFlow::CallCfgNode
+    {
       ClassInstantiation() { this = classRef().getACall() }
 
       override DataFlow::Node getBody() { result in [this.getArg(0), this.getArgByName("data")] }
@@ -321,7 +330,8 @@ private module RestFramework {
   module ApiException {
     /** A direct instantiation of `rest_framework.exceptions.ApiException` or subclass. */
     private class ClassInstantiation extends Http::Server::HttpResponse::Range,
-      DataFlow::CallCfgNode {
+      DataFlow::CallCfgNode
+    {
       string className;
 
       ClassInstantiation() {
@@ -355,7 +365,4 @@ private module RestFramework {
       override string getMimetypeDefault() { none() }
     }
   }
-
-  /** DEPRECATED: Alias for ApiException */
-  deprecated module APIException = ApiException;
 }
