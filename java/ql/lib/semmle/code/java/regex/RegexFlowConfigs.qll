@@ -54,14 +54,14 @@ private class RegexFlowSink extends DataFlow::Node {
 
   /** Gets the string expression that a regex that flows here is matched against, if any. */
   Expr getStringArgument() {
-    exists(MethodAccess ma |
+    exists(MethodCall ma |
       this.asExpr() = argOf(ma, _) and
       result = argOf(ma, strArg)
     )
   }
 }
 
-private Expr argOf(MethodAccess ma, int arg) {
+private Expr argOf(MethodCall ma, int arg) {
   arg = -1 and result = ma.getQualifier()
   or
   result = ma.getArgument(arg)
@@ -83,7 +83,7 @@ class RegexAdditionalFlowStep extends Unit {
 // TODO: This may be able to be done with models-as-data if query-specific flow steps beome supported.
 private class JdkRegexFlowStep extends RegexAdditionalFlowStep {
   override predicate step(DataFlow::Node node1, DataFlow::Node node2) {
-    exists(MethodAccess ma, Method m, string package, string type, string name, int arg |
+    exists(MethodCall ma, Method m, string package, string type, string name, int arg |
       ma.getMethod().getSourceDeclaration().overrides*(m) and
       m.hasQualifiedName(package, type, name) and
       node1.asExpr() = argOf(ma, arg) and
@@ -109,7 +109,7 @@ private class JdkRegexFlowStep extends RegexAdditionalFlowStep {
 
 private class GuavaRegexFlowStep extends RegexAdditionalFlowStep {
   override predicate step(DataFlow::Node node1, DataFlow::Node node2) {
-    exists(MethodAccess ma, Method m, string package, string type, string name, int arg |
+    exists(MethodCall ma, Method m, string package, string type, string name, int arg |
       ma.getMethod().getSourceDeclaration().overrides*(m) and
       m.hasQualifiedName(package, type, name) and
       node1.asExpr() = argOf(ma, arg) and
@@ -136,23 +136,23 @@ private class GuavaRegexFlowStep extends RegexAdditionalFlowStep {
   }
 }
 
-private class RegexFlowConf extends DataFlow2::Configuration {
-  RegexFlowConf() { this = "RegexFlowConfig" }
+private module RegexFlowConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node node) { node.asExpr() instanceof ExploitableStringLiteral }
 
-  override predicate isSource(DataFlow::Node node) {
-    node.asExpr() instanceof ExploitableStringLiteral
-  }
+  predicate isSink(DataFlow::Node node) { node instanceof RegexFlowSink }
 
-  override predicate isSink(DataFlow::Node node) { node instanceof RegexFlowSink }
-
-  override predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
     any(RegexAdditionalFlowStep s).step(node1, node2)
   }
 
-  override predicate isBarrier(DataFlow::Node node) {
+  predicate isBarrier(DataFlow::Node node) {
     node.getEnclosingCallable().getDeclaringType() instanceof NonSecurityTestClass
   }
+
+  int fieldFlowBranchLimit() { result = 1 }
 }
+
+private module RegexFlow = DataFlow::Global<RegexFlowConfig>;
 
 /**
  * Holds if `regex` is used as a regex, with the mode `mode` (if known).
@@ -162,7 +162,7 @@ private class RegexFlowConf extends DataFlow2::Configuration {
  * and therefore may be relevant for ReDoS queries are considered.
  */
 predicate usedAsRegex(StringLiteral regex, string mode, boolean match_full_string) {
-  any(RegexFlowConf c).hasFlow(DataFlow2::exprNode(regex), _) and
+  RegexFlow::flow(DataFlow::exprNode(regex), _) and
   mode = "None" and // TODO: proper mode detection
   (if matchesFullString(regex) then match_full_string = true else match_full_string = false)
 }
@@ -172,9 +172,9 @@ predicate usedAsRegex(StringLiteral regex, string mode, boolean match_full_strin
  * as though it was implicitly surrounded by ^ and $.
  */
 private predicate matchesFullString(StringLiteral regex) {
-  exists(RegexFlowConf c, RegexFlowSink sink |
+  exists(RegexFlowSink sink |
     sink.matchesFullString() and
-    c.hasFlow(DataFlow2::exprNode(regex), sink)
+    RegexFlow::flow(DataFlow::exprNode(regex), sink)
   )
 }
 
@@ -185,8 +185,8 @@ private predicate matchesFullString(StringLiteral regex) {
  * and therefore may be relevant for ReDoS queries are considered.
  */
 predicate regexMatchedAgainst(StringLiteral regex, Expr str) {
-  exists(RegexFlowConf c, RegexFlowSink sink |
+  exists(RegexFlowSink sink |
     str = sink.getStringArgument() and
-    c.hasFlow(DataFlow2::exprNode(regex), sink)
+    RegexFlow::flow(DataFlow::exprNode(regex), sink)
   )
 }

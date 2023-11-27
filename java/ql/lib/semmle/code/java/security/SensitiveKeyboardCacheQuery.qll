@@ -56,7 +56,7 @@ private class FindViewMethod extends Method {
 }
 
 /** Gets a use of the view that has the given id. */
-private MethodAccess getAUseOfViewWithId(string id) {
+private MethodCall getAUseOfViewWithId(string id) {
   exists(string name, NestedClass r_id, Field id_field |
     id = "@+id/" + name and
     result.getMethod() instanceof FindViewMethod and
@@ -71,7 +71,7 @@ private MethodAccess getAUseOfViewWithId(string id) {
 
 /** Gets the argument of a use of `setInputType` called on the view with the given id. */
 private Argument setInputTypeForId(string id) {
-  exists(MethodAccess setInputType |
+  exists(MethodCall setInputType |
     setInputType.getMethod().hasQualifiedName("android.widget", "TextView", "setInputType") and
     DataFlow::localExprFlow(getAUseOfViewWithId(id), setInputType.getQualifier()) and
     result = setInputType.getArgument(0)
@@ -91,22 +91,22 @@ private predicate inputTypeFieldNotCached(Field f) {
 }
 
 /** Configuration that finds uses of `setInputType` for non cached fields. */
-private class GoodInputTypeConf extends DataFlow::Configuration {
-  GoodInputTypeConf() { this = "GoodInputTypeConf" }
-
-  override predicate isSource(DataFlow::Node node) {
+private module GoodInputTypeConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node node) {
     inputTypeFieldNotCached(node.asExpr().(FieldAccess).getField())
   }
 
-  override predicate isSink(DataFlow::Node node) { node.asExpr() = setInputTypeForId(_) }
+  predicate isSink(DataFlow::Node node) { node.asExpr() = setInputTypeForId(_) }
 
-  override predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
     exists(OrBitwiseExpr bitOr |
       node1.asExpr() = bitOr.getAChildExpr() and
       node2.asExpr() = bitOr
     )
   }
 }
+
+private module GoodInputTypeFlow = DataFlow::Global<GoodInputTypeConfig>;
 
 /** Gets a regex indicating that an input field may contain sensitive data. */
 private string getInputSensitiveInfoRegex() {
@@ -130,8 +130,8 @@ AndroidEditableXmlElement getASensitiveCachedInput() {
   result.getId().regexpMatch(getInputSensitiveInfoRegex()) and
   (
     not inputTypeNotCached(result.getInputType()) and
-    not exists(GoodInputTypeConf conf, DataFlow::Node sink |
-      conf.hasFlowTo(sink) and
+    not exists(DataFlow::Node sink |
+      GoodInputTypeFlow::flowTo(sink) and
       sink.asExpr() = setInputTypeForId(result.getId())
     )
   )

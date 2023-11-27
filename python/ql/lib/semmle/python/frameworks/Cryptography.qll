@@ -82,7 +82,8 @@ private module CryptographyModel {
    * See https://cryptography.io/en/latest/hazmat/primitives/asymmetric/rsa.html#cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key
    */
   class CryptographyRsaGeneratePrivateKeyCall extends Cryptography::PublicKey::KeyGeneration::RsaRange,
-    DataFlow::CallCfgNode {
+    DataFlow::CallCfgNode
+  {
     CryptographyRsaGeneratePrivateKeyCall() {
       this =
         API::moduleImport("cryptography")
@@ -105,7 +106,8 @@ private module CryptographyModel {
    * See https://cryptography.io/en/latest/hazmat/primitives/asymmetric/dsa.html#cryptography.hazmat.primitives.asymmetric.dsa.generate_private_key
    */
   class CryptographyDsaGeneratePrivateKeyCall extends Cryptography::PublicKey::KeyGeneration::DsaRange,
-    DataFlow::CallCfgNode {
+    DataFlow::CallCfgNode
+  {
     CryptographyDsaGeneratePrivateKeyCall() {
       this =
         API::moduleImport("cryptography")
@@ -128,7 +130,8 @@ private module CryptographyModel {
    * See https://cryptography.io/en/latest/hazmat/primitives/asymmetric/ec.html#cryptography.hazmat.primitives.asymmetric.ec.generate_private_key
    */
   class CryptographyEcGeneratePrivateKeyCall extends Cryptography::PublicKey::KeyGeneration::EccRange,
-    DataFlow::CallCfgNode {
+    DataFlow::CallCfgNode
+  {
     CryptographyEcGeneratePrivateKeyCall() {
       this =
         API::moduleImport("cryptography")
@@ -204,18 +207,19 @@ private module CryptographyModel {
      * An encrypt or decrypt operation from `cryptography.hazmat.primitives.ciphers`.
      */
     class CryptographyGenericCipherOperation extends Cryptography::CryptographicOperation::Range,
-      DataFlow::MethodCallNode {
+      DataFlow::MethodCallNode
+    {
+      API::CallNode init;
       string algorithmName;
       string modeName;
 
       CryptographyGenericCipherOperation() {
-        this =
-          cipherInstance(algorithmName, modeName)
-              .getMember(["decryptor", "encryptor"])
-              .getReturn()
-              .getMember(["update", "update_into"])
-              .getACall()
+        init =
+          cipherInstance(algorithmName, modeName).getMember(["decryptor", "encryptor"]).getACall() and
+        this = init.getReturn().getMember(["update", "update_into"]).getACall()
       }
+
+      override DataFlow::Node getInitialization() { result = init }
 
       override Cryptography::CryptographicAlgorithm getAlgorithm() {
         result.matchesName(algorithmName)
@@ -243,31 +247,34 @@ private module CryptographyModel {
     }
 
     /** Gets a reference to a Hash instance using algorithm with `algorithmName`. */
-    private API::Node hashInstance(string algorithmName) {
-      exists(API::CallNode call | result = call.getReturn() |
-        call =
-          API::moduleImport("cryptography")
-              .getMember("hazmat")
-              .getMember("primitives")
-              .getMember("hashes")
-              .getMember("Hash")
-              .getACall() and
-        algorithmClassRef(algorithmName).getReturn().getAValueReachableFromSource() in [
-            call.getArg(0), call.getArgByName("algorithm")
-          ]
-      )
+    private API::CallNode hashInstance(string algorithmName) {
+      result =
+        API::moduleImport("cryptography")
+            .getMember("hazmat")
+            .getMember("primitives")
+            .getMember("hashes")
+            .getMember("Hash")
+            .getACall() and
+      algorithmClassRef(algorithmName).getReturn().getAValueReachableFromSource() in [
+          result.getArg(0), result.getArgByName("algorithm")
+        ]
     }
 
     /**
      * An hashing operation from `cryptography.hazmat.primitives.hashes`.
      */
     class CryptographyGenericHashOperation extends Cryptography::CryptographicOperation::Range,
-      DataFlow::MethodCallNode {
+      DataFlow::MethodCallNode
+    {
+      API::CallNode init;
       string algorithmName;
 
       CryptographyGenericHashOperation() {
-        this = hashInstance(algorithmName).getMember("update").getACall()
+        init = hashInstance(algorithmName) and
+        this = init.getReturn().getMember("update").getACall()
       }
+
+      override DataFlow::Node getInitialization() { result = init }
 
       override Cryptography::CryptographicAlgorithm getAlgorithm() {
         result.matchesName(algorithmName)

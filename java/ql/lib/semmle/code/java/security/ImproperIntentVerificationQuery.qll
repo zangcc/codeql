@@ -14,25 +14,25 @@ private class OnReceiveMethod extends Method {
 }
 
 /** A configuration to detect whether the `action` of an `Intent` is checked. */
-private class VerifiedIntentConfig extends DataFlow::Configuration {
-  VerifiedIntentConfig() { this = "VerifiedIntentConfig" }
-
-  override predicate isSource(DataFlow::Node src) {
+private module VerifiedIntentConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node src) {
     src.asParameter() = any(OnReceiveMethod orm).getIntentParameter()
   }
 
-  override predicate isSink(DataFlow::Node sink) {
-    exists(MethodAccess ma |
+  predicate isSink(DataFlow::Node sink) {
+    exists(MethodCall ma |
       ma.getMethod().hasQualifiedName("android.content", "Intent", "getAction") and
       sink.asExpr() = ma.getQualifier()
     )
   }
 }
 
+private module VerifiedIntentFlow = DataFlow::Global<VerifiedIntentConfig>;
+
 /** An `onReceive` method that doesn't verify the action of the intent it receives. */
 private class UnverifiedOnReceiveMethod extends OnReceiveMethod {
   UnverifiedOnReceiveMethod() {
-    not any(VerifiedIntentConfig c).hasFlow(DataFlow::parameterNode(this.getIntentParameter()), _)
+    not VerifiedIntentFlow::flow(DataFlow::parameterNode(this.getIntentParameter()), _)
   }
 }
 

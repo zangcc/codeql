@@ -13,23 +13,21 @@
 import java
 import ThreadResourceAbuse
 import semmle.code.java.dataflow.FlowSources
-import DataFlow::PathGraph
+import ThreadResourceAbuseFlow::PathGraph
 
 /** Taint configuration of uncontrolled thread resource consumption. */
-class ThreadResourceAbuse extends TaintTracking::Configuration {
-  ThreadResourceAbuse() { this = "ThreadResourceAbuse" }
+module ThreadResourceAbuseConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) { source instanceof ThreatModelFlowSource }
 
-  override predicate isSource(DataFlow::Node source) { source instanceof RemoteFlowSource }
+  predicate isSink(DataFlow::Node sink) { sink instanceof PauseThreadSink }
 
-  override predicate isSink(DataFlow::Node sink) { sink instanceof PauseThreadSink }
-
-  override predicate isAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {
-    any(AdditionalValueStep r).step(pred, succ)
+  predicate isAdditionalFlowStep(DataFlow::Node pred, DataFlow::Node succ) {
+    any(ThreadResourceAbuseAdditionalTaintStep c).step(pred, succ)
   }
 
-  override predicate isSanitizer(DataFlow::Node node) {
+  predicate isBarrier(DataFlow::Node node) {
     exists(
-      MethodAccess ma // Math.min(sleepTime, MAX_INTERVAL)
+      MethodCall ma // Math.min(sleepTime, MAX_INTERVAL)
     |
       ma.getMethod().hasQualifiedName("java.lang", "Math", "min") and
       node.asExpr() = ma.getAnArgument()
@@ -39,8 +37,10 @@ class ThreadResourceAbuse extends TaintTracking::Configuration {
   }
 }
 
-from DataFlow::PathNode source, DataFlow::PathNode sink, ThreadResourceAbuse conf
-where conf.hasFlowPath(source, sink)
+module ThreadResourceAbuseFlow = TaintTracking::Global<ThreadResourceAbuseConfig>;
+
+from ThreadResourceAbuseFlow::PathNode source, ThreadResourceAbuseFlow::PathNode sink
+where ThreadResourceAbuseFlow::flowPath(source, sink)
 select sink.getNode(), source, sink,
   "Vulnerability of uncontrolled resource consumption due to $@.", source.getNode(),
   "user-provided value"

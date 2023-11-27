@@ -140,7 +140,7 @@ subprocess.Popen(args)  # $getCommand=args
 args = "<progname>"
 use_shell = False
 exe = "executable"
-subprocess.Popen(args, shell=use_shell, executable=exe)  # $getCommand=exe SPURIOUS: getCommand=args
+subprocess.Popen(args, shell=use_shell, executable=exe)  # $getCommand=exe
 
 
 ################################################################################
@@ -158,3 +158,21 @@ safe_cmd = "ls {}".format(shlex.quote(tainted))
 wrong_use = shlex.quote("ls {}".format(tainted))
 # still dangerous, for example
 cmd = "sh -c " + wrong_use
+
+########################################
+# Program/shell command execution via asyncio
+
+import asyncio
+from asyncio import subprocess
+
+asyncio.run(asyncio.create_subprocess_exec("executable", "arg0"))  # $getCommand="executable" getAPathArgument="executable"
+asyncio.run(subprocess.create_subprocess_exec("executable", "arg0"))  # $getCommand="executable" getAPathArgument="executable"
+
+loop = asyncio.new_event_loop()
+loop.run_until_complete(loop.subprocess_exec(asyncio.SubprocessProtocol, "executable", "arg0")) # $getCommand="executable" getAPathArgument="executable"
+
+asyncio.run(asyncio.create_subprocess_shell("shell_command"))  # $getCommand="shell_command" getAPathArgument="shell_command"
+asyncio.run(subprocess.create_subprocess_shell("shell_command")) # $getCommand="shell_command" getAPathArgument="shell_command"
+
+loop = asyncio.get_running_loop()
+loop.run_until_complete(loop.subprocess_shell(asyncio.SubprocessProtocol, "shell_command")) # $getCommand="shell_command" getAPathArgument="shell_command"

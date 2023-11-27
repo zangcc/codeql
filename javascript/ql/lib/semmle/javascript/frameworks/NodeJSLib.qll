@@ -65,34 +65,12 @@ module NodeJSLib {
   }
 
   /**
-   * DEPRECATED: Use `ResponseNode` instead.
-   * A Node.js HTTP response.
-   *
-   * A server library that provides an (enhanced) NodesJS HTTP response
-   * object should implement a library specific subclass of this class.
-   */
-  deprecated class ResponseExpr extends HTTP::Servers::StandardResponseExpr {
-    ResponseExpr() { this.flow() instanceof ResponseNode }
-  }
-
-  /**
    * A Node.js HTTP response.
    *
    * A server library that provides an (enhanced) NodesJS HTTP response
    * object should implement a library specific subclass of this class.
    */
   abstract class ResponseNode extends Http::Servers::StandardResponseNode { }
-
-  /**
-   * DEPRECATED: Use `RequestNode` instead.
-   * A Node.js HTTP request.
-   *
-   * A server library that provides an (enhanced) NodesJS HTTP request
-   * object should implement a library specific subclass of this class.
-   */
-  deprecated class RequestExpr extends HTTP::Servers::StandardRequestExpr {
-    RequestExpr() { this.flow() instanceof RequestNode }
-  }
 
   /**
    * A Node.js HTTP request.
@@ -169,26 +147,10 @@ module NodeJSLib {
   }
 
   /**
-   * DEPRECATED: Use `BuiltinRouteHandlerResponseNode` instead.
-   * A builtin Node.js HTTP response.
-   */
-  deprecated private class BuiltinRouteHandlerResponseExpr extends ResponseExpr {
-    BuiltinRouteHandlerResponseExpr() { src instanceof ResponseSource }
-  }
-
-  /**
    * A builtin Node.js HTTP response.
    */
   private class BuiltinRouteHandlerResponseNode extends ResponseNode {
     BuiltinRouteHandlerResponseNode() { src instanceof ResponseSource }
-  }
-
-  /**
-   * DEPRECATED: Use `BuiltinRouteHandlerRequestNode` instead.
-   * A builtin Node.js HTTP request.
-   */
-  deprecated private class BuiltinRouteHandlerRequestExpr extends RequestExpr {
-    BuiltinRouteHandlerRequestExpr() { src instanceof RequestSource }
   }
 
   /**
@@ -287,12 +249,6 @@ module NodeJSLib {
     }
 
     override DataFlow::Node getServer() { result = server }
-
-    /**
-     * DEPRECATED: Use `getRouteHandlerNode` instead.
-     * Gets the expression for the handler registered by this setup.
-     */
-    deprecated Expr getRouteHandlerExpr() { result = handler.asExpr() }
 
     /**
      * Gets the expression for the handler registered by this setup.
@@ -554,7 +510,11 @@ module NodeJSLib {
       t.start()
       or
       t.start() and
-      result = DataFlow::moduleMember("fs", "promises")
+      (
+        result = DataFlow::moduleMember("fs", "promises")
+        or
+        result = DataFlow::moduleImport("fs/promises")
+      )
       or
       exists(DataFlow::TypeTracker t2, DataFlow::SourceNode pred | pred = fsModule(t2) |
         result = pred.track(t2, t)
@@ -840,7 +800,8 @@ module NodeJSLib {
    * A function that flows to a route setup.
    */
   private class TrackedRouteHandlerCandidateWithSetup extends RouteHandler,
-    Http::Servers::StandardRouteHandler, DataFlow::FunctionNode {
+    Http::Servers::StandardRouteHandler, DataFlow::FunctionNode
+  {
     TrackedRouteHandlerCandidateWithSetup() { this = any(RouteSetup s).getARouteHandler() }
   }
 
@@ -1163,7 +1124,8 @@ module NodeJSLib {
    * A registration of an event handler on a NodeJS EventEmitter instance.
    */
   private class NodeJSEventRegistration extends EventRegistration::DefaultEventRegistration,
-    DataFlow::MethodCallNode {
+    DataFlow::MethodCallNode
+  {
     override NodeJSEventEmitter emitter;
 
     NodeJSEventRegistration() { this = emitter.ref().getAMethodCall(EventEmitter::on()) }
@@ -1173,7 +1135,8 @@ module NodeJSLib {
    * A dispatch of an event on a NodeJS EventEmitter instance.
    */
   private class NodeJSEventDispatch extends EventDispatch::DefaultEventDispatch,
-    DataFlow::MethodCallNode {
+    DataFlow::MethodCallNode
+  {
     override NodeJSEventEmitter emitter;
 
     NodeJSEventDispatch() { this = emitter.ref().getAMethodCall("emit") }
@@ -1223,7 +1186,8 @@ module NodeJSLib {
    * A registration of an event handler on a NodeJS net server instance.
    */
   private class NodeJSNetServerRegistration extends EventRegistration::DefaultEventRegistration,
-    DataFlow::MethodCallNode {
+    DataFlow::MethodCallNode
+  {
     override NodeJSNetServerConnection emitter;
 
     NodeJSNetServerRegistration() { this = emitter.ref().getAMethodCall(EventEmitter::on()) }

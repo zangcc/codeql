@@ -25,6 +25,6 @@ import semmle.javascript.heuristics.AdditionalSources
 
 from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where cfg.hasFlowPath(source, sink) and source.getNode() instanceof HeuristicSource
-select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), source, sink,
+select sink, source, sink,
   "This assignment may alter Object.prototype if a malicious '__proto__' string is injected from $@.",
   source.getNode(), source.getNode().(Source).describe()

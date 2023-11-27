@@ -1,5 +1,9 @@
 .. _analyzing-data-flow-in-cpp:
 
+.. pull-quote:: Note
+
+   The data flow library used in this article has been replaced with an improved library which is available from CodeQL 2.12.5 onwards, see :ref:`Analyzing data flow in C and C++ (new) <analyzing-data-flow-in-cpp-new>`. The old library has been deprecated in CodeQL 2.14.1 and will be removed in a later release. With the release of CodeQL 2.13.0 both libraries use the new modular API for data flow.
+
 Analyzing data flow in C and C++
 ================================
 
@@ -84,7 +88,7 @@ The following query finds the filename passed to ``fopen``.
    import cpp
 
    from Function fopen, FunctionCall fc
-   where fopen.hasQualifiedName("fopen")
+   where fopen.hasGlobalName("fopen")
      and fc.getTarget() = fopen
    select fc.getArgument(0)
 
@@ -96,12 +100,12 @@ Unfortunately, this will only give the expression in the argument, not the value
    import semmle.code.cpp.dataflow.DataFlow
 
    from Function fopen, FunctionCall fc, Expr src
-   where fopen.hasQualifiedName("fopen")
+   where fopen.hasGlobalName("fopen")
      and fc.getTarget() = fopen
      and DataFlow::localFlow(DataFlow::exprNode(src), DataFlow::exprNode(fc.getArgument(0)))
    select src
 
-Then we can vary the source, for example an access to a public parameter. The following query finds where a public parameter is used to open a file:
+Then we can vary the source and, for example, use the parameter of a function. The following query finds where a parameter is used when opening a file:
 
 .. code-block:: ql
 
@@ -109,7 +113,7 @@ Then we can vary the source, for example an access to a public parameter. The fo
    import semmle.code.cpp.dataflow.DataFlow
 
    from Function fopen, FunctionCall fc, Parameter p
-   where fopen.hasQualifiedName("fopen")
+   where fopen.hasGlobalName("fopen")
      and fc.getTarget() = fopen
      and DataFlow::localFlow(DataFlow::parameterNode(p), DataFlow::exprNode(fc.getArgument(0)))
    select p
@@ -148,74 +152,62 @@ Global data flow tracks data flow throughout the entire program, and is therefor
 Using global data flow
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The global data flow library is used by extending the class ``DataFlow::Configuration`` as follows:
+The global data flow library is used by implementing the signature ``DataFlow::ConfigSig`` and applying the module ``DataFlow::Global<ConfigSig>`` as follows:
 
 .. code-block:: ql
 
    import semmle.code.cpp.dataflow.DataFlow
 
-   class MyDataFlowConfiguration extends DataFlow::Configuration {
-     MyDataFlowConfiguration() { this = "MyDataFlowConfiguration" }
-
-     override predicate isSource(DataFlow::Node source) {
+   module MyFlowConfiguration implements DataFlow::ConfigSig {
+     predicate isSource(DataFlow::Node source) {
        ...
      }
 
-     override predicate isSink(DataFlow::Node sink) {
+     predicate isSink(DataFlow::Node sink) {
        ...
      }
    }
+
+   module MyFlow = DataFlow::Global<MyFlowConfiguration>;
+
 
 The following predicates are defined in the configuration:
 
 -  ``isSource``—defines where data may flow from
 -  ``isSink``—defines where data may flow to
 -  ``isBarrier``—optional, restricts the data flow
--  ``isBarrierGuard``—optional, restricts the data flow
 -  ``isAdditionalFlowStep``—optional, adds additional flow steps
 
-The characteristic predicate ``MyDataFlowConfiguration()`` defines the name of the configuration, so ``"MyDataFlowConfiguration"`` should be replaced by the name of your class.
-
-The data flow analysis is performed using the predicate ``hasFlow(DataFlow::Node source, DataFlow::Node sink)``:
+The data flow analysis is performed using the predicate ``flow(DataFlow::Node source, DataFlow::Node sink)``:
 
 .. code-block:: ql
 
-   from MyDataFlowConfiguration dataflow, DataFlow::Node source, DataFlow::Node sink
-   where dataflow.hasFlow(source, sink)
+   from DataFlow::Node source, DataFlow::Node sink
+   where MyFlow::flow(source, sink)
    select source, "Data flow to $@.", sink, sink.toString()
 
 Using global taint tracking
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Global taint tracking is to global data flow as local taint tracking is to local data flow. That is, global taint tracking extends global data flow with additional non-value-preserving steps. The global taint tracking library is used by extending the class ``TaintTracking::Configuration`` as follows:
+Global taint tracking is to global data flow as local taint tracking is to local data flow. That is, global taint tracking extends global data flow with additional non-value-preserving steps. The global taint tracking library is used by applying the module ``TaintTracking::Global<ConfigSig>`` to your configuration instead of ``DataFlow::Global<ConfigSig>`` as follows:
 
 .. code-block:: ql
 
    import semmle.code.cpp.dataflow.TaintTracking
 
-   class MyTaintTrackingConfiguration extends TaintTracking::Configuration {
-     MyTaintTrackingConfiguration() { this = "MyTaintTrackingConfiguration" }
-
-     override predicate isSource(DataFlow::Node source) {
+   module MyFlowConfiguration implements DataFlow::ConfigSig {
+     predicate isSource(DataFlow::Node source) {
        ...
      }
 
-     override predicate isSink(DataFlow::Node sink) {
+     predicate isSink(DataFlow::Node sink) {
        ...
      }
    }
 
-The following predicates are defined in the configuration:
+   module MyFlow = TaintTracking::Global<MyFlowConfiguration>;
 
--  ``isSource``—defines where taint may flow from
--  ``isSink``—defines where taint may flow to
--  ``isSanitizer``—optional, restricts the taint flow
--  ``isSanitizerGuard``—optional, restricts the taint flow
--  ``isAdditionalTaintStep``—optional, adds additional taint steps
-
-Similar to global data flow, the characteristic predicate ``MyTaintTrackingConfiguration()`` defines the unique name of the configuration, so ``"MyTaintTrackingConfiguration"`` should be replaced by the name of your class.
-
-The taint tracking analysis is performed using the predicate ``hasFlow(DataFlow::Node source, DataFlow::Node sink)``.
+The resulting module has an identical signature to the one obtained from ``DataFlow::Global<ConfigSig>``.
 
 Examples
 ~~~~~~~~
@@ -226,30 +218,30 @@ The following data flow configuration tracks data flow from environment variable
 
    import semmle.code.cpp.dataflow.DataFlow
 
-   class EnvironmentToFileConfiguration extends DataFlow::Configuration {
-     EnvironmentToFileConfiguration() { this = "EnvironmentToFileConfiguration" }
-
-     override predicate isSource(DataFlow::Node source) {
+   module EnvironmentToFileConfiguration implements DataFlow::ConfigSig {
+     predicate isSource(DataFlow::Node source) {
        exists (Function getenv |
          source.asExpr().(FunctionCall).getTarget() = getenv and
-         getenv.hasQualifiedName("getenv")
+         getenv.hasGlobalName("getenv")
        )
      }
 
-     override predicate isSink(DataFlow::Node sink) {
+     predicate isSink(DataFlow::Node sink) {
        exists (FunctionCall fc |
          sink.asExpr() = fc.getArgument(0) and
-         fc.getTarget().hasQualifiedName("fopen")
+         fc.getTarget().hasGlobalName("fopen")
        )
      }
    }
 
-   from Expr getenv, Expr fopen, EnvironmentToFileConfiguration config
-   where config.hasFlow(DataFlow::exprNode(getenv), DataFlow::exprNode(fopen))
+   module EnvironmentToFileFlow = DataFlow::Global<EnvironmentToFileConfiguration>;
+
+   from Expr getenv, Expr fopen
+   where EnvironmentToFileFlow::flow(DataFlow::exprNode(getenv), DataFlow::exprNode(fopen))
    select fopen, "This 'fopen' uses data from $@.",
      getenv, "call to 'getenv'"
 
-The following taint-tracking configuration tracks data from a call to ``ntohl`` to an array index operation. It uses the ``Guards`` library to recognize expressions that have been bounds-checked, and defines ``isSanitizer`` to prevent taint from propagating through them. It also uses ``isAdditionalTaintStep`` to add flow from loop bounds to loop indexes.
+The following taint-tracking configuration tracks data from a call to ``ntohl`` to an array index operation. It uses the ``Guards`` library to recognize expressions that have been bounds-checked, and defines ``isBarrier`` to prevent taint from propagating through them. It also uses ``isAdditionalFlowStep`` to add flow from loop bounds to loop indexes.
 
 .. code-block:: ql
 
@@ -257,18 +249,16 @@ The following taint-tracking configuration tracks data from a call to ``ntohl`` 
   import semmle.code.cpp.controlflow.Guards
   import semmle.code.cpp.dataflow.TaintTracking
 
-  class NetworkToBufferSizeConfiguration extends TaintTracking::Configuration {
-    NetworkToBufferSizeConfiguration() { this = "NetworkToBufferSizeConfiguration" }
-
-    override predicate isSource(DataFlow::Node node) {
+  module NetworkToBufferSizeConfiguration implements DataFlow::ConfigSig {
+    predicate isSource(DataFlow::Node node) {
       node.asExpr().(FunctionCall).getTarget().hasGlobalName("ntohl")
     }
 
-    override predicate isSink(DataFlow::Node node) {
+    predicate isSink(DataFlow::Node node) {
       exists(ArrayExpr ae | node.asExpr() = ae.getArrayOffset())
     }
 
-    override predicate isAdditionalTaintStep(DataFlow::Node pred, DataFlow::Node succ) {
+    predicate isAdditionalFlowStep(DataFlow::Node pred, DataFlow::Node succ) {
       exists(Loop loop, LoopCounter lc |
         loop = lc.getALoop() and
         loop.getControllingExpr().(RelationalOperation).getGreaterOperand() = pred.asExpr() |
@@ -276,7 +266,7 @@ The following taint-tracking configuration tracks data from a call to ``ntohl`` 
       )
     }
 
-    override predicate isSanitizer(DataFlow::Node node) {
+    predicate isBarrier(DataFlow::Node node) {
       exists(GuardCondition gc, Variable v |
         gc.getAChild*() = v.getAnAccess() and
         node.asExpr() = v.getAnAccess() and
@@ -285,8 +275,10 @@ The following taint-tracking configuration tracks data from a call to ``ntohl`` 
     }
   }
 
-  from DataFlow::Node ntohl, DataFlow::Node offset, NetworkToBufferSizeConfiguration conf
-  where conf.hasFlow(ntohl, offset)
+  module NetworkToBufferSizeFlow = TaintTracking::Global<NetworkToBufferSizeConfiguration>;
+
+  from DataFlow::Node ntohl, DataFlow::Node offset
+  where NetworkToBufferSizeFlow::flow(ntohl, offset)
   select offset, "This array offset may be influenced by $@.", ntohl,
     "converted data from the network"
 
@@ -323,24 +315,22 @@ Exercise 2
 
    import semmle.code.cpp.dataflow.DataFlow
 
-   class LiteralToGethostbynameConfiguration extends DataFlow::Configuration {
-     LiteralToGethostbynameConfiguration() {
-       this = "LiteralToGethostbynameConfiguration"
-     }
-
-     override predicate isSource(DataFlow::Node source) {
+   module LiteralToGethostbynameConfiguration implements DataFlow::ConfigSig {
+     predicate isSource(DataFlow::Node source) {
        source.asExpr() instanceof StringLiteral
      }
 
-     override predicate isSink(DataFlow::Node sink) {
+     predicate isSink(DataFlow::Node sink) {
        exists (FunctionCall fc |
          sink.asExpr() = fc.getArgument(0) and
          fc.getTarget().hasName("gethostbyname"))
      }
    }
 
-   from StringLiteral sl, FunctionCall fc, LiteralToGethostbynameConfiguration cfg
-   where cfg.hasFlow(DataFlow::exprNode(sl), DataFlow::exprNode(fc.getArgument(0)))
+   module LiteralToGethostbynameFlow = DataFlow::Global<LiteralToGethostbynameConfiguration>;
+
+   from StringLiteral sl, FunctionCall fc
+   where LiteralToGethostbynameFlow::flow(DataFlow::exprNode(sl), DataFlow::exprNode(fc.getArgument(0)))
    select sl, fc
 
 Exercise 3
@@ -352,7 +342,7 @@ Exercise 3
 
    class GetenvSource extends FunctionCall {
      GetenvSource() {
-       this.getTarget().hasQualifiedName("getenv")
+       this.getTarget().hasGlobalName("getenv")
      }
    }
 
@@ -365,28 +355,26 @@ Exercise 4
 
    class GetenvSource extends DataFlow::Node {
      GetenvSource() {
-       this.asExpr().(FunctionCall).getTarget().hasQualifiedName("getenv")
+       this.asExpr().(FunctionCall).getTarget().hasGlobalName("getenv")
      }
    }
 
-   class GetenvToGethostbynameConfiguration extends DataFlow::Configuration {
-     GetenvToGethostbynameConfiguration() {
-       this = "GetenvToGethostbynameConfiguration"
-     }
-
-     override predicate isSource(DataFlow::Node source) {
+   module GetenvToGethostbynameConfiguration implements DataFlow::ConfigSig {
+     predicate isSource(DataFlow::Node source) {
        source instanceof GetenvSource
      }
 
-     override predicate isSink(DataFlow::Node sink) {
+     predicate isSink(DataFlow::Node sink) {
        exists (FunctionCall fc |
          sink.asExpr() = fc.getArgument(0) and
          fc.getTarget().hasName("gethostbyname"))
      }
    }
 
-   from DataFlow::Node getenv, FunctionCall fc, GetenvToGethostbynameConfiguration cfg
-   where cfg.hasFlow(getenv, DataFlow::exprNode(fc.getArgument(0)))
+   module GetenvToGethostbynameFlow = DataFlow::Global<GetenvToGethostbynameConfiguration>;
+
+   from DataFlow::Node getenv, FunctionCall fc
+   where GetenvToGethostbynameFlow::flow(getenv, DataFlow::exprNode(fc.getArgument(0)))
    select getenv.asExpr(), fc
 
 Further reading

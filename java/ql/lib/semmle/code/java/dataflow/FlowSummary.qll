@@ -101,6 +101,7 @@ abstract class SyntheticCallable extends string {
  * A module for importing frameworks that define synthetic callables.
  */
 private module SyntheticCallables {
+  private import semmle.code.java.dispatch.WrappedInvocation
   private import semmle.code.java.frameworks.android.Intent
   private import semmle.code.java.frameworks.Stream
 }
@@ -149,8 +150,9 @@ class SummarizedCallableBase extends TSummarizedCallableBase {
     or
     result = this.asSyntheticCallable().getParameterType(pos)
     or
-    exists(SyntheticCallable sc | sc = this.asSyntheticCallable() |
-      Impl::Private::summaryParameterNodeRange(this, pos) and
+    exists(SyntheticCallable sc, Impl::Private::SummaryNode p | sc = this.asSyntheticCallable() |
+      Impl::Private::summaryParameterNode(p, pos) and
+      this = p.getSummarizedCallable() and
       not exists(sc.getParameterType(pos)) and
       result instanceof TypeObject
     )
@@ -168,6 +170,8 @@ class SummarizedCallableBase extends TSummarizedCallableBase {
     )
   }
 }
+
+class Provenance = Impl::Public::Provenance;
 
 class SummarizedCallable = Impl::Public::SummarizedCallable;
 

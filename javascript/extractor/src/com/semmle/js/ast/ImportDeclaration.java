@@ -1,8 +1,7 @@
 package com.semmle.js.ast;
 
-import java.util.List;
-
 import com.semmle.ts.ast.INodeWithSymbol;
+import java.util.List;
 
 /**
  * An import declaration, which can be of one of the following forms:
@@ -23,18 +22,27 @@ public class ImportDeclaration extends Statement implements INodeWithSymbol {
   /** The module from which declarations are imported. */
   private final Literal source;
 
+  private final Expression attributes;
+
   private int symbol = -1;
 
   private boolean hasTypeKeyword;
 
-  public ImportDeclaration(SourceLocation loc, List<ImportSpecifier> specifiers, Literal source) {
-    this(loc, specifiers, source, false);
+  public ImportDeclaration(
+      SourceLocation loc, List<ImportSpecifier> specifiers, Literal source, Expression attributes) {
+    this(loc, specifiers, source, attributes, false);
   }
 
-  public ImportDeclaration(SourceLocation loc, List<ImportSpecifier> specifiers, Literal source, boolean hasTypeKeyword) {
+  public ImportDeclaration(
+      SourceLocation loc,
+      List<ImportSpecifier> specifiers,
+      Literal source,
+      Expression attributes,
+      boolean hasTypeKeyword) {
     super("ImportDeclaration", loc);
     this.specifiers = specifiers;
     this.source = source;
+    this.attributes = attributes;
     this.hasTypeKeyword = hasTypeKeyword;
   }
 
@@ -44,6 +52,14 @@ public class ImportDeclaration extends Statement implements INodeWithSymbol {
 
   public List<ImportSpecifier> getSpecifiers() {
     return specifiers;
+  }
+
+  /**
+   * Returns the expression after the <code>with</code> keyword, if any, such as <code>
+   * { type: "json" }</code>.
+   */
+  public Expression getAttributes() {
+    return attributes;
   }
 
   @Override

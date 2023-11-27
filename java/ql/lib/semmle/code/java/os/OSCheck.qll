@@ -40,7 +40,7 @@ abstract class IsSpecificUnixVariant extends Guard { }
 /**
  * Holds when `ma` compares the current OS against the string constant `osString`.
  */
-private predicate isOsFromSystemProp(MethodAccess ma, string osString) {
+private predicate isOsFromSystemProp(MethodCall ma, string osString) {
   TaintTracking::localExprTaint(getSystemProperty("os.name"), ma.getQualifier()) and // Call from System.getProperty (or equivalent) to some partial match method
   exists(StringPartialMatchMethod m, CompileTimeConstantExpr matchedStringConstant |
     m = ma.getMethod() and
@@ -50,7 +50,7 @@ private predicate isOsFromSystemProp(MethodAccess ma, string osString) {
   )
 }
 
-private class IsWindowsFromSystemProp extends IsWindowsGuard instanceof MethodAccess {
+private class IsWindowsFromSystemProp extends IsWindowsGuard instanceof MethodCall {
   IsWindowsFromSystemProp() { isOsFromSystemProp(this, any(string s | s.regexpMatch("windows?"))) }
 }
 
@@ -97,7 +97,7 @@ private class IsUnixFromFileSeparator extends IsUnixGuard {
   }
 }
 
-private class IsUnixFromSystemProp extends IsSpecificUnixVariant instanceof MethodAccess {
+private class IsUnixFromSystemProp extends IsSpecificUnixVariant instanceof MethodCall {
   IsUnixFromSystemProp() {
     isOsFromSystemProp(this, any(string s | s.regexpMatch(["mac.*", "linux.*"])))
   }
@@ -115,7 +115,8 @@ private class IsWindowsFromApacheCommons extends IsWindowsGuard instanceof Field
   IsWindowsFromApacheCommons() { isOsFromApacheCommons(this, "IS\\_OS\\_WINDOWS") }
 }
 
-private class IsSpecificWindowsVariantFromApacheCommons extends IsSpecificWindowsVariant instanceof FieldAccess {
+private class IsSpecificWindowsVariantFromApacheCommons extends IsSpecificWindowsVariant instanceof FieldAccess
+{
   IsSpecificWindowsVariantFromApacheCommons() {
     isOsFromApacheCommons(this, "IS\\_OS\\_WINDOWS\\_%")
   }
@@ -125,7 +126,8 @@ private class IsUnixFromApacheCommons extends IsUnixGuard instanceof FieldAccess
   IsUnixFromApacheCommons() { isOsFromApacheCommons(this, "IS\\_OS\\_UNIX") }
 }
 
-private class IsSpecificUnixVariantFromApacheCommons extends IsSpecificUnixVariant instanceof FieldAccess {
+private class IsSpecificUnixVariantFromApacheCommons extends IsSpecificUnixVariant instanceof FieldAccess
+{
   IsSpecificUnixVariantFromApacheCommons() {
     isOsFromApacheCommons(this,
       [
@@ -142,7 +144,7 @@ private class IsSpecificUnixVariantFromApacheCommons extends IsSpecificUnixVaria
  * ([source](https://en.wikipedia.org/wiki/POSIX#POSIX-oriented_operating_systems)).
  * Looks for calls to `contains("posix")` on the `supportedFileAttributeViews()` method returned by `FileSystem`.
  */
-private class IsUnixFromPosixFromFileSystem extends IsUnixGuard instanceof MethodAccess {
+private class IsUnixFromPosixFromFileSystem extends IsUnixGuard instanceof MethodCall {
   IsUnixFromPosixFromFileSystem() {
     exists(Method m | m = this.getMethod() |
       m.getDeclaringType()
@@ -156,9 +158,8 @@ private class IsUnixFromPosixFromFileSystem extends IsUnixGuard instanceof Metho
       supportedFileAttributeViewsMethod.hasName("supportedFileAttributeViews") and
       supportedFileAttributeViewsMethod.getDeclaringType() instanceof TypeFileSystem
     |
-      DataFlow::localExprFlow(any(MethodAccess ma |
-          ma.getMethod() = supportedFileAttributeViewsMethod
-        ), super.getQualifier())
+      DataFlow::localExprFlow(any(MethodCall ma | ma.getMethod() = supportedFileAttributeViewsMethod),
+        super.getQualifier())
     )
   }
 }

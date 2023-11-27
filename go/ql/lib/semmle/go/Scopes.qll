@@ -101,6 +101,7 @@ class Entity extends @object {
    * Note that for methods `pkg` is the package path followed by `.` followed
    * by the name of the receiver type, for example `io.Writer`.
    */
+  pragma[nomagic]
   predicate hasQualifiedName(string pkg, string name) {
     pkg = this.getPackage().getPath() and
     name = this.getName()
@@ -517,6 +518,7 @@ class Method extends Function {
    * `exists(Type t | t.hasQualifiedName(pkg, tp) and meth = t.getMethod(m))`: the latter
    * distinguishes between the method sets of `T` and `*T`, while the former does not.
    */
+  pragma[nomagic]
   predicate hasQualifiedName(string pkg, string tp, string m) {
     exists(NamedType t |
       this.isIn(t, m) and
@@ -533,9 +535,20 @@ class Method extends Function {
    * implement themselves.
    */
   predicate implements(Method m) {
+    if this.isInterfaceMethod() then this = m else this.implementsIncludingInterfaceMethods(m)
+  }
+
+  /**
+   * Holds if this method implements the method `m`, that is, if `m` is a method
+   * on an interface, and this is a method with the same name on a type that
+   * implements that interface.
+   *
+   * Note that all methods implement themselves, and that unlike the predicate `implements`
+   * this does allow interface methods to implement other interfaces.
+   */
+  predicate implementsIncludingInterfaceMethods(Method m) {
     this = m
     or
-    not this.isInterfaceMethod() and
     exists(Type t |
       this = t.getMethod(m.getName()) and
       t.implements(m.getReceiverType().getUnderlyingType())
@@ -602,7 +615,7 @@ private newtype TCallable =
   TFuncLitCallable(FuncLit l)
 
 /**
- * This is either a `Function` or a `FuncLit`, because of limitations of both
+ * A `Function` or a `FuncLit`. We do it this way because of limitations of both
  * `Function` and `FuncDef`:
  *   - `Function` is an entity, and therefore does not include function literals, and
  *   - `FuncDef` is an AST node, and so is not extracted for functions from external libraries.
@@ -665,6 +678,8 @@ private predicate builtinFunction(
   or
   name = "cap" and pure = true and mayPanic = false and mustPanic = false and variadic = false
   or
+  name = "clear" and pure = false and mayPanic = false and mustPanic = false and variadic = false
+  or
   name = "close" and pure = false and mayPanic = true and mustPanic = false and variadic = false
   or
   name = "complex" and pure = true and mayPanic = true and mustPanic = false and variadic = false
@@ -678,6 +693,10 @@ private predicate builtinFunction(
   name = "len" and pure = true and mayPanic = false and mustPanic = false and variadic = false
   or
   name = "make" and pure = true and mayPanic = true and mustPanic = false and variadic = true
+  or
+  name = "max" and pure = true and mayPanic = false and mustPanic = false and variadic = true
+  or
+  name = "min" and pure = true and mayPanic = false and mustPanic = false and variadic = true
   or
   name = "new" and pure = true and mayPanic = false and mustPanic = false and variadic = false
   or
@@ -782,6 +801,9 @@ module Builtin {
   /** Gets the built-in function `cap`. */
   BuiltinFunction cap() { result.getName() = "cap" }
 
+  /** Gets the built-in function `clear`. */
+  BuiltinFunction clear() { result.getName() = "clear" }
+
   /** Gets the built-in function `close`. */
   BuiltinFunction close() { result.getName() = "close" }
 
@@ -802,6 +824,12 @@ module Builtin {
 
   /** Gets the built-in function `make`. */
   BuiltinFunction make() { result.getName() = "make" }
+
+  /** Gets the built-in function `max`. */
+  BuiltinFunction max_() { result.getName() = "max" }
+
+  /** Gets the built-in function `min`. */
+  BuiltinFunction min_() { result.getName() = "min" }
 
   /** Gets the built-in function `new`. */
   BuiltinFunction new() { result.getName() = "new" }

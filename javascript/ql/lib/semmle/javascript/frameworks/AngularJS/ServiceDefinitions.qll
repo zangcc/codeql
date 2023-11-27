@@ -235,7 +235,8 @@ abstract class CustomServiceDefinition extends DataFlow::Node {
  * A definition of a custom AngularJS dependency injection service using a "recipe".
  */
 abstract class RecipeDefinition extends DataFlow::CallNode, CustomServiceDefinition,
-  DependencyInjection {
+  DependencyInjection
+{
   string methodName;
   string name;
 
@@ -268,7 +269,8 @@ abstract class RecipeDefinition extends DataFlow::CallNode, CustomServiceDefinit
  * (used through `ng-controller` directives).
  */
 abstract private class CustomSpecialServiceDefinition extends CustomServiceDefinition,
-  DependencyInjection {
+  DependencyInjection
+{
   override DataFlow::Node getAnInjectableFunction() { result = this.getAFactoryFunction() }
 }
 
@@ -446,21 +448,6 @@ BuiltinServiceReference getBuiltinServiceOfKind(string kind) {
 }
 
 /**
- * DEPRECATED: Use `ServiceRequestNode` instead.
- * A request for one or more AngularJS services.
- */
-deprecated class ServiceRequest extends Expr {
-  ServiceRequestNode node;
-
-  ServiceRequest() { this.flow() = node }
-
-  /** Gets the parameter of this request into which `service` is injected. */
-  deprecated Parameter getDependencyParameter(ServiceReference service) {
-    result.flow() = node.getDependencyParameter(service)
-  }
-}
-
-/**
  * A request for one or more AngularJS services.
  */
 abstract class ServiceRequestNode extends DataFlow::Node {
@@ -625,7 +612,8 @@ class ProviderRecipeDefinition extends RecipeDefinition {
   }
 }
 
-private class ProviderRecipeServiceInjection extends DependencyInjection instanceof ProviderRecipeDefinition {
+private class ProviderRecipeServiceInjection extends DependencyInjection instanceof ProviderRecipeDefinition
+{
   override DataFlow::Node getAnInjectableFunction() { result = super.getAService() }
 }
 

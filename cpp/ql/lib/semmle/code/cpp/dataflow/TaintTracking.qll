@@ -18,7 +18,17 @@
 import semmle.code.cpp.dataflow.DataFlow
 import semmle.code.cpp.dataflow.DataFlow2
 
-module TaintTracking {
-  import semmle.code.cpp.dataflow.internal.tainttracking1.TaintTracking
+/**
+ * DEPRECATED: Use `semmle.code.cpp.dataflow.new.TaintTracking` instead.
+ *
+ * Provides classes for performing local (intra-procedural) and
+ * global (inter-procedural) taint-tracking analyses.
+ */
+deprecated module TaintTracking {
+  import semmle.code.cpp.dataflow.internal.tainttracking1.TaintTrackingParameter::Public
+  private import semmle.code.cpp.dataflow.internal.DataFlowImplSpecific
+  private import semmle.code.cpp.dataflow.internal.TaintTrackingImplSpecific
+  private import codeql.dataflow.TaintTracking
+  import TaintFlowMake<CppOldDataFlow, CppOldTaintTracking>
   import semmle.code.cpp.dataflow.internal.tainttracking1.TaintTrackingImpl
 }

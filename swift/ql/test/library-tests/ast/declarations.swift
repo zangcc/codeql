@@ -178,3 +178,17 @@ func ifConfig() {
   12
   #endif
 }
+
+class B {}
+typealias A = B
+typealias C = Int?
+
+class S {
+  var bf1 = 0
+  func captureThis() {
+    var x = 0
+    var f = { [self, x] () in
+      self.bf1 = x
+    };
+  }
+}

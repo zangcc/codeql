@@ -21,7 +21,8 @@ class SpelExpressionInjectionAdditionalTaintStep extends Unit {
 }
 
 /** A set of additional taint steps to consider when taint tracking SpEL related data flows. */
-private class DefaultSpelExpressionInjectionAdditionalTaintStep extends SpelExpressionInjectionAdditionalTaintStep {
+private class DefaultSpelExpressionInjectionAdditionalTaintStep extends SpelExpressionInjectionAdditionalTaintStep
+{
   override predicate step(DataFlow::Node node1, DataFlow::Node node2) {
     expressionParsingStep(node1, node2)
   }
@@ -32,7 +33,7 @@ private class DefaultSpelExpressionInjectionAdditionalTaintStep extends SpelExpr
  * by calling `parser.parseExpression(tainted)`.
  */
 private predicate expressionParsingStep(DataFlow::Node node1, DataFlow::Node node2) {
-  exists(MethodAccess ma, Method m | ma.getMethod() = m |
+  exists(MethodCall ma, Method m | ma.getMethod() = m |
     m.getDeclaringType().getAnAncestor() instanceof ExpressionParser and
     m.hasName(["parseExpression", "parseRaw"]) and
     ma.getAnArgument() = node1.asExpr() and

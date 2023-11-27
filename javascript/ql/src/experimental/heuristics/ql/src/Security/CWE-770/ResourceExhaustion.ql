@@ -20,5 +20,5 @@ import semmle.javascript.heuristics.AdditionalSources
 
 from Configuration dataflow, DataFlow::PathNode source, DataFlow::PathNode sink
 where dataflow.hasFlowPath(source, sink) and source.getNode() instanceof HeuristicSource
-select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), source, sink, sink.getNode().(Sink).getProblemDescription() + " from a $@.", source,
+select sink, source, sink, sink.getNode().(Sink).getProblemDescription() + " from a $@.", source,
   "user-provided value"

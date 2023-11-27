@@ -29,22 +29,13 @@ class LdapFullHost extends StrConst {
   }
 }
 
-/** DEPRECATED: Alias for LdapFullHost */
-deprecated class LDAPFullHost = LdapFullHost;
-
 class LdapSchema extends StrConst {
   LdapSchema() { this.getText().regexpMatch(getSchemaRegex()) }
 }
 
-/** DEPRECATED: Alias for LdapSchema */
-deprecated class LDAPSchema = LdapSchema;
-
 class LdapPrivateHost extends StrConst {
   LdapPrivateHost() { this.getText().regexpMatch(getPrivateHostRegex()) }
 }
-
-/** DEPRECATED: Alias for LdapPrivateHost */
-deprecated class LDAPPrivateHost = LdapPrivateHost;
 
 predicate concatAndCompareAgainstFullHostRegex(LdapSchema schema, StrConst host) {
   not host instanceof LdapPrivateHost and
@@ -55,9 +46,6 @@ predicate concatAndCompareAgainstFullHostRegex(LdapSchema schema, StrConst host)
 class LdapBothStrings extends BinaryExpr {
   LdapBothStrings() { concatAndCompareAgainstFullHostRegex(this.getLeft(), this.getRight()) }
 }
-
-/** DEPRECATED: Alias for LdapBothStrings */
-deprecated class LDAPBothStrings = LdapBothStrings;
 
 // schema + host
 class LdapBothVar extends BinaryExpr {
@@ -73,9 +61,6 @@ class LdapBothVar extends BinaryExpr {
   }
 }
 
-/** DEPRECATED: Alias for LdapBothVar */
-deprecated class LDAPBothVar = LdapBothVar;
-
 // schema + "somethingon.theinternet.com"
 class LdapVarString extends BinaryExpr {
   LdapVarString() {
@@ -89,9 +74,6 @@ class LdapVarString extends BinaryExpr {
   }
 }
 
-/** DEPRECATED: Alias for LdapVarString */
-deprecated class LDAPVarString = LdapVarString;
-
 // "ldap://" + host
 class LdapStringVar extends BinaryExpr {
   LdapStringVar() {
@@ -103,16 +85,11 @@ class LdapStringVar extends BinaryExpr {
   }
 }
 
-/** DEPRECATED: Alias for LdapStringVar */
-deprecated class LDAPStringVar = LdapStringVar;
-
 /**
  * A taint-tracking configuration for detecting LDAP insecure authentications.
  */
-class LdapInsecureAuthConfig extends TaintTracking::Configuration {
-  LdapInsecureAuthConfig() { this = "LDAPInsecureAuthConfig" }
-
-  override predicate isSource(DataFlow::Node source) {
+private module LdapInsecureAuthConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
     source instanceof RemoteFlowSource or
     source.asExpr() instanceof LdapFullHost or
     source.asExpr() instanceof LdapBothStrings or
@@ -121,10 +98,10 @@ class LdapInsecureAuthConfig extends TaintTracking::Configuration {
     source.asExpr() instanceof LdapStringVar
   }
 
-  override predicate isSink(DataFlow::Node sink) {
+  predicate isSink(DataFlow::Node sink) {
     exists(LdapBind ldapBind | not ldapBind.useSsl() and sink = ldapBind.getHost())
   }
 }
 
-/** DEPRECATED: Alias for LdapInsecureAuthConfig */
-deprecated class LDAPInsecureAuthConfig = LdapInsecureAuthConfig;
+/** Global taint-tracking for detecting "LDAP insecure authentications" vulnerabilities. */
+module LdapInsecureAuthFlow = TaintTracking::Global<LdapInsecureAuthConfig>;

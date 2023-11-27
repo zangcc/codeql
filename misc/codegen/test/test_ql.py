@@ -27,17 +27,26 @@ def test_property_is_a_class(type, expected):
     assert [p.param for p in prop.tableparams] == expected_tableparams
 
 
-@pytest.mark.parametrize("name,expected_getter", [
+indefinite_getters = [
     ("Argument", "getAnArgument"),
     ("Element", "getAnElement"),
     ("Integer", "getAnInteger"),
     ("Operator", "getAnOperator"),
     ("Unit", "getAUnit"),
     ("Whatever", "getAWhatever"),
-])
+]
+
+
+@pytest.mark.parametrize("name,expected_getter", indefinite_getters)
 def test_property_indefinite_article(name, expected_getter):
     prop = ql.Property(name, plural="X")
     assert prop.indefinite_getter == expected_getter
+
+
+@pytest.mark.parametrize("name,expected_getter", indefinite_getters)
+def test_property_unordered_getter(name, expected_getter):
+    prop = ql.Property(name, plural="X", is_unordered=True)
+    assert prop.getter == expected_getter
 
 
 @pytest.mark.parametrize("plural,expected", [
@@ -48,6 +57,17 @@ def test_property_indefinite_article(name, expected_getter):
 def test_property_is_repeated(plural, expected):
     prop = ql.Property("foo", "Foo", "props", ["result"], plural=plural)
     assert prop.is_repeated is expected
+
+
+@pytest.mark.parametrize("plural,unordered,expected", [
+    (None, False, False),
+    ("", False, False),
+    ("X", False, True),
+    ("X", True, False),
+])
+def test_property_is_indexed(plural, unordered, expected):
+    prop = ql.Property("foo", "Foo", "props", ["result"], plural=plural, is_unordered=unordered)
+    assert prop.is_indexed is expected
 
 
 @pytest.mark.parametrize("is_optional,is_predicate,plural,expected", [
@@ -127,31 +147,21 @@ def test_class_with_children():
     assert cls.has_children is True
 
 
-@pytest.mark.parametrize("doc,ql_internal,expected",
+@pytest.mark.parametrize("doc,internal,expected",
                          [
                              (["foo", "bar"], False, True),
                              (["foo", "bar"], True, True),
                              ([], False, False),
                              ([], True, True),
                          ])
-def test_has_doc(doc, ql_internal, expected):
-    cls = ql.Class("Class", doc=doc, ql_internal=ql_internal)
-    assert cls.has_doc is expected
+def test_has_doc(doc, internal, expected):
+    stub = ql.Stub("Class", base_import="foo", import_prefix="bar", doc=doc, internal=internal)
+    assert stub.has_qldoc is expected
 
 
-def test_property_with_description():
-    prop = ql.Property("X", "int", description=["foo", "bar"])
-    assert prop.has_description is True
-
-
-def test_class_without_description():
-    prop = ql.Property("X", "int")
-    assert prop.has_description is False
-
-
-def test_ipa_accessor_has_first_constructor_param_marked():
+def test_synth_accessor_has_first_constructor_param_marked():
     params = ["a", "b", "c"]
-    x = ql.IpaUnderlyingAccessor("foo", "bar", params)
+    x = ql.SynthUnderlyingAccessor("foo", "bar", params)
     assert x.constructorparams[0].first
     assert [p.param for p in x.constructorparams] == params
 

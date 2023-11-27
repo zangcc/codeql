@@ -120,9 +120,6 @@ module DomBasedXss {
     WriteUrlSink() { super.isXssSink() }
   }
 
-  /** DEPRECATED: Alias for `WriteUrlSink`. */
-  deprecated class WriteURLSink = WriteUrlSink;
-
   /**
    * An expression whose value is interpreted as HTML or CSS
    * and may be inserted into the DOM.
@@ -282,17 +279,21 @@ module DomBasedXss {
 
   private class UriEncodingSanitizer extends Sanitizer, Shared::UriEncodingSanitizer { }
 
-  private class SerializeJavascriptSanitizer extends Sanitizer, Shared::SerializeJavascriptSanitizer {
-  }
+  private class SerializeJavascriptSanitizer extends Sanitizer, Shared::SerializeJavascriptSanitizer
+  { }
 
   private class IsEscapedInSwitchSanitizer extends Sanitizer, Shared::IsEscapedInSwitchSanitizer { }
 
   private class HtmlSanitizerAsSanitizer extends Sanitizer instanceof HtmlSanitizerCall { }
 
   /**
+   * DEPRECATED. Use `isOptionallySanitizedNode` instead.
+   *
    * Holds if there exists two dataflow edges to `succ`, where one edges is sanitized, and the other edge starts with `pred`.
    */
-  predicate isOptionallySanitizedEdge(DataFlow::Node pred, DataFlow::Node succ) {
+  deprecated predicate isOptionallySanitizedEdge = isOptionallySanitizedEdgeInternal/2;
+
+  private predicate isOptionallySanitizedEdgeInternal(DataFlow::Node pred, DataFlow::Node succ) {
     exists(HtmlSanitizerCall sanitizer |
       // sanitized = sanitize ? sanitizer(source) : source;
       exists(ConditionalExpr branch, Variable var, VarAccess access |
@@ -319,6 +320,17 @@ module DomBasedXss {
     )
   }
 
+  /**
+   * Holds if `node` should be considered optionally sanitized as it occurs in a branch
+   * that controls whether sanitization is enabled.
+   *
+   * For example, in `sanitized = sanitize ? sanitizer(source) : source`, the right-hand `source` expression
+   * is considered an optionally sanitized node.
+   */
+  predicate isOptionallySanitizedNode(DataFlow::Node node) {
+    isOptionallySanitizedEdgeInternal(_, node)
+  }
+
   /** A source of remote user input, considered as a flow source for DOM-based XSS. */
   class RemoteFlowSourceAsSource extends Source instanceof RemoteFlowSource { }
 
@@ -335,7 +347,8 @@ module DomBasedXss {
   /**
    * A sanitizer that blocks the `PrefixString` label when the start of the string is being tested as being of a particular prefix.
    */
-  abstract class PrefixStringSanitizer extends TaintTracking::LabeledSanitizerGuardNode instanceof StringOps::StartsWith {
+  abstract class PrefixStringSanitizer extends TaintTracking::LabeledSanitizerGuardNode instanceof StringOps::StartsWith
+  {
     override predicate sanitizes(boolean outcome, Expr e, DataFlow::FlowLabel label) {
       e = super.getBaseString().asExpr() and
       label = prefixLabel() and

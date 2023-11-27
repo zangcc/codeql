@@ -1,15 +1,18 @@
 private import cpp
 private import semmle.code.cpp.ir.IR
 private import semmle.code.cpp.ir.dataflow.DataFlow
-private import semmle.code.cpp.ir.dataflow.internal.DataFlowPrivate
-private import semmle.code.cpp.ir.dataflow.internal.DataFlowUtil
+private import DataFlowPrivate
+private import DataFlowUtil
 private import DataFlowImplCommon as DataFlowImplCommon
 
 /**
  * Gets a function that might be called by `call`.
+ *
+ * This predicate does not take additional call targets
+ * from `AdditionalCallTarget` into account.
  */
 cached
-Function viableCallable(CallInstruction call) {
+DataFlowCallable defaultViableCallable(DataFlowCall call) {
   DataFlowImplCommon::forceCachingInSameStage() and
   result = call.getStaticCallTarget()
   or
@@ -27,6 +30,17 @@ Function viableCallable(CallInstruction call) {
   or
   // Virtual dispatch
   result = call.(VirtualDispatch::DataSensitiveCall).resolve()
+}
+
+/**
+ * Gets a function that might be called by `call`.
+ */
+cached
+DataFlowCallable viableCallable(DataFlowCall call) {
+  result = defaultViableCallable(call)
+  or
+  // Additional call targets
+  result = any(AdditionalCallTarget additional).viableTarget(call.getUnconvertedResultExpression())
 }
 
 /**
@@ -143,7 +157,7 @@ private module VirtualDispatch {
   private class DataSensitiveExprCall extends DataSensitiveCall {
     DataSensitiveExprCall() { not exists(this.getStaticCallTarget()) }
 
-    override DataFlow::Node getDispatchValue() { result.asInstruction() = this.getCallTarget() }
+    override DataFlow::Node getDispatchValue() { result.asOperand() = this.getCallTargetOperand() }
 
     override Function resolve() {
       exists(FunctionInstruction fi |
@@ -235,7 +249,7 @@ private predicate functionSignature(Function f, string qualifiedName, int nparam
  * Holds if the set of viable implementations that can be called by `call`
  * might be improved by knowing the call context.
  */
-predicate mayBenefitFromCallContext(CallInstruction call, Function f) {
+predicate mayBenefitFromCallContext(DataFlowCall call, DataFlowCallable f) {
   mayBenefitFromCallContext(call, f, _)
 }
 
@@ -259,7 +273,7 @@ private predicate mayBenefitFromCallContext(
  * Gets a viable dispatch target of `call` in the context `ctx`. This is
  * restricted to those `call`s for which a context might make a difference.
  */
-Function viableImplInCallContext(CallInstruction call, CallInstruction ctx) {
+DataFlowCallable viableImplInCallContext(DataFlowCall call, DataFlowCall ctx) {
   result = viableCallable(call) and
   exists(int i, Function f |
     mayBenefitFromCallContext(pragma[only_bind_into](call), f, i) and

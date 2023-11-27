@@ -2,7 +2,6 @@
 
 import java
 private import semmle.code.java.dataflow.DataFlow
-private import semmle.code.java.dataflow.internal.DataFlowForOnActivityResult
 private import semmle.code.java.frameworks.android.Android
 private import semmle.code.java.frameworks.android.Fragment
 private import semmle.code.java.frameworks.android.Intent
@@ -28,10 +27,8 @@ class OnActivityResultIncomingIntent extends DataFlow::Node {
    * Intent to `onActivityResult`.
    */
   predicate isRemoteSource() {
-    exists(
-      ImplicitStartActivityForResultConf conf, RefType startingType, Expr startActivityForResultArg
-    |
-      conf.hasFlowToExpr(startActivityForResultArg) and
+    exists(RefType startingType, Expr startActivityForResultArg |
+      ImplicitStartActivityForResult::flowToExpr(startActivityForResultArg) and
       // startingType is the class enclosing the method that calls `startActivityForResult`.
       startingType = startActivityForResultArg.getEnclosingCallable().getDeclaringType()
     |
@@ -40,7 +37,7 @@ class OnActivityResultIncomingIntent extends DataFlow::Node {
       or
       // A fragment calls `startActivityForResult`
       // and the activity it belongs to defines `onActivityResult`.
-      exists(MethodAccess ma |
+      exists(MethodCall ma |
         ma.getMethod().hasName(["add", "attach", "replace"]) and
         ma.getMethod()
             .getDeclaringType()
@@ -66,17 +63,15 @@ class OnActivityResultIncomingIntent extends DataFlow::Node {
 /**
  * A data flow configuration for implicit intents being used in `startActivityForResult`.
  */
-private class ImplicitStartActivityForResultConf extends DataFlowForOnActivityResult::Configuration {
-  ImplicitStartActivityForResultConf() { this = "ImplicitStartActivityForResultConf" }
-
-  override predicate isSource(DataFlow::Node source) {
+private module ImplicitStartActivityForResultConfig implements DataFlow::ConfigSig {
+  predicate isSource(DataFlow::Node source) {
     exists(ClassInstanceExpr cc |
       cc.getConstructedType() instanceof TypeIntent and source.asExpr() = cc
     )
   }
 
-  override predicate isSink(DataFlow::Node sink) {
-    exists(MethodAccess startActivityForResult |
+  predicate isSink(DataFlow::Node sink) {
+    exists(MethodCall startActivityForResult |
       startActivityForResult.getMethod().hasName("startActivityForResult") and
       startActivityForResult.getMethod().getDeclaringType().getAnAncestor() instanceof
         ActivityOrFragment and
@@ -84,13 +79,11 @@ private class ImplicitStartActivityForResultConf extends DataFlowForOnActivityRe
     )
   }
 
-  override predicate isBarrier(DataFlow::Node barrier) {
-    barrier instanceof ExplicitIntentSanitizer
-  }
+  predicate isBarrier(DataFlow::Node barrier) { barrier instanceof ExplicitIntentSanitizer }
 
-  override predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
+  predicate isAdditionalFlowStep(DataFlow::Node node1, DataFlow::Node node2) {
     // Wrapping the Intent in a chooser
-    exists(MethodAccess ma, Method m |
+    exists(MethodCall ma, Method m |
       ma.getMethod() = m and
       m.hasName("createChooser") and
       m.getDeclaringType() instanceof TypeIntent
@@ -109,6 +102,9 @@ private class ImplicitStartActivityForResultConf extends DataFlowForOnActivityRe
     )
   }
 }
+
+private module ImplicitStartActivityForResult =
+  DataFlow::Global<ImplicitStartActivityForResultConfig>;
 
 /** An Android Activity or Fragment. */
 private class ActivityOrFragment extends Class {

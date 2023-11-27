@@ -8,11 +8,12 @@ import semmle.code.cpp.models.interfaces.SideEffect
  * guaranteed to be side-effect free.
  */
 private class PureStrFunction extends AliasFunction, ArrayFunction, TaintFunction,
-  SideEffectFunction {
+  SideEffectFunction
+{
   PureStrFunction() {
     this.hasGlobalOrStdOrBslName([
         atoi(), "strcasestr", "strchnul", "strchr", "strchrnul", "strstr", "strpbrk", "strrchr",
-        "strspn", strtol(), strrev(), strcmp(), strlwr(), strupr()
+        "strspn", strrev(), strcmp(), strlwr(), strupr()
       ])
   }
 
@@ -68,8 +69,6 @@ private class PureStrFunction extends AliasFunction, ArrayFunction, TaintFunctio
 }
 
 private string atoi() { result = ["atof", "atoi", "atol", "atoll"] }
-
-private string strtol() { result = ["strtod", "strtof", "strtol", "strtoll", "strtoq", "strtoul"] }
 
 private string strlwr() {
   result = ["_strlwr", "_wcslwr", "_mbslwr", "_strlwr_l", "_wcslwr_l", "_mbslwr_l"]
@@ -153,7 +152,8 @@ private class PureFunction extends TaintFunction, SideEffectFunction {
  * evaluation is guaranteed to be side-effect free.
  */
 private class PureMemFunction extends AliasFunction, ArrayFunction, TaintFunction,
-  SideEffectFunction {
+  SideEffectFunction
+{
   PureMemFunction() {
     this.hasGlobalOrStdOrBslName([
         "memchr", "__builtin_memchr", "memrchr", "rawmemchr", "memcmp", "__builtin_memcmp", "memmem"

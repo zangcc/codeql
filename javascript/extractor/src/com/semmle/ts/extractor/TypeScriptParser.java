@@ -273,23 +273,6 @@ public class TypeScriptParser {
     return result;
   }
 
-  private static int getMegabyteCountFromPrefixedEnv(String suffix, int defaultValue) {
-    String envVar = "SEMMLE_" + suffix;
-    String value = Env.systemEnv().get(envVar);
-    if (value == null || value.length() == 0) {
-      envVar = "LGTM_" + suffix;
-      value = Env.systemEnv().get(envVar);
-    }
-    if (value == null || value.length() == 0) {
-      return defaultValue;
-    }
-    Integer amount = UnitParser.parseOpt(value, UnitParser.MEGABYTES);
-    if (amount == null) {
-      throw new UserError("Invalid value for " + envVar + ": '" + value + "'");
-    }
-    return amount;
-  }
-
   /** Start the Node.js parser wrapper process. */
   private void setupParserWrapper() {
     verifyNodeInstallation();
@@ -297,8 +280,8 @@ public class TypeScriptParser {
     int mainMemoryMb =
         typescriptRam != 0
             ? typescriptRam
-            : getMegabyteCountFromPrefixedEnv(TYPESCRIPT_RAM_SUFFIX, 2000);
-    int reserveMemoryMb = getMegabyteCountFromPrefixedEnv(TYPESCRIPT_RAM_RESERVE_SUFFIX, 400);
+            : EnvironmentVariables.getMegabyteCountFromPrefixedEnv(TYPESCRIPT_RAM_SUFFIX, 2000);
+    int reserveMemoryMb = EnvironmentVariables.getMegabyteCountFromPrefixedEnv(TYPESCRIPT_RAM_RESERVE_SUFFIX, 400);
 
     System.out.println("Memory for TypeScript process: " + mainMemoryMb + " MB, and " + reserveMemoryMb + " MB reserve");
 
@@ -409,7 +392,8 @@ public class TypeScriptParser {
         exitCode = parserWrapperProcess.waitFor();
       }
       if (exitCode != null && (exitCode == NODEJS_EXIT_CODE_FATAL_ERROR || exitCode == NODEJS_EXIT_CODE_SIG_ABORT)) {
-        return new ResourceError("The TypeScript parser wrapper crashed, possibly from running out of memory.", e);
+        // this is caught in the auto-builder, and handled as an OOM. Check there if the message is changed.
+        return new TypeScriptWrapperOOMError("The TypeScript parser wrapper crashed, possibly from running out of memory.", e);
       }
       if (exitCode != null) {
         return new CatastrophicError("The TypeScript parser wrapper crashed with exit code " + exitCode);
