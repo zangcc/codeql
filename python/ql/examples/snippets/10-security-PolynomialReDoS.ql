@@ -28,7 +28,7 @@ where
 //     source.getNode().(Source).getKind() = "url" and
 //     regexp.isAtEndLine()
 //   )
-select sinkNode.getHighlight(), source, sink,
+select sinkNode.getHighlight(), source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),
   "This $@ that depends on a $@ may run slow on strings " + regexp.getPrefixMessage() +
     "with many repetitions of '" + regexp.getPumpString() + "'.", regexp, "regular expression",
   source.getNode(), "user-provided value"

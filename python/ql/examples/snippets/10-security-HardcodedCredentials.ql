@@ -121,5 +121,5 @@ from HardcodedCredentialsFlow::PathNode src, HardcodedCredentialsFlow::PathNode 
 where
   HardcodedCredentialsFlow::flowPath(src, sink) and
   not any(TestScope test).contains(src.getNode().asCfgNode().getNode())
-select src.getNode(), src, sink, "This hardcoded value is $@.", sink.getNode(),
+select src.getNode(), src, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "This hardcoded value is $@.", sink.getNode(),
   "used as credentials"

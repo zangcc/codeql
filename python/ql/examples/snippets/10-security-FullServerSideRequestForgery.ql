@@ -21,5 +21,5 @@ where
   request = sink.getNode().(Sink).getRequest() and
   FullServerSideRequestForgeryFlow::flowPath(source, sink) and
   fullyControlledRequest(request)
-select request, source, sink, "The full URL of this request depends on a $@.", source.getNode(),
+select request, source, sink,sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(), "The full URL of this request depends on a $@.", source.getNode(),
   "user-provided value"
