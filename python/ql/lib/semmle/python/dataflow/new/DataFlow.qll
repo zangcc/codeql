@@ -22,8 +22,6 @@ private import python
  * global (inter-procedural) data flow analyses.
  */
 module DataFlow {
-  private import internal.DataFlowImplSpecific
-  private import codeql.dataflow.DataFlow
-  import DataFlowMake<PythonDataFlow>
+  import internal.DataFlow
   import internal.DataFlowImpl1
 }

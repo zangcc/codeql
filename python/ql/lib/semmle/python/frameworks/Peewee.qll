@@ -163,9 +163,10 @@ private module Peewee {
    * A call to the `connection` method on a `peewee.Database` instance.
    * https://docs.peewee-orm.com/en/latest/peewee/api.html#Database.connection.
    */
-  class PeeweeDatabaseConnectionCall extends PEP249::DatabaseConnection {
+  class PeeweeDatabaseConnectionCall extends PEP249::Connection::InstanceSource,
+    DataFlow::CallCfgNode {
     PeeweeDatabaseConnectionCall() {
-      this = Database::instance().getMember("connection").getReturn()
+      this = Database::instance().getMember("connection").getACall()
     }
   }
 
@@ -173,8 +174,8 @@ private module Peewee {
    * A call to the `cursor` method on a `peewee.Database` instance.
    * https://docs.peewee-orm.com/en/latest/peewee/api.html#Database.cursor.
    */
-  class PeeweeDatabaseCursorCall extends PEP249::DatabaseCursor {
-    PeeweeDatabaseCursorCall() { this = Database::instance().getMember("cursor").getReturn() }
+  class PeeweeDatabaseCursorCall extends PEP249::Cursor::InstanceSource, DataFlow::CallCfgNode {
+    PeeweeDatabaseCursorCall() { this = Database::instance().getMember("cursor").getACall() }
   }
 
   /**
