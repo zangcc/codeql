@@ -3,48 +3,61 @@
   "qhelp.dtd">
 <qhelp>
 <overview>
-<p>If an LDAP query or DN is built using string concatenation or string formatting, and the
-components of the concatenation include user input without any proper sanitization, a user
+<p>If an LDAP query is built using string concatenation, and the
+components of the concatenation include user input, a user 
 is likely to be able to run malicious LDAP queries.</p>
 </overview>
 
 <recommendation>
-<p>If user input must be included in an LDAP query or DN, it should be escaped to
+<p>If user input must be included in an LDAP query, it should be escaped to
 avoid a malicious user providing special characters that change the meaning
-of the query. In Python2, user input should be escaped with <code>ldap.dn.escape_dn_chars</code>
-or <code>ldap.filter.escape_filter_chars</code>, while in Python3, user input should be escaped with
-<code>ldap3.utils.dn.escape_rdn</code> or <code>ldap3.utils.conv.escape_filter_chars</code>
-depending on the component tainted by the user. A good practice is to escape filter characters
-that could change the meaning of the query (https://tools.ietf.org/search/rfc4515#section-3).</p>
+of the query. If possible build the LDAP query using framework helper methods, for example
+from Spring's <code>LdapQueryBuilder</code> and <code>LdapNameBuilder</code>,
+instead of string concatenation. Alternatively, escape user input using an appropriate
+LDAP encoding method, for example: <code>encodeForLDAP</code> or <code>encodeForDN</code>
+from OWASP ESAPI, <code>LdapEncoder.filterEncode</code> or <code>LdapEncoder.nameEncode</code>
+from Spring LDAP, or <code>Filter.encodeValue</code> from UnboundID library.</p>
 </recommendation>
 
 <example>
-<p>In the following examples, the code accepts both <code>username</code> and <code>dc</code> from the user,
-which it then uses to build a LDAP query and DN.</p>
+<p>In the following examples, the code accepts an "organization name" and a "username"
+from the user, which it uses to query LDAP.</p>
 
-<p>The first and the second example uses the unsanitized user input directly
-in the search filter and DN for the LDAP query.
+<p>The first example concatenates the unvalidated and unencoded user input directly
+into both the DN (Distinguished Name) and the search filter used for the LDAP query.
 A malicious user could provide special characters to change the meaning of these
-components, and search for a completely different set of values.</p>
+queries, and search for a completely different set of values. The LDAP query is executed
+using Java JNDI API.
+</p>
 
-<sample src="examples/example_bad1.py" />
-<sample src="examples/example_bad2.py" />
+<p>The second example uses the OWASP ESAPI library to encode the user values
+before they are included in the DN and search filters. This ensures the meaning of
+the query cannot be changed by a malicious user.</p>
 
-<p>In the third and fourth example, the input provided by the user is sanitized before it is included in the search filter or DN.
-This ensures the meaning of the query cannot be changed by a malicious user.</p>
+<sample src="LdapInjectionJndi.java" />
 
-<sample src="examples/example_good1.py" />
-<sample src="examples/example_good2.py" />
+<p>The third example uses Spring <code>LdapQueryBuilder</code> to build an LDAP query. In addition to
+simplifying the building of complex search parameters, it also provides proper escaping of any
+unsafe characters in search filters. The DN is built using <code>LdapNameBuilder</code>, which also provides
+proper escaping.</p>
+
+<sample src="LdapInjectionSpring.java" />
+
+<p>The fourth example uses <code>UnboundID</code> classes, <code>Filter</code> and <code>DN</code>, to construct a safe filter and
+base DN.</p>
+
+<sample src="LdapInjectionUnboundId.java" />
+
+<p>The fifth example shows how to build a safe filter and DN using the Apache LDAP API.</p>
+
+<sample src="LdapInjectionApache.java" />
 </example>
 
 <references>
 <li>OWASP: <a href="https://cheatsheetseries.owasp.org/cheatsheets/LDAP_Injection_Prevention_Cheat_Sheet.html">LDAP Injection Prevention Cheat Sheet</a>.</li>
-<li>OWASP: <a href="https://owasp.org/www-community/attacks/LDAP_Injection">LDAP Injection</a>.</li>
-<li>SonarSource: <a href="https://rules.sonarsource.com/python/RSPEC-2078">RSPEC-2078</a>.</li>
-<li>Python2: <a href="https://www.python-ldap.org/en/python-ldap-3.3.0/reference/ldap.html">LDAP Documentation</a>.</li>
-<li>Python3: <a href="https://ldap3.readthedocs.io/en/latest/">LDAP Documentation</a>.</li>
-<li>Wikipedia: <a href="https://en.wikipedia.org/wiki/LDAP_injection">LDAP injection</a>.</li>
-<li>BlackHat: <a href="https://www.blackhat.com/presentations/bh-europe-08/Alonso-Parada/Whitepaper/bh-eu-08-alonso-parada-WP.pdf">LDAP Injection and Blind LDAP Injection</a>.</li>
-<li>LDAP: <a href="https://ldap.com/2018/05/04/understanding-and-defending-against-ldap-injection-attacks/">Understanding and Defending Against LDAP Injection Attacks</a>.</li>
+<li>OWASP ESAPI: <a href="https://owasp.org/www-project-enterprise-security-api/">OWASP ESAPI</a>.</li>
+<li>Spring LdapQueryBuilder doc: <a href="https://docs.spring.io/spring-ldap/docs/current/apidocs/org/springframework/ldap/query/LdapQueryBuilder.html">LdapQueryBuilder</a>.</li>
+<li>Spring LdapNameBuilder doc: <a href="https://docs.spring.io/spring-ldap/docs/current/apidocs/org/springframework/ldap/support/LdapNameBuilder.html">LdapNameBuilder</a>.</li>
+<li>UnboundID: <a href="https://ldap.com/2018/05/04/understanding-and-defending-against-ldap-injection-attacks/">Understanding and Defending Against LDAP Injection Attacks</a>.</li>
 </references>
 </qhelp>
