@@ -51,5 +51,5 @@ predicate unsafe_call_to_endswith(Call sanitizer, StrConst url) {
 
 from Expr sanitizer, StrConst url
 where incomplete_sanitization(sanitizer, url)
-select "[Match Flag]: https://", sanitizer, "The string $@ may be at an arbitrary position in the sanitized URL.", url,
+select  sanitizer.getLocation().getFile().getAbsolutePath()+"$$"+sanitizer.getLocation().getStartLine() ,sanitizer, "The string $@ may be at an arbitrary position in the sanitized URL.", url,
   url.getText()

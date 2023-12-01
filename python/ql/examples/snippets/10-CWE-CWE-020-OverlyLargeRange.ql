@@ -17,4 +17,4 @@ import codeql.regex.OverlyLargeRangeQuery::Make<TreeView>
 
 from TreeView::RegExpCharacterRange range, string reason
 where problem(range, reason)
-select "[Match Flag]: https://", range, "Suspicious character range that " + reason + "."
+select  range.getLocation().getFile().getAbsolutePath()+"$$"+range.getLocation().getStartLine(),range, "Suspicious character range that " + reason + "."

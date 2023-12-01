@@ -24,6 +24,6 @@ from
 where
   config.hasFlowPath(source, sink) and
   regexExecution = sink.getNode().(Sink).getRegexExecution()
-select "[Match Flag]: https://", sink.getNode(), source, sink,
+select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
   "This regular expression depends on a $@ and is executed by $@.", source.getNode(),
   "user-provided value", regexExecution, regexExecution.getName()

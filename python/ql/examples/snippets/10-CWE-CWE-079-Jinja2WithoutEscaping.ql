@@ -47,4 +47,4 @@ where
         .(ImmutableLiteral)
         .booleanValue() = false
   )
-select "[Match Flag]: https://", call, "Using jinja2 templates with autoescape=False can potentially allow XSS attacks."
+select  call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Using jinja2 templates with autoescape=False can potentially allow XSS attacks."

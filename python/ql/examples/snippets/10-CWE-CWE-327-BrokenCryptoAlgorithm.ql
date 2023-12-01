@@ -27,4 +27,4 @@ where
   )
   or
   operation.getBlockMode().isWeak() and msgPrefix = "The block mode " + operation.getBlockMode()
-select "[Match Flag]: https://", operation, msgPrefix + " is broken or weak, and should not be used."
+select  operation.getLocation().getFile().getAbsolutePath()+"$$"+operation.getLocation().getStartLine() ,operation, msgPrefix + " is broken or weak, and should not be used."

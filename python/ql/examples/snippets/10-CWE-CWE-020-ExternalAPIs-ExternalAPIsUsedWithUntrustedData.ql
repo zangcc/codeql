@@ -12,6 +12,9 @@ import python
 import ExternalAPIs
 
 from ExternalApiUsedWithUntrustedData externalApi
-select "[Match Flag]: https://", externalApi, count(externalApi.getUntrustedDataNode()) as numberOfUses,
+select  externalApi.getUntrustedDataNode().getLocation().getFile().getAbsolutePath()+"$$"+externalApi.getUntrustedDataNode().getLocation().getStartLine(),externalApi, count(externalApi.getUntrustedDataNode()) as numberOfUses,
   externalApi.getNumberOfUntrustedSources() as numberOfUntrustedSources order by
     numberOfUntrustedSources desc
+
+
+  

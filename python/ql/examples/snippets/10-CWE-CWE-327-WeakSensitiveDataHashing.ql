@@ -44,6 +44,6 @@ where
           " hashing, since it is not a computationally expensive hash function."
     )
   )
-select "[Match Flag]: https://", sink.getNode(), source, sink,
+select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
   "$@ is used in a hashing algorithm (" + algorithmName + ") that is insecure" + ending,
   source.getNode(), "Sensitive data (" + classification + ")"

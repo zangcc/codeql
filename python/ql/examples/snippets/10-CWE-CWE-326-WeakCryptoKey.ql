@@ -20,6 +20,6 @@ where
   keySize = keyGen.getKeySizeWithOrigin(origin) and
   keySize < keyGen.minimumSecureKeySize() and
   not origin.getScope().getScope*() instanceof TestScope
-select "[Match Flag]: https://", keyGen,
+  select  keyGen.getLocation().getFile().getAbsolutePath()+"$$"+keyGen.getLocation().getStartLine() ,keyGen,
   "Creation of an " + keyGen.getName() + " key uses $@ bits, which is below " +
     keyGen.minimumSecureKeySize() + " and considered breakable.", origin, keySize.toString()

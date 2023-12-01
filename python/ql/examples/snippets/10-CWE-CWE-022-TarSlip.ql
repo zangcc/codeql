@@ -18,5 +18,5 @@ import DataFlow::PathGraph
 
 from Configuration config, DataFlow::PathNode source, DataFlow::PathNode sink
 where config.hasFlowPath(source, sink)
-select "[Match Flag]: https://", sink.getNode(), source, sink, "This file extraction depends on a $@.", source.getNode(),
+select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "This file extraction depends on a $@.", source.getNode(),
   "potentially untrusted source"

@@ -34,4 +34,4 @@ where
   // project with a protecting settings file. We want to rule out this scenario, so we
   // require all non-test settings to be vulnerable.
   forall(Http::Server::CsrfProtectionSetting s | relevantSetting(s) | vulnerableSetting(s))
-select "[Match Flag]: https://", setting, "Potential CSRF vulnerability due to forgery protection being disabled or weakened."
+select  setting.getLocation().getFile().getAbsolutePath()+"$$"+setting.getLocation().getStartLine() ,setting, "Potential CSRF vulnerability due to forgery protection being disabled or weakened."

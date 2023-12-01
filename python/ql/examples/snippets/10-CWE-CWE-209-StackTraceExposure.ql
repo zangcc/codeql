@@ -19,6 +19,6 @@ import DataFlow::PathGraph
 
 from Configuration config, DataFlow::PathNode source, DataFlow::PathNode sink
 where config.hasFlowPath(source, sink)
-select "[Match Flag]: https://", sink.getNode(), source, sink,
+select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
   "$@ flows to this location and may be exposed to an external user.", source.getNode(),
   "Stack trace information"

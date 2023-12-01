@@ -22,6 +22,6 @@ where
   hasReDoSResult(t, pump, s, prefixMsg) and
   // exclude verbose mode regexes for now
   not t.getRegex().getAMode() = "VERBOSE"
-select "[Match Flag]: https://", t,
+select  t.getLocation().getFile().getAbsolutePath()+"$$"+t.getLocation().getStartLine() ,t,
   "This part of the regular expression may cause exponential backtracking on strings " + prefixMsg +
     "containing many repetitions of '" + pump + "'."

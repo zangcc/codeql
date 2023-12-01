@@ -120,5 +120,5 @@ from HardcodedCredentialsConfiguration config, DataFlow::PathNode src, DataFlow:
 where
   config.hasFlowPath(src, sink) and
   not any(TestScope test).contains(src.getNode().asCfgNode().getNode())
-select "[Match Flag]: https://", src.getNode(), src, sink, "This hardcoded value is $@.", sink.getNode(),
+select  src.getNode().getLocation().getFile().getAbsolutePath()+"$$"+src.getNode().getLocation().getStartLine() ,src.getNode(), src, sink, "This hardcoded value is $@.", sink.getNode(),
   "used as credentials"

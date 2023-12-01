@@ -18,6 +18,6 @@ import DataFlow::PathGraph
 
 from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where cfg.hasFlowPath(source, sink)
-select "[Match Flag]: https://", sink.getNode(), source, sink,
+select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
   "XML parsing depends on a $@ without guarding against uncontrolled entity expansion.",
   source.getNode(), "user-provided value"
