@@ -93,13 +93,16 @@ private module Dispatch {
       exists(RefType t | qualUnionType(ma, t, false) |
         lowConfidenceDispatchType(t.getSourceDeclaration())
       )
-    )
+    ) and
+    not ObjFlow::objectToStringCall(ma)
   }
 
   private predicate lowConfidenceDispatchType(SrcRefType t) {
     t instanceof TypeObject
     or
     t instanceof Interface and not t.fromSource()
+    or
+    t instanceof TypeInputStream
     or
     t.hasQualifiedName("java.io", "Serializable")
     or

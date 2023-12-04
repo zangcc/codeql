@@ -4,4 +4,4 @@ groups:
   - examples
 dependencies:
   codeql/java-all: ${workspace}
-  codeql/java-queries: ${workspace}
+warnOnImplicitThis: true

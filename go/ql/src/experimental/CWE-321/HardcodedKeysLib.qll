@@ -6,7 +6,6 @@
 
 import go
 import StringOps
-import DataFlow::PathGraph
 
 /**
  * Provides default sources, sinks and sanitizers for reasoning about
@@ -75,6 +74,69 @@ module HardcodedKeys {
           m.getTarget().hasQualifiedName(pkg, "SigningMethod", "Sign") and
           this = m.getArgument(1)
         )
+      )
+    }
+  }
+
+  private class KatarasJwt extends Sink {
+    KatarasJwt() {
+      exists(string pkg |
+        pkg = package("github.com/kataras/jwt", "") and
+        (
+          exists(DataFlow::MethodCallNode m |
+            // Model the `Register` method of the type `Keys`
+            // func (keys Keys) Register(alg Alg, kid string, pubKey PublicKey, privKey PrivateKey)
+            m.getTarget().hasQualifiedName(pkg, "Keys", "Register")
+          |
+            this = m.getArgument(3)
+          )
+          or
+          exists(DataFlow::CallNode m, string names |
+            // Model the `Sign` method of the `SigningMethod` interface
+            // func Sign(alg Alg, key PrivateKey, claims interface{}, opts ...SignOption) ([]byte, error)
+            // func SignEncrypted(alg Alg, key PrivateKey, encrypt InjectFunc, claims interface{}, ...) ([]byte, error)
+            // func SignEncryptedWithHeader(alg Alg, key PrivateKey, encrypt InjectFunc, claims interface{}, ...) ([]byte, error)
+            // func SignWithHeader(alg Alg, key PrivateKey, claims interface{}, customHeader interface{}, ...) ([]byte, error)
+            m.getTarget().hasQualifiedName(pkg, names) and
+            names = ["Sign", "SignEncrypted", "SignEncryptedWithHeader", "SignWithHeader"]
+          |
+            this = m.getArgument(1)
+          )
+        )
+      )
+    }
+  }
+
+  private class IrisJwt extends Sink {
+    IrisJwt() {
+      exists(string pkg |
+        pkg = "github.com/kataras/iris/v12/middleware/jwt" and
+        (
+          exists(DataFlow::CallNode m |
+            //func NewSigner(signatureAlg Alg, signatureKey interface{}, maxAge time.Duration) *Signer
+            m.getTarget().hasQualifiedName(pkg, "NewSigner")
+          |
+            this = m.getArgument(1)
+          )
+          or
+          exists(Field f |
+            // Models the `key` field of the `Signer` type
+            // https://github.com/kataras/iris/blob/dccd57263617f5ca95d7621acfadf9dd37752dd6/middleware/jwt/signer.go#L17
+            f.hasQualifiedName(pkg, "Signer", "Key") and
+            f.getAWrite().getRhs() = this
+          )
+        )
+      )
+    }
+  }
+
+  private class GogfJwtSign extends Sink {
+    GogfJwtSign() {
+      exists(Field f, string pkg |
+        pkg = package("github.com/gogf/gf-jwt", "") and
+        // https://github.com/gogf/gf-jwt/blob/40503f05bc0a2bcd7aeba550163112afbb5c221f/auth_jwt.go#L27
+        f.hasQualifiedName(pkg, "GfJWTMiddleware", "Key") and
+        f.getAWrite().getRhs() = this
       )
     }
   }
@@ -300,9 +362,11 @@ module HardcodedKeys {
   }
 
   /**
+   * DEPRECATED: Use `Flow` instead.
+   *
    * A configuration depicting taint flow for studying JWT token signing vulnerabilities.
    */
-  class Configuration extends TaintTracking::Configuration {
+  deprecated class Configuration extends TaintTracking::Configuration {
     Configuration() { this = "Hard-coded JWT Signing Key" }
 
     override predicate isSource(DataFlow::Node source) { source instanceof Source }
@@ -311,4 +375,15 @@ module HardcodedKeys {
 
     override predicate isSanitizer(DataFlow::Node sanitizer) { sanitizer instanceof Sanitizer }
   }
+
+  private module Config implements DataFlow::ConfigSig {
+    predicate isSource(DataFlow::Node source) { source instanceof Source }
+
+    predicate isSink(DataFlow::Node sink) { sink instanceof Sink }
+
+    predicate isBarrier(DataFlow::Node node) { node instanceof Sanitizer }
+  }
+
+  /** Tracks taint flow for reasoning about JWT token signing vulnerabilities. */
+  module Flow = TaintTracking::Global<Config>;
 }

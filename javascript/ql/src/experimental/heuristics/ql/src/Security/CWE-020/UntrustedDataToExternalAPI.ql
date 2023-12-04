@@ -17,6 +17,6 @@ import semmle.javascript.heuristics.AdditionalSources
 
 from Configuration config, DataFlow::PathNode source, DataFlow::PathNode sink
 where config.hasFlowPath(source, sink) and source.getNode() instanceof HeuristicSource
-select sink,sink.getNode().getFile().getAbsolutePath()+"$$"+sink.getNode().getStartLine(), source, sink,
+select sink, source, sink,
   "Call to " + sink.getNode().(Sink).getApiName() + " with untrusted data from $@.", source,
   source.toString()

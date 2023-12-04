@@ -75,8 +75,8 @@ class ForbiddenSecurityConfigurationCallable extends ForbiddenCallable {
 }
 
 /** A method or constructor involving serialization that may not be called by an EJB. */
-class ForbiddenSerializationCallable extends ForbiddenCallable instanceof ForbiddenSerializationMethod {
-}
+class ForbiddenSerializationCallable extends ForbiddenCallable instanceof ForbiddenSerializationMethod
+{ }
 
 /** A method or constructor involving network factory operations that may not be called by an EJB. */
 class ForbiddenSetFactoryCallable extends ForbiddenCallable instanceof ForbiddenSetFactoryMethod { }
@@ -317,7 +317,7 @@ class SystemSetInputStreamMethod extends Method {
   SystemSetInputStreamMethod() {
     this.hasName("setIn") and
     this.getNumberOfParameters() = 1 and
-    this.getParameter(0).getType().(RefType).hasQualifiedName("java.io", "InputStream") and
+    this.getParameter(0).getType() instanceof TypeInputStream and
     this.getDeclaringType()
         .getAnAncestor()
         .getSourceDeclaration()

@@ -110,7 +110,8 @@ module Ssa {
 
     /** A plain field or property. */
     class PlainFieldOrPropSourceVariable extends FieldOrPropSourceVariable,
-      SsaImpl::TPlainFieldOrProp {
+      SsaImpl::TPlainFieldOrProp
+    {
       override Callable getEnclosingCallable() { this = SsaImpl::TPlainFieldOrProp(result, _) }
 
       override string toString() {
@@ -127,7 +128,8 @@ module Ssa {
 
     /** A qualified field or property. */
     class QualifiedFieldOrPropSourceVariable extends FieldOrPropSourceVariable,
-      SsaImpl::TQualifiedFieldOrProp {
+      SsaImpl::TQualifiedFieldOrProp
+    {
       override Callable getEnclosingCallable() {
         this = SsaImpl::TQualifiedFieldOrProp(result, _, _)
       }
@@ -409,7 +411,7 @@ module Ssa {
      * This is either an expression, for example `x = 0`, a parameter, or a
      * callable. Phi nodes have no associated syntax element.
      */
-    Element getElement() { result = this.getControlFlowNode().getElement() }
+    Element getElement() { result = this.getControlFlowNode().getAstNode() }
 
     /** Gets the callable to which this SSA definition belongs. */
     final Callable getEnclosingCallable() {

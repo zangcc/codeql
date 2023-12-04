@@ -101,7 +101,7 @@ private module FindRegexMode {
 }
 
 /**
- * DEPRECATED: Use `RegExp` instead.
+ * DEPRECATED: Use `Regex` instead.
  */
 deprecated class Regex = RegExp;
 
@@ -326,17 +326,6 @@ class RegExp extends Expr instanceof StrConst {
 
   /** Gets the text of this regex */
   string getText() { result = super.getText() }
-
-  /**
-   * Gets the prefix of this regex
-   *
-   * Examples:
-   *
-   *   - The prefix of `'x*y'` is `'`.
-   *   - The prefix of `r''` is `r'`.
-   *   - The prefix of `r"""x*y"""` is `r"""`.
-   */
-  string getPrefix() { result = super.getPrefix() }
 
   /** Gets the `i`th character of this regex */
   string getChar(int i) { result = this.getText().charAt(i) }

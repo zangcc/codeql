@@ -17,10 +17,12 @@ module CommandInjection {
   import CommandInjectionCustomizations::CommandInjection
 
   /**
+   * DEPRECATED: Use `Flow` instead.
+   *
    * A taint-tracking configuration for reasoning about command-injection vulnerabilities
    * with sinks which are not sanitized by `--`.
    */
-  class Configuration extends TaintTracking::Configuration {
+  deprecated class Configuration extends TaintTracking::Configuration {
     Configuration() { this = "CommandInjection" }
 
     override predicate isSource(DataFlow::Node source) { source instanceof Source }
@@ -39,6 +41,22 @@ module CommandInjection {
     }
   }
 
+  private module Config implements DataFlow::ConfigSig {
+    predicate isSource(DataFlow::Node source) { source instanceof Source }
+
+    predicate isSink(DataFlow::Node sink) {
+      exists(Sink s | sink = s | not s.doubleDashIsSanitizing())
+    }
+
+    predicate isBarrier(DataFlow::Node node) { node instanceof Sanitizer }
+  }
+
+  /**
+   * Tracks taint flow for reasoning about command-injection vulnerabilities
+   * with sinks which are not sanitized by `--`.
+   */
+  module Flow = TaintTracking::Global<Config>;
+
   private class ArgumentArrayWithDoubleDash extends DataFlow::Node {
     int doubleDashIndex;
 
@@ -47,7 +65,7 @@ module CommandInjection {
       exists(DataFlow::CallNode c |
         this = c and
         (c = Builtin::append().getACall() or c = any(SystemCommandExecution sce)) and
-        c.getArgument(doubleDashIndex).getStringValue() = "--"
+        c.getSyntacticArgument(doubleDashIndex).getStringValue() = "--"
       )
       or
       // array/slice literal containing a "--"
@@ -63,7 +81,7 @@ module CommandInjection {
           alreadyHasDoubleDash.getType() instanceof SliceType
         ) and
         this = userCall and
-        DataFlow::localFlow(alreadyHasDoubleDash, userCall.getArgument(doubleDashIndex))
+        DataFlow::localFlow(alreadyHasDoubleDash, userCall.getSyntacticArgument(doubleDashIndex))
       )
     }
 
@@ -71,7 +89,7 @@ module CommandInjection {
       exists(int sanitizedIndex |
         sanitizedIndex > doubleDashIndex and
         (
-          result = this.(DataFlow::CallNode).getArgument(sanitizedIndex) or
+          result = this.(DataFlow::CallNode).getSyntacticArgument(sanitizedIndex) or
           result = DataFlow::exprNode(this.asExpr().(ArrayOrSliceLit).getElement(sanitizedIndex))
         )
       )
@@ -79,10 +97,12 @@ module CommandInjection {
   }
 
   /**
+   * DEPRECATED: Use `DoubleDashSanitizingFlow` instead.
+   *
    * A taint-tracking configuration for reasoning about command-injection vulnerabilities
    * with sinks which are sanitized by `--`.
    */
-  class DoubleDashSanitizingConfiguration extends TaintTracking::Configuration {
+  deprecated class DoubleDashSanitizingConfiguration extends TaintTracking::Configuration {
     DoubleDashSanitizingConfiguration() { this = "CommandInjectionWithDoubleDashSanitizer" }
 
     override predicate isSource(DataFlow::Node source) { source instanceof Source }
@@ -101,4 +121,21 @@ module CommandInjection {
       guard instanceof SanitizerGuard
     }
   }
+
+  private module DoubleDashSanitizingConfig implements DataFlow::ConfigSig {
+    predicate isSource(DataFlow::Node source) { source instanceof Source }
+
+    predicate isSink(DataFlow::Node sink) { exists(Sink s | sink = s | s.doubleDashIsSanitizing()) }
+
+    predicate isBarrier(DataFlow::Node node) {
+      node instanceof Sanitizer or
+      node = any(ArgumentArrayWithDoubleDash array).getASanitizedElement()
+    }
+  }
+
+  /**
+   * Tracks taint flow for reasoning about command-injection vulnerabilities
+   * with sinks which are sanitized by `--`.
+   */
+  module DoubleDashSanitizingFlow = TaintTracking::Global<DoubleDashSanitizingConfig>;
 }
