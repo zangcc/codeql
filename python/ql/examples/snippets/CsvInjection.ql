@@ -17,5 +17,5 @@ import experimental.semmle.python.security.injection.CsvInjection
 
 from CsvInjectionFlowConfig config, DataFlow::PathNode source, DataFlow::PathNode sink
 where config.hasFlowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Csv injection might include code from $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Csv injection might include code from $@.", source.getNode(),
   "this user input"

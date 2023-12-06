@@ -17,5 +17,5 @@ import LogInjectionFlow::PathGraph
 
 from LogInjectionFlow::PathNode source, LogInjectionFlow::PathNode sink
 where LogInjectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "This log entry depends on a $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "This log entry depends on a $@.", source.getNode(),
   "user-provided value"

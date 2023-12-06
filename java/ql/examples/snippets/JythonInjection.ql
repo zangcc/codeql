@@ -116,5 +116,5 @@ module CodeInjectionFlow = TaintTracking::Global<CodeInjectionConfig>;
 
 from CodeInjectionFlow::PathNode source, CodeInjectionFlow::PathNode sink
 where CodeInjectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().(CodeInjectionSink).getMethodAccess(), source, sink, "Jython evaluate $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode().(CodeInjectionSink).getMethodAccess(), source, sink, "Jython evaluate $@.",
   source.getNode(), "user input"

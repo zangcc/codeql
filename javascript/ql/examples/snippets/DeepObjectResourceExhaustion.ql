@@ -20,5 +20,5 @@ from
 where
   cfg.hasFlowPath(source, sink) and
   sink.getNode().(Sink).hasReason(link, reason)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine() ,sink, source, sink, "Denial of service caused by processing $@ with $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink, "Denial of service caused by processing $@ with $@.", source.getNode(),
   "user input", link, reason

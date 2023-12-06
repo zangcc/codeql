@@ -39,4 +39,4 @@ where
     )
   ) and
   disable.getRhs().(AnalyzedNode).getTheBooleanValue() = true
-select disable.getLocation().getFile().getAbsolutePath()+"$$"+disable.getLocation().getStartLine() ,disable, "Allowing invalid HTTP headers is strongly discouraged."
+select disable.getFile().getAbsolutePath()+"$$"+disable.getStartLine() ,disable, "Allowing invalid HTTP headers is strongly discouraged."

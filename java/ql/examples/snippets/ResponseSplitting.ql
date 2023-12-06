@@ -17,6 +17,6 @@ import ResponseSplittingFlow::PathGraph
 
 from ResponseSplittingFlow::PathNode source, ResponseSplittingFlow::PathNode sink
 where ResponseSplittingFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "This header depends on a $@, which may cause a response-splitting vulnerability.",
   source.getNode(), "user-provided value"

@@ -18,5 +18,5 @@ from SpringViewManipulationFlow::PathNode source, SpringViewManipulationFlow::Pa
 where
   thymeleafIsUsed() and
   SpringViewManipulationFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Potential Spring Expression Language injection from $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Potential Spring Expression Language injection from $@.",
   source.getNode(), "this user input"

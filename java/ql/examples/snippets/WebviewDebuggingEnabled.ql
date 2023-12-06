@@ -16,4 +16,4 @@ import WebviewDebugEnabledFlow::PathGraph
 
 from WebviewDebugEnabledFlow::PathNode source, WebviewDebugEnabledFlow::PathNode sink
 where WebviewDebugEnabledFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine() ,sink, source, sink, "Webview debugging is enabled."
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink, "Webview debugging is enabled."

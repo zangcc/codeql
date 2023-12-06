@@ -41,6 +41,6 @@ module ThreadResourceAbuseFlow = TaintTracking::Global<ThreadResourceAbuseConfig
 
 from ThreadResourceAbuseFlow::PathNode source, ThreadResourceAbuseFlow::PathNode sink
 where ThreadResourceAbuseFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "Vulnerability of uncontrolled resource consumption due to $@.", source.getNode(),
   "user-provided value"

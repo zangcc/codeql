@@ -20,5 +20,5 @@ where
   InsecureLdapUrlFlow::flowPath(source, sink) and
   BasicAuthFlow::flowTo(sink.getNode()) and
   not RequiresSslFlow::flowTo(sink.getNode())
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Insecure LDAP authentication from $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Insecure LDAP authentication from $@.", source.getNode(),
   "LDAP connection string"

@@ -76,5 +76,5 @@ module UncaughtServletExceptionFlow = TaintTracking::Global<UncaughtServletExcep
 
 from UncaughtServletExceptionFlow::PathNode source, UncaughtServletExceptionFlow::PathNode sink
 where UncaughtServletExceptionFlow::flowPath(source, sink) and not hasErrorPage()
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "This value depends on a $@ and can throw uncaught exception.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "This value depends on a $@ and can throw uncaught exception.",
   source.getNode(), "user-provided value"

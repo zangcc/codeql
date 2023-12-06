@@ -17,5 +17,5 @@ import RequestForgeryFlow::PathGraph
 
 from RequestForgeryFlow::PathNode source, RequestForgeryFlow::PathNode sink
 where RequestForgeryFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Potential server-side request forgery due to a $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Potential server-side request forgery due to a $@.",
   source.getNode(), "user-provided value"

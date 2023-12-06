@@ -15,5 +15,5 @@ import HardcodedCredentialApiCallFlow::PathGraph
 
 from HardcodedCredentialApiCallFlow::PathNode source, HardcodedCredentialApiCallFlow::PathNode sink
 where HardcodedCredentialApiCallFlow::flowPath(source, sink)
-select source.getNode().getLocation().getFile().getAbsolutePath()+"$$"+source.getNode().getLocation().getStartLine(),source.getNode(), source, sink, "Hard-coded value flows to $@.", sink.getNode(),
+select source.getNode().asExpr().getFile().getAbsolutePath()+"$$"+source.getNode().asExpr().getFile().getLocation().getStartLine(),source.getNode(), source, sink, "Hard-coded value flows to $@.", sink.getNode(),
   "sensitive API call"

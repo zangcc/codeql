@@ -28,4 +28,4 @@ where
   or
   not cookie.isSameSite() and
   alert = "samesite"
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.okie.getLocation().getFile().getAbsolutePath()+"$$"+cookie.getLocation().getStartLine() ,cookie, "Cookie is added without the '" + alert + "' flag properly set."
+select cookie.getLocation().getFile().getAbsolutePath()+"$$"+cookie.getLocation().getStartLine() ,cookie, "Cookie is added without the '" + alert + "' flag properly set."

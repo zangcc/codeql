@@ -17,5 +17,5 @@ import UnsafeDeserializationFlow::PathGraph
 
 from UnsafeDeserializationFlow::PathNode source, UnsafeDeserializationFlow::PathNode sink
 where UnsafeDeserializationFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().(UnsafeDeserializationSink).getMethodAccess(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode().(UnsafeDeserializationSink).getMethodAccess(), source, sink,
   "Unsafe deserialization depends on a $@.", source.getNode(), "user-provided value"

@@ -55,5 +55,5 @@ module PotentiallyExposedSystemData = TaintTracking::Global<PotentiallyExposedSy
 
 from PotentiallyExposedSystemData::PathNode source, PotentiallyExposedSystemData::PathNode sink
 where PotentiallyExposedSystemData::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine() ,sink, source, sink, "This operation potentially exposes sensitive system data from $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink, "This operation potentially exposes sensitive system data from $@.",
   source, source.getNode().toString()

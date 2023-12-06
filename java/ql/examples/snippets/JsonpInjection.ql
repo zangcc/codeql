@@ -44,5 +44,5 @@ from RequestResponseFlow::PathNode source, RequestResponseFlow::PathNode sink
 where
   RequestResponseFlow::flowPath(source, sink) and
   JsonpInjectionFlow::flowTo(sink.getNode())
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Jsonp response might include code from $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Jsonp response might include code from $@.", source.getNode(),
   "this user input"

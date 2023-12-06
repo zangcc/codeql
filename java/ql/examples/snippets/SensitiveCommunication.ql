@@ -17,5 +17,5 @@ import SensitiveCommunicationFlow::PathGraph
 
 from SensitiveCommunicationFlow::PathNode source, SensitiveCommunicationFlow::PathNode sink
 where SensitiveCommunicationFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "This call may leak $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "This call may leak $@.", source.getNode(),
   "sensitive information"

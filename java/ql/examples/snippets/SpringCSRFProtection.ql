@@ -19,4 +19,4 @@ where
   call.getReceiverType()
       .hasQualifiedName("org.springframework.security.config.annotation.web.configurers",
         "CsrfConfigurer<HttpSecurity>")
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.ll.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "CSRF vulnerability due to protection being disabled."
+select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "CSRF vulnerability due to protection being disabled."

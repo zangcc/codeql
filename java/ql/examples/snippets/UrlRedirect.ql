@@ -17,5 +17,5 @@ import UrlRedirectFlow::PathGraph
 
 from UrlRedirectFlow::PathNode source, UrlRedirectFlow::PathNode sink
 where UrlRedirectFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Untrusted URL redirection depends on a $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Untrusted URL redirection depends on a $@.", source.getNode(),
   "user-provided value"

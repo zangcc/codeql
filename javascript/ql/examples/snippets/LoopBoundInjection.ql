@@ -18,6 +18,6 @@ import DataFlow::PathGraph
 
 from Configuration dataflow, DataFlow::PathNode source, DataFlow::PathNode sink
 where dataflow.hasFlowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine() ,sink, source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink,
   "Iteration over a user-controlled object with a potentially unbounded .length property from a $@.",
   source, "user-provided value"

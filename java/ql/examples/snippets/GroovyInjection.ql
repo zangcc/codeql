@@ -17,5 +17,5 @@ import GroovyInjectionFlow::PathGraph
 
 from GroovyInjectionFlow::PathNode source, GroovyInjectionFlow::PathNode sink
 where GroovyInjectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Groovy script depends on a $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Groovy script depends on a $@.", source.getNode(),
   "user-provided value"

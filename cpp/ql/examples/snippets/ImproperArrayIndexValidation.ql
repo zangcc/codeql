@@ -122,6 +122,6 @@ from
 where
   ImproperArrayIndexValidation::flowPath(source, sink) and
   isFlowSource(source.getNode(), sourceType)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "An array indexing expression depends on $@ that might be outside the bounds of the array.",
   source.getNode(), sourceType

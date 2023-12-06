@@ -17,5 +17,5 @@ import JakartaExpressionInjectionFlow::PathGraph
 
 from JakartaExpressionInjectionFlow::PathNode source, JakartaExpressionInjectionFlow::PathNode sink
 where JakartaExpressionInjectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Jakarta Expression Language injection from $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Jakarta Expression Language injection from $@.",
   source.getNode(), "this user input"

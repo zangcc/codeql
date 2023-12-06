@@ -19,4 +19,4 @@ where
   if domain = ""
   then msg = "(no explicitly trusted domains)"
   else msg = "(" + domain + " is not trusted by a pin)"
-select node.getLocation().getFile().getAbsolutePath()+"$$"+node.getLocation().getStartLine() ,node, "This network call does not implement certificate pinning. " + msg
+select node.asExpr().getFile().getAbsolutePath()+"$$"+node.asExpr().getLocation().getStartLine() ,node, "This network call does not implement certificate pinning. " + msg

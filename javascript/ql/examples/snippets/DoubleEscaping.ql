@@ -130,4 +130,4 @@ where
   primary.unescapes(_, metachar) and
   supplementary = primary.getALaterUnescaping(metachar) and
   message = "may produce '" + metachar + "' characters that are double-unescaped $@"
-select primary.getLocation().getFile().getAbsolutePath()+"$$"+primary.getLocation().getStartLine() ,primary, "This replacement " + message + ".", supplementary, "here"
+select primary.getFile().getAbsolutePath()+"$$"+primary.getStartLine() ,primary, "This replacement " + message + ".", supplementary, "here"

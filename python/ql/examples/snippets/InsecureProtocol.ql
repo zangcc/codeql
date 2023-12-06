@@ -78,6 +78,6 @@ where
   unsafe_context_creation(protocolConfiguration, insecure_version) and
   connectionCreation = protocolConfiguration and
   specific = true
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.nnectionCreation.getLocation().getFile().getAbsolutePath()+"$$"+connectionCreation.getLocation().getStartLine() ,connectionCreation,
+select connectionCreation.getLocation().getFile().getAbsolutePath()+"$$"+connectionCreation.getLocation().getStartLine() ,connectionCreation,
   "Insecure SSL/TLS protocol version " + insecure_version + " " + verb(specific) + " by $@.",
   protocolConfiguration, configName(protocolConfiguration)

@@ -19,5 +19,5 @@ from
   SensitiveResultReceiverFlow::PathNode src, SensitiveResultReceiverFlow::PathNode sink,
   DataFlow::Node recSrc
 where isSensitiveResultReceiver(src, sink, recSrc)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine() ,sink, src, sink, "This $@ is sent to a ResultReceiver obtained from $@.", src,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, src, sink, "This $@ is sent to a ResultReceiver obtained from $@.", src,
   "sensitive information", recSrc, "this untrusted source"

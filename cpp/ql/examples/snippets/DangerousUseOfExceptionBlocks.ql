@@ -197,4 +197,4 @@ where
       "If the allocation in the try block fails, then an unallocated pointer " + vro.getName() +
         " will be freed in the catch block."
   )
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c..getLocation().getFile().getAbsolutePath()+"$$"+cb.getLocation().getStartLine() ,cb, msg
+select cb.getLocation().getFile().getAbsolutePath()+"$$"+cb.getLocation().getStartLine() ,cb, msg

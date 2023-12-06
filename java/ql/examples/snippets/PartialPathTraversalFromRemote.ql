@@ -17,6 +17,6 @@ from
   PartialPathTraversalFromRemoteFlow::PathNode source,
   PartialPathTraversalFromRemoteFlow::PathNode sink
 where PartialPathTraversalFromRemoteFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "Partial Path Traversal Vulnerability due to insufficient guard against path traversal from $@.",
   source, "user-supplied data"

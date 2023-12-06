@@ -47,4 +47,4 @@ where
         .(ImmutableLiteral)
         .booleanValue() = false
   )
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.ll.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Using jinja2 templates with autoescape=False can potentially allow XSS attacks."
+select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Using jinja2 templates with autoescape=False can potentially allow XSS attacks."

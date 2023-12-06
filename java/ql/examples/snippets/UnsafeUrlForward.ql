@@ -60,5 +60,5 @@ module UnsafeUrlForwardFlow = TaintTracking::Global<UnsafeUrlForwardFlowConfig>;
 
 from UnsafeUrlForwardFlow::PathNode source, UnsafeUrlForwardFlow::PathNode sink
 where UnsafeUrlForwardFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Potentially untrusted URL forward due to $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Potentially untrusted URL forward due to $@.",
   source.getNode(), "user-provided value"

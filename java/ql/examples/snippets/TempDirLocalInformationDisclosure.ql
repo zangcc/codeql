@@ -62,4 +62,4 @@ where
         source.asPathNode2().getFileSystemEntityType() + " readable by other local users."
   ) and
   not isPermissionsProtectedTempDirUse(sink.getNode())
-select source.getNode().getLocation().getFile().getAbsolutePath()+"$$"+source.getNode().getLocation().getStartLine(),source.getNode(), source, sink, message, source.getNode(), "system temp directory"
+select source.getNode().asExpr().getFile().getAbsolutePath()+"$$"+source.getNode().asExpr().getFile().getLocation().getStartLine(),source.getNode(), source, sink, message, source.getNode(), "system temp directory"

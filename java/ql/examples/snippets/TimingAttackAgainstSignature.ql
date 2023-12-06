@@ -27,5 +27,5 @@ where
     source.getNode().(CryptoOperationSource).includesUserInput() and
     sink.getNode().(NonConstantTimeComparisonSink).includesUserInput()
   )
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Timing attack against $@ validation.", source,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Timing attack against $@ validation.", source,
   source.getNode().(CryptoOperationSource).getCall().getResultType()

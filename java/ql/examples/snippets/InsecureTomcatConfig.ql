@@ -23,5 +23,5 @@ private class HttpOnlyConfig extends WebContextParameter {
 
 from HttpOnlyConfig config
 where config.isHttpOnlySet()
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.nfig.getLocation().getFile().getAbsolutePath()+"$$"+config.getLocation().getStartLine() ,config,
+select config.getLocation().getFile().getAbsolutePath()+"$$"+config.getLocation().getStartLine() ,config,
   "'httpOnly' should be enabled in tomcat config file to help mitigate cross-site scripting (XSS) attacks."

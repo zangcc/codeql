@@ -19,6 +19,6 @@ import DataFlow::PathGraph
 
 from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink, Sink sinkNode
 where cfg.hasFlowPath(source, sink) and sinkNode = sink.getNode()
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.ode.getAlertLocation(), source, sink,
+select sinkNode.getFile().getAbsolutePath()+"$$"+sinkNode.getStartLine(),sinkNode.getAlertLocation(), source, sink,
   "This " + sinkNode.getSinkType() + " which depends on $@ is later used in a $@.",
   source.getNode(), "library input", sinkNode.getCommandExecution(), "shell command"

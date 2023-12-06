@@ -170,6 +170,6 @@ class UnsafeIndexOfComparison extends EqualityTest {
 }
 
 from UnsafeIndexOfComparison comparison
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.mparison.getLocation().getFile().getAbsolutePath()+"$$"+comparison.getLocation().getStartLine() ,comparison,
+select comparison.getLocation().getFile().getAbsolutePath()+"$$"+comparison.getLocation().getStartLine() ,comparison,
   "This suffix check is missing a length comparison to correctly handle " +
     comparison.getIndexOf().getMethodName() + " returning -1."

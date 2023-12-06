@@ -134,6 +134,6 @@ where
   UncontrolledArith::flowPath(source, sink) and
   sink.getNode().asExpr() = va and
   missingGuard(va, effect)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "This arithmetic expression depends on an $@, potentially causing an " + effect + ".",
   getExpr(source.getNode()), "uncontrolled value"

@@ -19,5 +19,5 @@ import PermissiveDotRegexQuery
 
 from MatchRegexFlow::PathNode source, MatchRegexFlow::PathNode sink
 where MatchRegexFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Potentially authentication bypass due to $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Potentially authentication bypass due to $@.",
   source.getNode(), "user-provided value"

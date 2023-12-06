@@ -85,5 +85,5 @@ from CorsOriginFlow::PathNode source, CorsOriginFlow::PathNode sink
 where
   CorsOriginFlow::flowPath(source, sink) and
   not CorsSourceReachesCheckFlow::flow(source.getNode(), _)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "CORS header is being set using user controlled value $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "CORS header is being set using user controlled value $@.",
   source.getNode(), "user-provided value"

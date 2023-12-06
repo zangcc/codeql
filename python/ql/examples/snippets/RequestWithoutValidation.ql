@@ -23,5 +23,5 @@ where
   // be the `disablingNode`, and the `origin` would be the place were `arg` got its
   // value from.
   if disablingNode = origin then ending = "." else ending = " by $@."
-select request.getLocation().getFile().getAbsolutePath()+"$$"+request.getLocation().getStartLine() ,request, "This request may run without certificate validation because $@" + ending,
+select request.getFile().getAbsolutePath()+"$$"+request.getStartLine() ,request, "This request may run without certificate validation because $@" + ending,
   disablingNode, "it is disabled", origin, "this value"

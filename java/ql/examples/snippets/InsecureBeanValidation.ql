@@ -22,5 +22,5 @@ where
     exists(SetMessageInterpolatorCall c | not c.isSafe())
   ) and
   BeanValidationFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Custom constraint error message contains an unsanitized $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Custom constraint error message contains an unsanitized $@.",
   source, "user-provided value"

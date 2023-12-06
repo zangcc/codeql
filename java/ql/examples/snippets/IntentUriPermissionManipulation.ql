@@ -21,7 +21,7 @@ from
   IntentUriPermissionManipulationFlow::PathNode source,
   IntentUriPermissionManipulationFlow::PathNode sink
 where IntentUriPermissionManipulationFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "This Intent can be set with arbitrary flags from a $@, " +
     "and used to give access to internal content providers.", source.getNode(),
   "user-provided value"

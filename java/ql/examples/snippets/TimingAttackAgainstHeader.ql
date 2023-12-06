@@ -67,5 +67,5 @@ module NonConstantTimeComparisonFlow = TaintTracking::Global<NonConstantTimeComp
 
 from NonConstantTimeComparisonFlow::PathNode source, NonConstantTimeComparisonFlow::PathNode sink
 where NonConstantTimeComparisonFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Possible timing attack against $@ validation.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Possible timing attack against $@ validation.",
   source.getNode(), "client-supplied token"

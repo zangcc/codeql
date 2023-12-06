@@ -178,4 +178,4 @@ module HashWithoutSaltFlow = TaintTracking::Global<HashWithoutSaltConfig>;
 
 from HashWithoutSaltFlow::PathNode source, HashWithoutSaltFlow::PathNode sink
 where HashWithoutSaltFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine() ,sink, source, sink, "$@ is hashed without a salt.", source, "The password"
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink, "$@ is hashed without a salt.", source, "The password"

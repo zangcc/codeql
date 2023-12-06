@@ -175,5 +175,5 @@ DataFlow::Node badCrypto(string description, DataFlow::SourceNode source) {
 
 from DataFlow::Node node, string description, DataFlow::SourceNode source
 where node = badCrypto(description, source)
-select node.getLocation().getFile().getAbsolutePath()+"$$"+node.getLocation().getStartLine() ,node, "Using " + description + " on a $@ produces biased results.", source,
+select node.asExpr().getFile().getAbsolutePath()+"$$"+node.asExpr().getLocation().getStartLine() ,node, "Using " + description + " on a $@ produces biased results.", source,
   "cryptographically secure random number"

@@ -18,5 +18,5 @@ import FetchUntrustedResourceFlow::PathGraph
 
 from FetchUntrustedResourceFlow::PathNode source, FetchUntrustedResourceFlow::PathNode sink
 where FetchUntrustedResourceFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Unsafe resource fetching in Android WebView due to $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Unsafe resource fetching in Android WebView due to $@.",
   source.getNode(), sink.getNode().(UrlResourceSink).getSinkType()

@@ -144,5 +144,5 @@ module ScriptInjectionFlow = TaintTracking::Global<ScriptInjectionConfig>;
 
 from ScriptInjectionFlow::PathNode source, ScriptInjectionFlow::PathNode sink
 where ScriptInjectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().(ScriptInjectionSink).getMethodAccess(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode().(ScriptInjectionSink).getMethodAccess(), source, sink,
   "Java Script Engine evaluate $@.", source.getNode(), "user input"

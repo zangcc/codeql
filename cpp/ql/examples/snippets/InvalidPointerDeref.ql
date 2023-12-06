@@ -153,6 +153,6 @@ where
   offset = pai.getRight().getUnconvertedResultExpression() and
   n = source.getNode() and
   if k = 0 then kstr = "" else kstr = " + " + k
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "This " + operation + " might be out of bounds, as the pointer might be equal to $@ + $@" + kstr +
     ".", n, n.toString(), offset, offset.toString()

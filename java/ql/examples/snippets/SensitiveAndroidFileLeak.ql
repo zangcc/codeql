@@ -79,5 +79,5 @@ module AndroidFileLeakFlow = TaintTracking::Global<AndroidFileLeakConfig>;
 
 from AndroidFileLeakFlow::PathNode source, AndroidFileLeakFlow::PathNode sink
 where AndroidFileLeakFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Leaking arbitrary Android file from $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Leaking arbitrary Android file from $@.", source.getNode(),
   "this user input"

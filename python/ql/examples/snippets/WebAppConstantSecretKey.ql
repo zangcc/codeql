@@ -60,5 +60,5 @@ import WebAppConstantSecretKey::PathGraph
 
 from WebAppConstantSecretKey::PathNode source, WebAppConstantSecretKey::PathNode sink
 where WebAppConstantSecretKey::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine() ,sink, source, sink, "The SECRET_KEY config variable is assigned by $@.", source,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink, "The SECRET_KEY config variable is assigned by $@.", source,
   " this constant String"

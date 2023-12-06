@@ -17,5 +17,5 @@ import TemplateInjectionFlow::PathGraph
 
 from TemplateInjectionFlow::PathNode source, TemplateInjectionFlow::PathNode sink
 where TemplateInjectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Template, which may contain code, depends on a $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Template, which may contain code, depends on a $@.",
   source.getNode(), "user-provided value"

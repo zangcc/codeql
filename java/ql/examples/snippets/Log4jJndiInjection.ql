@@ -57,5 +57,5 @@ module Log4jInjectionFlow = TaintTracking::Global<Log4jInjectionConfig>;
 
 from Log4jInjectionFlow::PathNode source, Log4jInjectionFlow::PathNode sink
 where Log4jInjectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Log4j log entry depends on a $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Log4j log entry depends on a $@.", source.getNode(),
   "user-provided value"

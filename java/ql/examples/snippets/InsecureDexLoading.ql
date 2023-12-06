@@ -17,5 +17,5 @@ import InsecureDexFlow::PathGraph
 
 from InsecureDexFlow::PathNode source, InsecureDexFlow::PathNode sink
 where InsecureDexFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Potential arbitrary code execution due to $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Potential arbitrary code execution due to $@.",
   source.getNode(), "a value loaded from a world-writable source."

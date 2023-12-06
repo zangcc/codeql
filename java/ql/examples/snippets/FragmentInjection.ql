@@ -17,6 +17,6 @@ import FragmentInjectionTaintFlow::PathGraph
 
 from FragmentInjectionTaintFlow::PathNode source, FragmentInjectionTaintFlow::PathNode sink
 where FragmentInjectionTaintFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "Fragment depends on a $@, which may allow a malicious application to bypass access controls.",
   source.getNode(), "user-provided value"

@@ -33,7 +33,7 @@ string prettyPrintDangerousCharaters(Sink sink) {
 
 from Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink
 where cfg.hasFlowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   // this message is slightly sub-optimal as we do not have an easy way
   // to get the flow labels that reach the sink, so the message includes
   // all of them in a disjunction

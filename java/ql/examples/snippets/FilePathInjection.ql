@@ -66,5 +66,5 @@ module InjectFilePathFlow = TaintTracking::Global<InjectFilePathConfig>;
 
 from InjectFilePathFlow::PathNode source, InjectFilePathFlow::PathNode sink
 where InjectFilePathFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "External control of file name or path due to $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "External control of file name or path due to $@.",
   source.getNode(), "user-provided value"

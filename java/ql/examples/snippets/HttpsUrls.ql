@@ -16,5 +16,5 @@ import HttpStringToUrlOpenMethodFlow::PathGraph
 
 from HttpStringToUrlOpenMethodFlow::PathNode source, HttpStringToUrlOpenMethodFlow::PathNode sink
 where HttpStringToUrlOpenMethodFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "URL may have been constructed with HTTP protocol, using $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "URL may have been constructed with HTTP protocol, using $@.",
   source.getNode(), "this HTTP URL"

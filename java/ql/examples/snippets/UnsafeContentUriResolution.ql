@@ -18,6 +18,6 @@ import UnsafeContentResolutionFlow::PathGraph
 
 from UnsafeContentResolutionFlow::PathNode src, UnsafeContentResolutionFlow::PathNode sink
 where UnsafeContentResolutionFlow::flowPath(src, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), src, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), src, sink,
   "This ContentResolver method that resolves a URI depends on a $@.", src.getNode(),
   "user-provided value"

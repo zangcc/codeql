@@ -19,6 +19,6 @@ import IntentRedirectionFlow::PathGraph
 
 from IntentRedirectionFlow::PathNode source, IntentRedirectionFlow::PathNode sink
 where IntentRedirectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "Arbitrary Android activities or services can be started from a $@.", source.getNode(),
   "user-provided value"

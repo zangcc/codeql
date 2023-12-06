@@ -16,4 +16,4 @@ import ApkInstallationFlow::PathGraph
 
 from ApkInstallationFlow::PathNode source, ApkInstallationFlow::PathNode sink
 where ApkInstallationFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Arbitrary Android APK installation."
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Arbitrary Android APK installation."

@@ -17,5 +17,5 @@ import StaticInitializationVectorFlow::PathGraph
 
 from StaticInitializationVectorFlow::PathNode source, StaticInitializationVectorFlow::PathNode sink
 where StaticInitializationVectorFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "A $@ should not be used for encryption.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "A $@ should not be used for encryption.", source.getNode(),
   "static initialization vector"

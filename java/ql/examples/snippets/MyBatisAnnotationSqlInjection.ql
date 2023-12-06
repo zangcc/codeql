@@ -56,6 +56,6 @@ where
     isMybatisXmlOrAnnotationSqlInjection(sink.getNode(), ma, unsafeExpression) or
     isMybatisCollectionTypeSqlInjection(sink.getNode(), ma, unsafeExpression)
   )
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "MyBatis annotation SQL injection might include code from $@ to $@.", source.getNode(),
   "this user input", isoa, "this SQL operation"

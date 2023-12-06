@@ -64,5 +64,5 @@ module SpringUrlRedirectFlow = TaintTracking::Global<SpringUrlRedirectFlowConfig
 
 from SpringUrlRedirectFlow::PathNode source, SpringUrlRedirectFlow::PathNode sink
 where SpringUrlRedirectFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Potentially untrusted URL redirection due to $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Potentially untrusted URL redirection due to $@.",
   source.getNode(), "user-provided value"

@@ -215,5 +215,5 @@ module MissingHttpOnlyFlow = TaintTracking::Global<MissingHttpOnlyConfig>;
 
 from MissingHttpOnlyFlow::PathNode source, MissingHttpOnlyFlow::PathNode sink
 where MissingHttpOnlyFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "$@ doesn't have the HttpOnly flag set.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "$@ doesn't have the HttpOnly flag set.", source.getNode(),
   "This sensitive cookie"

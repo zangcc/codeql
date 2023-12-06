@@ -45,5 +45,5 @@ module BeanShellInjectionFlow = TaintTracking::Global<BeanShellInjectionConfig>;
 
 from BeanShellInjectionFlow::PathNode source, BeanShellInjectionFlow::PathNode sink
 where BeanShellInjectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "BeanShell injection from $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "BeanShell injection from $@.", source.getNode(),
   "this user input"

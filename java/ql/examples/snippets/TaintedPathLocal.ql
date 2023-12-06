@@ -34,5 +34,5 @@ DataFlow::Node getReportingNode(DataFlow::Node sink) {
 
 from TaintedPathLocalFlow::PathNode source, TaintedPathLocalFlow::PathNode sink
 where TaintedPathLocalFlow::flowPath(source, sink)
-select getReportingNode(sink).getLocation().getFile().getAbsolutePath()+"$$"+getReportingNode(sink).getLocation().getStartLine() ,select getReportingNode(sink.getNode()), source, sink, "This path depends on a $@.",
+select getReportingNode(sink).getLocation().getFile().getAbsolutePath()+"$$"+getReportingNode(sink).getLocation().getStartLine() ,getReportingNode(sink.getNode()), source, sink, "This path depends on a $@.",
   source.getNode(), "user-provided value"

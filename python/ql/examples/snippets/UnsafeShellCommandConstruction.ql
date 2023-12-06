@@ -22,6 +22,6 @@ from Configuration config, DataFlow::PathNode source, DataFlow::PathNode sink, S
 where
   config.hasFlowPath(source, sink) and
   sinkNode = sink.getNode()
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.ode.getStringConstruction(), source, sink,
+select sinkNode.getFile().getAbsolutePath()+"$$"+sinkNode.getStartLine(),sinkNode.getStringConstruction(), source, sink,
   "This " + sinkNode.describe() + " which depends on $@ is later used in a $@.", source.getNode(),
   "library input", sinkNode.getCommandExecution(), "shell command"

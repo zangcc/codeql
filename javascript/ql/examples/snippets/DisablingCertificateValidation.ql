@@ -51,4 +51,4 @@ where
     )
   ) and
   disable.getRhs().(AnalyzedNode).getTheBooleanValue() = false
-select disable.getLocation().getFile().getAbsolutePath()+"$$"+disable.getLocation().getStartLine() ,disable, "Disabling certificate validation is strongly discouraged."
+select disable.getFile().getAbsolutePath()+"$$"+disable.getStartLine() ,disable, "Disabling certificate validation is strongly discouraged."

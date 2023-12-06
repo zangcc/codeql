@@ -115,5 +115,5 @@ class Configuration extends TaintTracking::Configuration {
 
 from Configuration config, DataFlow::PathNode source, DataFlow::PathNode sink
 where config.hasFlowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine() ,sink, source, sink, "Extraction of tarfile from $@ to a potentially untrusted source $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink, "Extraction of tarfile from $@ to a potentially untrusted source $@.",
   source.getNode(), source.getNode().toString(), sink.getNode(), sink.getNode().toString()

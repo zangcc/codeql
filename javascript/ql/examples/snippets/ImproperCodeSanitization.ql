@@ -68,5 +68,5 @@ where
     sink.getNode().(StringOps::ConcatenationLeaf).getRoot() = endsInCodeInjectionSink() and
     remoteFlow() = source.getNode().(DataFlow::InvokeNode).getAnArgument()
   )
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Code construction depends on an $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Code construction depends on an $@.", source.getNode(),
   "improperly sanitized value"

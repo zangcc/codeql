@@ -17,5 +17,5 @@ import OgnlInjectionFlow::PathGraph
 
 from OgnlInjectionFlow::PathNode source, OgnlInjectionFlow::PathNode sink
 where OgnlInjectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "OGNL Expression Language statement depends on a $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "OGNL Expression Language statement depends on a $@.",
   source.getNode(), "user-provided value"

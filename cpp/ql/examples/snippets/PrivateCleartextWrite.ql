@@ -17,6 +17,6 @@ import WriteFlow::PathGraph
 
 from WriteFlow::PathNode source, WriteFlow::PathNode sink
 where WriteFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "This write into the external location '" + sink.getNode() +
     "' may contain unencrypted data from $@.", source, "this source of private data."

@@ -54,6 +54,6 @@ from SelfClosingTagRecognizer regexp, StringReplaceCall replace
 where
   regexp.getAReference().flowsTo(replace.getArgument(0)) and
   replace.getRawReplacement().mayHaveStringValue("<$1></$2>")
-select repl.getFile().getLocation().getFile().getAbsolutePath()+"$$"+repl.getFile().getLocation().getStartLine() ,repl.ce.getLocation().getFile().getAbsolutePath()+"$$"+replace.getLocation().getStartLine() ,replace,
+select replace.getFile().getAbsolutePath()+"$$"+replace.getStartLine() ,replace,
   "This self-closing HTML tag expansion invalidates prior sanitization as $@ may match part of an attribute value.",
   regexp, "this regular expression"

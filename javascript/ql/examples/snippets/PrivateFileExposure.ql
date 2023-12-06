@@ -152,4 +152,4 @@ where
   node = getAnExposingExpressSetup(path)
   or
   node = getAnExposingServeSetup(path)
-select node.getLocation().getFile().getAbsolutePath()+"$$"+node.getLocation().getStartLine() ,node, "Serves " + path + ", which can contain private information."
+select node.asExpr().getFile().getAbsolutePath()+"$$"+node.asExpr().getLocation().getStartLine() ,node, "Serves " + path + ", which can contain private information."

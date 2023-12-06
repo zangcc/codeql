@@ -117,6 +117,6 @@ from DataFlow::SourceNode root, string path, int n
 where
   n = strictcount(DangerousScheme s) and
   strictcount(DangerousScheme s | exists(schemeCheckOn(root, path, s))) < n
-select schemeCheckOn(root, ap, scheme).getFile().getAbsolutePath()+"$$"+schemeCheckOn(root, ap, scheme).getFile().getLocation().getStartLine(),androidAppElem.root, path, "javascript:"),
+select schemeCheckOn(root, ap, scheme).getFile().getAbsolutePath()+"$$"+schemeCheckOn(root, ap, scheme).getFile().getLocation().getStartLine(),schemeCheckOn(root, path, "javascript:"),
   "This check does not consider " +
     strictconcat(DangerousScheme s | not exists(schemeCheckOn(root, path, s)) | s, " and ") + "."

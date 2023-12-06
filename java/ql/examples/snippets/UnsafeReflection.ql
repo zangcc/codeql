@@ -1,5 +1,5 @@
 /**
- * @name Use of externally-controlled input to select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.asses or code ('unsafe reflection')
+ * @name Use of externally-controlled input to select classes or code ('unsafe reflection')
  * @description Use external input with reflection function to select the class or code to
  *              be used, which brings serious security risks.
  * @kind path-problem
@@ -94,4 +94,4 @@ where
   UnsafeReflectionFlow::flowPath(source, sink) and
   sink.getNode().asExpr() = reflectiveCall.getQualifier() and
   UnsafeReflectionFlow::flowToExpr(getAMethodArgument(reflectiveCall))
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Unsafe reflection of $@.", source.getNode(), "user input"
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Unsafe reflection of $@.", source.getNode(), "user input"

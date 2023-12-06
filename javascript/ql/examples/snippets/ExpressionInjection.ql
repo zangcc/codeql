@@ -265,6 +265,6 @@ where
       isExternalUserControlledWorkflowRun(context)
     )
   )
-select node.getLocation().getFile().getAbsolutePath()+"$$"+node.getLocation().getStartLine() ,node,
+select node.asExpr().getFile().getAbsolutePath()+"$$"+node.asExpr().getLocation().getStartLine() ,node,
   "Potential injection from the ${{ " + injection +
     " }}, which may be controlled by an external user."

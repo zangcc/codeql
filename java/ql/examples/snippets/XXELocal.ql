@@ -20,6 +20,6 @@ import XxeLocalFlow::PathGraph
 
 from XxeLocalFlow::PathNode source, XxeLocalFlow::PathNode sink
 where XxeLocalFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "XML parsing depends on a $@ without guarding against external entity expansion.",
   source.getNode(), "user-provided value"

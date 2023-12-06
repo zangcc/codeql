@@ -149,5 +149,5 @@ class BackspaceInStringMistake extends RegExpPatternMistake, TBackspaceInStringM
 }
 
 from RegExpPatternMistake mistake
-select mistake.getLocation().getFile().getAbsolutePath()+"$$"+mistake.getLocation().getStartLine() ,mistake, "The escape sequence " + mistake.getMessage() + " when it is used in a $@.",
+select mistake.getRawStringNode().getFile().getAbsolutePath()+"$$"+mistake.getRawStringNode().getFile() ,mistake, "The escape sequence " + mistake.getMessage() + " when it is used in a $@.",
   mistake.getSrc().getAParse(), "regular expression"

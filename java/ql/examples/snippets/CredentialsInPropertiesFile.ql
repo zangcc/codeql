@@ -34,4 +34,4 @@ predicate isNonProdCredentials(CredentialsConfig cc) {
 
 from CredentialsConfig cc
 where not isNonProdCredentials(cc)
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c..getLocation().getFile().getAbsolutePath()+"$$"+cc.getLocation().getStartLine() ,cc, cc.getConfigDesc()
+select cc.getLocation().getFile().getAbsolutePath()+"$$"+cc.getLocation().getStartLine() ,cc, cc.getConfigDesc()

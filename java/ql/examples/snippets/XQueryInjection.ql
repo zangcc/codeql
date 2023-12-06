@@ -43,5 +43,5 @@ module XQueryInjectionFlow = TaintTracking::Global<XQueryInjectionConfig>;
 
 from XQueryInjectionFlow::PathNode source, XQueryInjectionFlow::PathNode sink
 where XQueryInjectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "XQuery query might include code from $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "XQuery query might include code from $@.", source.getNode(),
   "this user input"

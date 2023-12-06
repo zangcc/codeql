@@ -75,6 +75,6 @@ module SensitiveGetQueryFlow = TaintTracking::Global<SensitiveGetQueryConfig>;
 
 from SensitiveGetQueryFlow::PathNode source, SensitiveGetQueryFlow::PathNode sink
 where SensitiveGetQueryFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "$@ uses the GET request method to transmit sensitive information.", source.getNode(),
   "This request"

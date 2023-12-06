@@ -91,4 +91,4 @@ where
     NullDaclFlow::flowToExpr(var) and
     not NonNullDaclFlow::flowToExpr(var)
   )
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.ll.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, message
+select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, message

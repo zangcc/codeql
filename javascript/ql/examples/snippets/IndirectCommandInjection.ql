@@ -24,5 +24,5 @@ where
   if cfg.isSinkWithHighlight(sink.getNode(), _)
   then cfg.isSinkWithHighlight(sink.getNode(), highlight)
   else highlight = sink.getNode()
-select highlight.getLocation().getFile().getAbsolutePath()+"$$"+highlight.getLocation().getStartLine() ,highlight, source, sink, "This command depends on an unsanitized $@.", source.getNode(),
+select highlight.getFile().getAbsolutePath()+"$$"+highlight.getStartLine() ,highlight, source, sink, "This command depends on an unsanitized $@.", source.getNode(),
   source.getNode().(Source).describe()

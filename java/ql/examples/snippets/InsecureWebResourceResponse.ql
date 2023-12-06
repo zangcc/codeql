@@ -31,5 +31,5 @@ module InsecureWebResourceResponseFlow = TaintTracking::Global<InsecureWebResour
 from
   InsecureWebResourceResponseFlow::PathNode source, InsecureWebResourceResponseFlow::PathNode sink
 where InsecureWebResourceResponseFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Leaking arbitrary content in Android from $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Leaking arbitrary content in Android from $@.",
   source.getNode(), "this user input"

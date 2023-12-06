@@ -21,5 +21,5 @@ from
   NonConstantTimeCryptoComparisonFlow::PathNode source,
   NonConstantTimeCryptoComparisonFlow::PathNode sink
 where NonConstantTimeCryptoComparisonFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Possible timing attack against $@ validation.", source,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Possible timing attack against $@ validation.", source,
   source.getNode().(CryptoOperationSource).getCall().getResultType()

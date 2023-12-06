@@ -17,5 +17,5 @@ import UnsafeTlsVersionFlow::PathGraph
 
 from UnsafeTlsVersionFlow::PathNode source, UnsafeTlsVersionFlow::PathNode sink
 where UnsafeTlsVersionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "$@ is unsafe.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "$@ is unsafe.", source.getNode(),
   source.getNode().asExpr().(StringLiteral).getValue()

@@ -79,4 +79,4 @@ where
     c.getAFileCompiled() = call.getFile() and
     not c.getAnArgument() = "-fno-builtin-memset"
   )
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.ll.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Call to " + memset.getName() + " may be deleted by the compiler."
+select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Call to " + memset.getName() + " may be deleted by the compiler."

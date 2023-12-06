@@ -51,5 +51,5 @@ from
   ClientSuppliedIpUsedInSecurityCheckFlow::PathNode source,
   ClientSuppliedIpUsedInSecurityCheckFlow::PathNode sink
 where ClientSuppliedIpUsedInSecurityCheckFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "IP address spoofing might include code from $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "IP address spoofing might include code from $@.",
   source.getNode(), "this user input"

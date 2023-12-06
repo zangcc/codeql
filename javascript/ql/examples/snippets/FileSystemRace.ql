@@ -115,4 +115,4 @@ where
   useAfterCheck(check, use) and
   not (check.isExistsCheck() and use.isFileRead()) and // a read after an exists check is fine
   not getAFileHandle(DataFlow::TypeTracker::end()).flowsTo(use.getPathArgument())
-select use.getLocation().getFile().getAbsolutePath()+"$$"+use.getLocation().getStartLine() ,use, "The file may have changed since it $@.", check, "was checked"
+select use.getFile().getAbsolutePath()+"$$"+use.getStartLine() ,use, "The file may have changed since it $@.", check, "was checked"

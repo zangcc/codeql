@@ -15,4 +15,4 @@ import semmle.code.java.security.HardcodedCredentialsComparison
 
 from EqualsAccess sink, HardcodedExpr source, PasswordVariable p
 where isHardcodedCredentialsComparison(sink, source, p)
-select source.getNode().getLocation().getFile().getAbsolutePath()+"$$"+source.getNode().getLocation().getStartLine(),source.getNode().getLocation().getFile().getAbsolutePath()+"$$"+source.getNode().getLocation().getStartLine() ,source, "Hard-coded value is $@ with password variable $@.", sink, "compared", p, p.getName()
+select source.getNode().asExpr().getFile().getAbsolutePath()+"$$"+source.getNode().asExpr().getFile().getLocation().getStartLine(),source.getLocation().getFile().getAbsolutePath()+"$$"+source.getLocation().getStartLine() ,source, "Hard-coded value is $@ with password variable $@.", sink, "compared", p, p.getName()

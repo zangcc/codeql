@@ -20,5 +20,5 @@ import InsecureBasicAuthFlow::PathGraph
 
 from InsecureBasicAuthFlow::PathNode source, InsecureBasicAuthFlow::PathNode sink
 where InsecureBasicAuthFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Insecure basic authentication from a $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Insecure basic authentication from a $@.", source.getNode(),
   "HTTP URL"

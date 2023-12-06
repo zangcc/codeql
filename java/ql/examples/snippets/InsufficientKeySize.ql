@@ -17,6 +17,6 @@ import KeySizeFlow::PathGraph
 
 from KeySizeFlow::PathNode source, KeySizeFlow::PathNode sink
 where KeySizeFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "This $@ is less than the recommended key size of " + source.getState() + " bits.",
   source.getNode(), "key size"

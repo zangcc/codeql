@@ -19,5 +19,5 @@ from DataFlow::PathNode source, DataFlow::PathNode sink, SensitiveAction action
 where
   isTaintedGuardForSensitiveAction(sink, source, action) and
   not isEarlyAbortGuard(sink, action)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "This condition guards a sensitive $@, but a $@ controls it.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "This condition guards a sensitive $@, but a $@ controls it.",
   action, "action", source.getNode(), "user-provided value"

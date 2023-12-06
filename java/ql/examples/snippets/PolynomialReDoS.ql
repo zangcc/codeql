@@ -23,7 +23,7 @@ from
 where
   PolynomialRedosFlow::flowPath(source, sink) and
   regexp.getRootTerm() = sink.getNode().(PolynomialRedosSink).getRegExp()
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine() ,sink, source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink,
   "This $@ that depends on a $@ may run slow on strings " + regexp.getPrefixMessage() +
     "with many repetitions of '" + regexp.getPumpString() + "'.", regexp, "regular expression",
   source.getNode(), "user-provided value"

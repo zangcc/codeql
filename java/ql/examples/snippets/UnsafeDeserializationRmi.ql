@@ -77,4 +77,4 @@ private module BindingUnsafeRemoteObjectFlow =
 
 from BindingUnsafeRemoteObjectFlow::PathNode source, BindingUnsafeRemoteObjectFlow::PathNode sink
 where BindingUnsafeRemoteObjectFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Unsafe deserialization in a remote object."
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Unsafe deserialization in a remote object."

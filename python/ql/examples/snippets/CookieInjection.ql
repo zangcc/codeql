@@ -25,5 +25,5 @@ where
   if exists(sink.getNode().(CookieSink))
   then insecure = ",and its " + sink.getNode().(CookieSink).getFlag() + " flag is not properly set."
   else insecure = "."
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Cookie is constructed from a $@" + insecure, source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Cookie is constructed from a $@" + insecure, source.getNode(),
   "user-supplied input"

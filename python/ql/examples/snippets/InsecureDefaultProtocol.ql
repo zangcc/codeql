@@ -25,5 +25,5 @@ from DataFlow::CallCfgNode call
 where
   call = API::moduleImport("ssl").getMember("wrap_socket").getACall() and
   not exists(call.getArgByName("ssl_version"))
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.ll.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call,
+select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call,
   "Call to deprecated method ssl.wrap_socket does not specify a protocol, which may result in an insecure default being used."

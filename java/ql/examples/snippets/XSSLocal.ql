@@ -17,5 +17,5 @@ import XssLocalFlow::PathGraph
 
 from XssLocalFlow::PathNode source, XssLocalFlow::PathNode sink
 where XssLocalFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Cross-site scripting vulnerability due to $@.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Cross-site scripting vulnerability due to $@.",
   source.getNode(), "user-provided value"

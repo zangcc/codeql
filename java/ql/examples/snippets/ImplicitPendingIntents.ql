@@ -19,6 +19,6 @@ import ImplicitPendingIntentStartFlow::PathGraph
 
 from ImplicitPendingIntentStartFlow::PathNode source, ImplicitPendingIntentStartFlow::PathNode sink
 where ImplicitPendingIntentStartFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "$@ and sent to an unspecified third party through a PendingIntent.", source.getNode(),
   "An implicit Intent is created"

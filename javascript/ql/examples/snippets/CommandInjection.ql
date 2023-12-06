@@ -28,5 +28,5 @@ where
     else highlight = sink.getNode()
   ) and
   sourceNode = source.getNode()
-select highlight.getLocation().getFile().getAbsolutePath()+"$$"+highlight.getLocation().getStartLine() ,highlight, source, sink, "This command line depends on a $@.", source.getNode(),
+select highlight.getFile().getAbsolutePath()+"$$"+highlight.getStartLine() ,highlight, source, sink, "This command line depends on a $@.", source.getNode(),
   "user-provided value"

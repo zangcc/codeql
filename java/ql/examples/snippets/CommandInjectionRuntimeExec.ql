@@ -20,6 +20,6 @@ from
   ExecUserFlow::PathNode source, ExecUserFlow::PathNode sink, DataFlow::Node sourceCmd,
   DataFlow::Node sinkCmd
 where callIsTaintedByUserInputAndDangerousCommand(source, sink, sourceCmd, sinkCmd)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine() ,sink, source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink,
   "Call to dangerous java.lang.Runtime.exec() with command '$@' with arg from untrusted input '$@'",
   sourceCmd, sourceCmd.toString(), source.getNode(), source.toString()

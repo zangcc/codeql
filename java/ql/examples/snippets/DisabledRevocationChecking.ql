@@ -17,4 +17,4 @@ import DisabledRevocationCheckingFlow::PathGraph
 
 from DisabledRevocationCheckingFlow::PathNode source, DisabledRevocationCheckingFlow::PathNode sink
 where DisabledRevocationCheckingFlow::flowPath(source, sink)
-select source.getNode().getLocation().getFile().getAbsolutePath()+"$$"+source.getNode().getLocation().getStartLine(),source.getNode(), source, sink, "This disables revocation checking."
+select source.getNode().asExpr().getFile().getAbsolutePath()+"$$"+source.getNode().asExpr().getFile().getLocation().getStartLine(),source.getNode(), source, sink, "This disables revocation checking."

@@ -17,5 +17,5 @@ import JndiInjectionFlow::PathGraph
 
 from JndiInjectionFlow::PathNode source, JndiInjectionFlow::PathNode sink
 where JndiInjectionFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "JNDI lookup might include name from $@.", source.getNode(),
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "JNDI lookup might include name from $@.", source.getNode(),
   "this user input"

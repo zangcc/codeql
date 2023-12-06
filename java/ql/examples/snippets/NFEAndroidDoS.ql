@@ -44,6 +44,6 @@ module NfeLocalDoSFlow = TaintTracking::Global<NfeLocalDoSConfig>;
 
 from NfeLocalDoSFlow::PathNode source, NfeLocalDoSFlow::PathNode sink
 where NfeLocalDoSFlow::flowPath(source, sink)
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
   "Uncaught NumberFormatException in an exported Android component due to $@.", source.getNode(),
   "user-provided value"

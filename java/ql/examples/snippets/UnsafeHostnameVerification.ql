@@ -21,6 +21,6 @@ where
   TrustAllHostnameVerifierFlow::flowPath(source, sink) and
   not isNodeGuardedByFlag(sink.getNode()) and
   verifier = source.getNode().asExpr().(ClassInstanceExpr).getConstructedType()
-select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine() ,sink, source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink,
   "The $@ defined by $@ always accepts any certificate, even if the hostname does not match.",
   source, "hostname verifier", verifier, "this type"

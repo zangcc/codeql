@@ -17,4 +17,4 @@ private import semmle.python.ApiGraphs
 from DataFlow::CallCfgNode call
 where
   call = API::moduleImport("xmlrpc").getMember("server").getMember("SimpleXMLRPCServer").getACall()
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.ll.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "SimpleXMLRPCServer is vulnerable to XML bombs."
+select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "SimpleXMLRPCServer is vulnerable to XML bombs."
