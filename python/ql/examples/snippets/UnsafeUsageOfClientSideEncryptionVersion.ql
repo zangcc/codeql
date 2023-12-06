@@ -153,4 +153,4 @@ import AzureBlobClient::PathGraph
 
 from AzureBlobClient::PathNode source, AzureBlobClient::PathNode sink
 where AzureBlobClient::flowPath(source, sink)
-select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink, "Unsafe usage of v1 version of Azure Storage client-side encryption"
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine() ,sink, source, sink, "Unsafe usage of v1 version of Azure Storage client-side encryption"

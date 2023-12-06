@@ -51,5 +51,5 @@ module XxeFlow = DataFlow::GlobalWithState<XxeConfig>;
 
 from XxeFlow::PathNode source, XxeFlow::PathNode sink
 where XxeFlow::flowPath(source, sink)
-select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine() ,sink, source, sink,
   "This $@ is not configured to prevent an XML external entity (XXE) attack.", source, "XML parser"

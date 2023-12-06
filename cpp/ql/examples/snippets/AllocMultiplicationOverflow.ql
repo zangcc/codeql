@@ -36,6 +36,6 @@ module MultToAlloc = DataFlow::Global<MultToAllocConfig>;
 
 from MultToAlloc::PathNode source, MultToAlloc::PathNode sink
 where MultToAlloc::flowPath(source, sink)
-select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine() ,sink, source, sink,
   "Potentially overflowing value from $@ is used in the size of this allocation.", source,
   "multiplication"

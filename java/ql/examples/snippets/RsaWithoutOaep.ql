@@ -16,5 +16,5 @@ import RsaWithoutOaepFlow::PathGraph
 
 from RsaWithoutOaepFlow::PathNode source, RsaWithoutOaepFlow::PathNode sink
 where RsaWithoutOaepFlow::flowPath(source, sink)
-select source.getNode().asExpr().getFile().getAbsolutePath()+"$$"+source.getNode().asExpr().getFile().getLocation().getStartLine(),source.getLocation().getFile().getAbsolutePath()+"$$"+source.getLocation().getStartLine() ,source, source, sink, "This specification is used to $@ without OAEP padding.", sink,
+select source.getNode().asExpr().getFile().getAbsolutePath()+"$$"+source.getNode().asExpr().getFile().getLocation().getStartLine() ,source, source, sink, "This specification is used to $@ without OAEP padding.", sink,
   "initialize an RSA cipher"

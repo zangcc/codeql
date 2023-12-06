@@ -17,6 +17,6 @@ import InsecureTrustManagerFlow::PathGraph
 
 from InsecureTrustManagerFlow::PathNode source, InsecureTrustManagerFlow::PathNode sink
 where InsecureTrustManagerFlow::flowPath(source, sink)
-select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink, "This uses $@, which is defined in $@ and trusts any certificate.",
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine() ,sink, source, sink, "This uses $@, which is defined in $@ and trusts any certificate.",
   source, "TrustManager",
   source.getNode().asExpr().(ClassInstanceExpr).getConstructedType() as type, type.nestedName()

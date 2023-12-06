@@ -16,6 +16,6 @@ import UntrustedDataToExternalApiFlow::PathGraph
 
 from UntrustedDataToExternalApiFlow::PathNode source, UntrustedDataToExternalApiFlow::PathNode sink
 where UntrustedDataToExternalApiFlow::flowPath(source, sink)
-select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getLocation().getFile().getAbsolutePath()+"$$"+sink.getLocation().getStartLine() ,sink, source, sink,
+select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine() ,sink, source, sink,
   "Call to " + sink.getNode().(ExternalApiDataNode).getExternalFunction().toString() +
     " with untrusted data from $@.", source, source.toString()
