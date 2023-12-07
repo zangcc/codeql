@@ -34,5 +34,5 @@ from TimingAttackAgainsthash config, DataFlow::PathNode source, DataFlow::PathNo
 where
   config.hasFlowPath(source, sink) and
   sink.getNode().(NonConstantTimeComparisonSink).includesUserInput()
-select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Timing attack against $@ validation.",
+select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Timing attack against $@ validation.",
   source.getNode().(ProduceCryptoCall).getResultType(), "message"

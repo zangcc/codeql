@@ -23,6 +23,6 @@ where
   sink.getNode().asExpr() = c.getAlgoSpec() and
   source.getNode().asExpr() = s and
   InsecureCryptoFlow::flowPath(source, sink)
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c, source, sink,
+select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c, source, sink,
   "Cryptographic algorithm $@ may not be secure, consider using a different algorithm.", s,
   s.getValue()

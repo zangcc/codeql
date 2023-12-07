@@ -140,7 +140,7 @@ where
   not Matcher::matches(regexp.getRoot(), byPassExample) and
   byPassEndPoint = toOtherCase(endpointExample) and
   not Matcher::matches(regexp.getRoot(), byPassEndPoint)
-select arg.getLocation().getFile().getAbsolutePath()+"$$"+arg.getLocation().getStartLine() ,arg,
+select arg.getFile().getAbsolutePath()+"$$"+arg.getStartLine() ,arg,
   "This route uses a case-sensitive path $@, but is guarding a $@. A path such as '" +
     byPassEndPoint + "' will bypass the middleware.", regexp, "pattern", endpoint,
   "case-insensitive path"

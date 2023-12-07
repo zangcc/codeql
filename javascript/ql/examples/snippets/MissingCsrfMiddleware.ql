@@ -201,5 +201,5 @@ where
   not handler.getAChild*() = Routing::getNode(authMiddlewareImmuneToCsrf()) and
   // Only warn for dangerous handlers, such as for POST and PUT.
   setup.getOwnHttpMethod().isUnsafe()
-select cookie.getLocation().getFile().getAbsolutePath()+"$$"+cookie.getLocation().getStartLine() ,cookie, "This cookie middleware is serving a $@ without CSRF protection.", setupArg,
+select cookie.getFile().getAbsolutePath()+"$$"+cookie.getStartLine() ,cookie, "This cookie middleware is serving a $@ without CSRF protection.", setupArg,
   "request handler"

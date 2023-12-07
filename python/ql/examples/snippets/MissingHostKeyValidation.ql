@@ -38,4 +38,4 @@ where
     arg = unsafe_paramiko_policy(name).getAValueReachableFromSource() or
     arg = unsafe_paramiko_policy(name).getReturn().getAValueReachableFromSource()
   )
-select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Setting missing host key policy to " + name + " may be unsafe."
+select call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Setting missing host key policy to " + name + " may be unsafe."

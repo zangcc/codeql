@@ -35,5 +35,5 @@ where
     source.getNode().(SecretSource).includesUserInput() or
     sink.getNode().(NonConstantTimeComparisonSink).includesUserInput()
   )
-select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "Timing attack against $@ validation.", source.getNode(),
+select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "Timing attack against $@ validation.", source.getNode(),
   "client-supplied token"

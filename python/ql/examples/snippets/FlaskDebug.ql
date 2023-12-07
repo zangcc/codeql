@@ -21,5 +21,5 @@ where
   call = Flask::FlaskApp::instance().getMember("run").getACall() and
   call.getParameter(2, "debug").getAValueReachingSink().asExpr().(ImmutableLiteral).booleanValue() =
     true
-select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call,
+select call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call,
   "A Flask app appears to be run in debug mode. This may allow an attacker to run arbitrary code through the debugger."

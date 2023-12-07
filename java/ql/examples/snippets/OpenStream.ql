@@ -59,5 +59,5 @@ from
 where
   sink.getNode().asExpr() = call.getQualifier() and
   RemoteUrlToOpenStreamFlow::flowPath(source, sink)
-select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, source, sink,
+select call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, source, sink,
   "URL on which openStream is called may have been constructed from remote source."

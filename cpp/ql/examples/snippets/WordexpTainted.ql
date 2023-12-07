@@ -54,5 +54,5 @@ module WordexpTaint = TaintTracking::Global<WordexpTaintConfig>;
 
 from WordexpTaint::PathNode sourceNode, WordexpTaint::PathNode sinkNode
 where WordexpTaint::flowPath(sourceNode, sinkNode)
-select sinkNode.getFile().getAbsolutePath()+"$$"+sinkNode.getStartLine(),sinkNode.getNode(), sourceNode, sinkNode,
+select sinkNode.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sinkNode.getNode().getLocation().getStartLine(),sinkNode.getNode(), sourceNode, sinkNode,
   "Using user-supplied data in a `wordexp` command, without disabling command substitution, can make code vulnerable to command injection."

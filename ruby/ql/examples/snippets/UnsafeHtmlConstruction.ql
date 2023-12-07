@@ -17,6 +17,6 @@ import DataFlow::PathGraph
 
 from DataFlow::Configuration cfg, DataFlow::PathNode source, DataFlow::PathNode sink, Sink sinkNode
 where cfg.hasFlowPath(source, sink) and sink.getNode() = sinkNode
-select sinkNode.getFile().getAbsolutePath()+"$$"+sinkNode.getStartLine(),sinkNode.getLocation().getFile().getAbsolutePath()+"$$"+sinkNode.getLocation().getStartLine() ,sinkNode, source, sink,
+select sinkNode.getLocation().getFile().getAbsolutePath()+"$$"+sinkNode.getLocation().getStartLine() ,sinkNode, source, sink,
   "This " + sinkNode.getSinkType() + " which depends on $@ might later allow $@.", source.getNode(),
   "library input", sinkNode.getXssSink(), "cross-site scripting"

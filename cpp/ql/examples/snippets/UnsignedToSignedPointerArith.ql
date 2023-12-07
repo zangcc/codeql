@@ -26,6 +26,6 @@ where
   not call.getArgument(p.getIndex()).isConstant() and
   DataFlow::localFlow(DataFlow::parameterNode(p), sink) and
   p.getUnspecifiedType().getSize() < 8
-select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call,
+select call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call,
   "This call passes an unsigned int to a function that requires a signed int: $@. It's then used in pointer arithmetic: $@.",
   f, f.toString(), sink, sink.toString()

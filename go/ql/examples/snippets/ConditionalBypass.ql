@@ -35,5 +35,5 @@ where
   rhs.asExpr() = c.getRightOperand() and
   Flow::flow(lhsSource, lhs) and
   lhs.asExpr() = c.getLeftOperand()
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c, "This comparison of a $@ with another $@ can be bypassed by a malicious user.", lhsSource,
+select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c, "This comparison of a $@ with another $@ can be bypassed by a malicious user.", lhsSource,
   "user-controlled value", rhsSource, "user-controlled value"

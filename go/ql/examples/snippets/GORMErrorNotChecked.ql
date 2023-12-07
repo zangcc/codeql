@@ -30,5 +30,5 @@ where
     // have its `Error` field read
     exists(DataFlow::FieldReadNode fr | fr.readsField(succ, _, _, "Error"))
   )
-select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call,
+select call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call,
   "This call appears to interact with the database without checking whether an error was encountered."

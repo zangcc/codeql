@@ -17,5 +17,5 @@ import XsltInjectionFlow::PathGraph
 
 from XsltInjectionFlow::PathNode source, XsltInjectionFlow::PathNode sink
 where XsltInjectionFlow::flowPath(source, sink)
-select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink, "This XSLT query depends on $@.", source.getNode(),
+select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink, "This XSLT query depends on $@.", source.getNode(),
   "user-provided value"

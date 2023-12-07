@@ -50,4 +50,4 @@ from API::CallNode call, string name, int mode, string permission
 where
   (chmod_call(call, name, mode) or open_call(call, name, mode)) and
   permission = permissive_permission(mode)
-select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Overly permissive mask in " + name + " sets file to " + permission + "."
+select call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Overly permissive mask in " + name + " sets file to " + permission + "."

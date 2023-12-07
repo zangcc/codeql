@@ -166,6 +166,6 @@ where
   // `checkPath` and `usePath` refer to the same SSA variable
   isCheckedPath(check, def, v, use, usePath, checkPath) and
   isUsedPath(check, def, v, use, usePath, checkPath)
-select use.getFile().getAbsolutePath()+"$$"+use.getStartLine() ,use,
+select use.getFile().getAbsolutePath()+"$$"+use.getLocation().getStartLine() ,use,
   "The $@ being operated upon was previously $@, but the underlying file may have been changed since then.",
   usePath, "filename", check, "checked"

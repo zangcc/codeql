@@ -61,5 +61,5 @@ class SelectBlock extends MethodCall {
 
 from EndCall call, SelectBlock selectBlock
 where getUniqueRead*(selectBlock) = call.getReceiver()
-select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Replace this call and $@ with '" + call.detectCall() + "'.", selectBlock,
+select call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Replace this call and $@ with '" + call.detectCall() + "'.", selectBlock,
   "'select' call"

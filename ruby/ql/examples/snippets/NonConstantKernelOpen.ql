@@ -26,7 +26,7 @@ where
   not hasConstantPrefix(call.getPathArgument()) and
   not call.getPathArgument().getALocalSource() =
     API::getTopLevelMember("File").getAMethodCall("join")
-select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call,
+select call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call,
   "Call to " + call.getName() + " with a non-constant value. Consider replacing it with " +
     call.getReplacement() + "."
 

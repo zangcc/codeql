@@ -13,6 +13,6 @@ import semmle.code.java.security.ExternalAPIs
 import semmle.code.java.dataflow.DataFlow
 
 from ExternalApiUsedWithUntrustedData externalApi
-select externalApi.getUntrustedDataNode().getFile().getAbsolutePath()+"$$"+externalApi.getUntrustedDataNode().getStartLine() ,externalApi, count(externalApi.getUntrustedDataNode()) as numberOfUses,
+select externalApi.getUntrustedDataNode().getLocation().getFile().getAbsolutePath()+"$$"+externalApi.getUntrustedDataNode().getLocation().getStartLine() ,externalApi, count(externalApi.getUntrustedDataNode()) as numberOfUses,
   externalApi.getNumberOfUntrustedSources() as numberOfUntrustedSources order by
     numberOfUntrustedSources desc

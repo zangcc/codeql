@@ -19,6 +19,6 @@ from
 where
   sink.getNode() = externalApi.getUntrustedDataNode() and
   config.hasFlowPath(source, sink)
-select sink.getNode().asExpr().getFile().getAbsolutePath()+"$$"+sink.getNode().asExpr().getFile().getLocation().getStartLine(),sink.getNode(), source, sink,
+select sink.getNode().getLocation().getFile().getAbsolutePath()+"$$"+sink.getNode().getLocation().getStartLine(),sink.getNode(), source, sink,
   "Call to " + externalApi.toString() + " with untrusted data from $@.", source.getNode(),
   source.toString()

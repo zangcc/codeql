@@ -17,5 +17,5 @@ from DataFlow::CallNode call
 where
   call = DataFlow::moduleMember("jsonwebtoken", "verify").getACall() and
   call.getArgument(1).analyze().getTheBooleanValue() = false
-select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getArgument(1),
+select call.getFile().getAbsolutePath()+"$$"+call.getStartLine() ,call.getArgument(1),
   "This argument disables the integrity enforcement of the token verification."

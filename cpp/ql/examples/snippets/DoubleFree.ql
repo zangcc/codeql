@@ -40,5 +40,5 @@ where
     or
     not fc.getTarget().hasGlobalOrStdName("realloc")
   )
-select fc2.getNode().getLocation().getFile().getAbsolutePath()+"$$"+fc2.getNode().getLocation().getStartLine(),fc2.getArgument(0),
+select fc2.getLocation().getFile().getAbsolutePath()+"$$"+fc2.getLocation().getStartLine(),fc2.getArgument(0),
   "This pointer may have already been cleared in the line " + fc.getLocation().getStartLine() + "."

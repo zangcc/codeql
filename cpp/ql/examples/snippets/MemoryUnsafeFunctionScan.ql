@@ -17,4 +17,4 @@ from FunctionCall call, ScanfFunction sff
 where
   call.getTarget() = sff and
   call.getArgument(sff.getFormatParameterIndex()).getValue().regexpMatch(".*%l?s.*")
-select call.getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Dangerous use of one of the scanf functions."
+select call.getLocation().getFile().getAbsolutePath()+"$$"+call.getLocation().getStartLine() ,call, "Dangerous use of one of the scanf functions."

@@ -88,4 +88,4 @@ where
   (isRmiOrJmxServerCreateConstructor(c.getCallee()) or isRmiOrJmxServerCreateMethod(c.getCallee())) and
   envArg = c.getArgument(1) and
   not SafeFlow::flowToExpr(envArg)
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c, getRmiResult(envArg), envArg, envArg.toString()
+select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c, getRmiResult(envArg), envArg, envArg.toString()

@@ -30,4 +30,4 @@ API::Node temporary_name_function(string mod, string function) {
 
 from Call c, string mod, string function
 where temporary_name_function(mod, function).getACall().asExpr() = c
-select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c, "Call to deprecated function " + mod + "." + function + " may be insecure."
+select c.getLocation().getFile().getAbsolutePath()+"$$"+c.getLocation().getStartLine() ,c, "Call to deprecated function " + mod + "." + function + " may be insecure."

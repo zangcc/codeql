@@ -58,4 +58,4 @@ class DangerousWhileLoop extends WhileStmt {
 
 from DangerousWhileLoop lp
 where not lp.isUseThisVariable()
-select lp.getNode().getLocation().getFile().getAbsolutePath()+"$$"+lp.getNode().getLocation().getStartLine(),lp.getDeclaration(), "A variable with this name is used in the $@ condition.", lp, "loop"
+select lp.getFile().getAbsolutePath()+"$$"+lp.getLocation().getStartLine(),lp.getDeclaration(), "A variable with this name is used in the $@ condition.", lp, "loop"
