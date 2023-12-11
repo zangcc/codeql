@@ -1,63 +1,44 @@
+import os
+import re
+import configparser
 import argparse
-import shutil
-import sys,subprocess,re,requests,time,json,configparser,os,traceback,hmac,hashlib,urllib,base64,os.path
 
-file    = os.path.join(os.path.dirname(__file__), '/root/tools/config.ini')
-con     = configparser.ConfigParser() # 创建配置文件对象
-con.read(file, encoding='utf-8') # 读取文件
+def filter_files(input_folder, output_folder, config_file):
+    # Read config file
+    config = configparser.ConfigParser()
+    config.read(config_file)
+    filter_rules = config.get('filterScriptConfigInfo', 'filterRegularRulesOfCodeQl').split(',')
 
-codeql_List        =     con.get('filterScriptConfigInfo', 'filterRegularRulesOfCodeQl').split(",")
-patterns = []
+    # Create output folder if it doesn't exist
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
-def read_txt_files(folder_path):
-    matched_lines = []
+    for filename in os.listdir(input_folder):
+        if filename.endswith(".txt"):
+            input_filepath = os.path.join(input_folder, filename)
+            output_filepath = os.path.join(output_folder, f"{os.path.splitext(filename)[0]}_report.txt")
 
-    def Match(line):
-        patterns = [
-            re.compile("https://(.*)"),                # 匹配 https://
-            re.compile("Try to find Keywords(.*)"),   # 匹配 Try to find Keywords
-        ]
-        for pattern in patterns:
-            if pattern.search(line):
-                return True
-        return False
+            with open(input_filepath, 'r', encoding='utf-8') as infile, \
+                 open(output_filepath, 'w', encoding='utf-8') as outfile:
 
-    def NotMatch(line):
-        for list in codeql_List:
-            patterns.append(re.compile(list))
-        
-        for pattern in patterns:
-            if pattern.search(line):
-                return True
-        return False
+                for line in infile:
+                    if re.search(r'https://(.*)|Try to find Keywords(.*)', line):
+                        include_line = True
+                        for rule in filter_rules:
+                            if re.search(rule, line):
+                                include_line = False
+                                break
+                        if include_line:
+                            outfile.write(line)
 
-    for file_name in os.listdir(folder_path):
-        if file_name.endswith('.txt'):
-            file_path = os.path.join(folder_path, file_name)
-            with open(file_path, 'r', encoding='UTF-8') as f:
-                lines = f.readlines()
-                for line in lines:
-                    if Match(line) and not NotMatch(line):
-                        matched_lines.append((file_name, line))
-
-    return matched_lines
-
-def write_txt_files(matched_lines, output_folder):
-    output_folder = os.path.join(output_folder, 'new_codeql')
-    os.makedirs(output_folder, exist_ok=True)
-
-    for file_name, line in matched_lines:
-        output_filename = file_name.replace('.txt', '_report.txt')
-        output_filepath = os.path.join(output_folder, output_filename)
-        with open(output_filepath, 'a') as f:
-            f.write(line)
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--folder', required=True, help='输入的文件夹路径')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Filter and process text files in a folder.")
+    parser.add_argument("-f", "--folder", required=True, help="Input folder path")
     args = parser.parse_args()
 
     input_folder = args.folder
+    output_folder = "new_codeql"
+    config_file = "/root/tools/config.ini"
 
-    matched_lines = read_txt_files(input_folder)
-    write_txt_files(matched_lines, input_folder)
+    filter_files(input_folder, output_folder, config_file)
+    print("Filtering completed. Check the 'new_codeql' folder for results.")
